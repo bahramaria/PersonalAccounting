@@ -1,10 +1,10 @@
 # Phase 0 — Technical validation status
 
-The repository has a platform-independent Core foundation, an EF Core SQLite relational model, an initial migration, and a migration startup service. The migration integration tests use SQLite. These changes do not satisfy the SQLCipher or cross-platform validation gates.
+The repository has a platform-independent Core foundation, an EF Core SQLite relational model, an initial migration, and a migration startup service. The MAUI startup now invokes that lifecycle before opening Shell, using the unencrypted SQLite development provider. The migration and pre-migration backup path is covered by SQLite integration tests. These changes do not satisfy the SQLCipher or cross-platform validation gates.
 
 ## Roadmap spikes
 
-- [ ] S1 — EF Core + SQLite/SQLCipher on Android/iOS/Windows; encrypted CRUD, key handling, and migrations. The SQLite migration and startup lifecycle are implemented and tested, but SQLCipher, native binaries, secure key handling, and device-level validation remain open.
+- [ ] S1 — EF Core + SQLite/SQLCipher on Android/iOS/Windows; encrypted CRUD, key handling, and migrations. The SQLite migration lifecycle is implemented and wired into MAUI startup, but SQLCipher, native binaries, secure key handling, and device-level validation remain open.
 - [ ] S2 — MAUI RTL spike covering Shell, CollectionView, amount Entry, and charts. Shell and a basic RTL dashboard are scaffolded; device screenshots and the remaining controls are not validated.
 - [ ] S3 — Persian calendar reference corpus (years 1200–1500) and round-trip property tests.
 - [ ] S4 — Android SMS permission, delivery behavior, and anonymized bank fixtures.

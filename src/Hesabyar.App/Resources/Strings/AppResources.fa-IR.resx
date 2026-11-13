@@ -11,9 +11,12 @@
   <data name="MoreTab" xml:space="preserve"><value>بیشتر</value></data>
   <data name="HomeHeading" xml:space="preserve"><value>حسابداری شخصی</value></data>
   <data name="HomeDescription" xml:space="preserve"><value>مدیریت مالی آفلاین و متمرکز شما</value></data>
-  <data name="BalanceUnavailable" xml:space="preserve"><value>موجودی حساب‌ها پس از راه‌اندازی امن پایگاه داده نمایش داده می‌شود.</value></data>
+  <data name="BalanceUnavailable" xml:space="preserve"><value>موجودی حساب‌ها پس از راه‌اندازی پایگاه داده نمایش داده می‌شود.</value></data>
   <data name="TransactionsPlaceholder" xml:space="preserve"><value>فرآیندهای ثبت و مدیریت تراکنش در مرحله بعد پیاده‌سازی می‌شوند.</value></data>
   <data name="AccountsPlaceholder" xml:space="preserve"><value>مدیریت حساب‌ها در مرحله بعد پیاده‌سازی می‌شود.</value></data>
   <data name="ReportsPlaceholder" xml:space="preserve"><value>گزارش‌ها پس از تکمیل فرآیندهای تراکنش اضافه می‌شوند.</value></data>
   <data name="MorePlaceholder" xml:space="preserve"><value>تنظیمات و امکانات تکمیلی در مراحل بعد اضافه می‌شوند.</value></data>
+  <data name="StartupInitializing" xml:space="preserve"><value>در حال آماده‌سازی پایگاه داده محلی...</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>آماده‌سازی پایگاه داده انجام نشد. فضای ذخیره‌سازی را بررسی و دوباره تلاش کنید.</value></data>
+  <data name="Retry" xml:space="preserve"><value>تلاش دوباره</value></data>
 </root>

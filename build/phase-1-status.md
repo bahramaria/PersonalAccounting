@@ -7,18 +7,18 @@
 - Manual transactions are confirmed when created; SMS/import sources remain unconfirmed until explicitly confirmed.
 - EF Core SQLite model and initial migration for Accounts, Transactions, and Postings.
 - Design-time DbContext factory, pinned dotnet-ef tool manifest, and migration startup service with pre-migration SQLite backup.
-- Migration integration tests run against SQLite migrations.
-- Initial .NET MAUI application scaffold for Android and Windows with Shell tabs, DI, CommunityToolkit.Mvvm, Persian resources, and RTL defaults.
-- Account and transaction application services, EF repository, and existing core tests.
+- Migration integration tests run against SQLite migrations; the backup test verifies that pre-existing data is retained in the safety copy and that repeated startup is idempotent.
+- MAUI Android/Windows shell scaffold with MVVM, DI, Persian resources, and page-level FlowDirection from ILocalizationService.
+- MAUI startup invokes DatabaseInitializer before displaying Shell; SQLite WAL, foreign keys, and busy timeout are configured per connection.
+- CI separates Core tests from platform-specific Android and Windows builds.
 
 ## Not yet implemented or validated
 
-- Production SQLCipher provider, native libraries, key storage, and encrypted CRUD validation.
-- Wiring the database initializer into MAUI startup after the secure encrypted provider is selected.
+- Production SQLCipher provider, native libraries, key generation/storage, and encrypted CRUD validation.
 - Default Persian category/system-account seeding.
-- Fiscal-period persistence and document numbering per fiscal period (Jalali fiscal year by default, custom periods supported, numbering restarts at 1).
-- MAUI RTL behavior on Android/Windows devices and complete S2 coverage.
+- MAUI RTL behavior on Android/Windows devices, screenshots, and complete S2 coverage.
 - Persian calendar reference corpus and property-based validation.
+- Jalali/Gregorian calendar selection and fiscal-period/numbering workflows are documented decisions but not yet implemented in UI or persistence.
 - People/debt, cheque, loan, SMS, reminders, reports, export, and backup features beyond the pre-migration safety copy.
 
-The current SQLite provider is an unencrypted development/test configuration. This branch is not a production-ready encrypted database.
+The current MAUI startup uses unencrypted Microsoft EF Core SQLite. It is not a production encrypted database, and the Android/Windows CI jobs are build checks only, not device-level behavior validation.

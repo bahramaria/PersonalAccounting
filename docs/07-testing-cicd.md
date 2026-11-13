@@ -21,22 +21,22 @@
 6. **Cheque**: همه انتقال‌های مجاز/غیرمجاز، تولید Posting درست.
 7. **Dedupe/نرمال‌سازی**: پیامک تکراری، ارقام/حروف عربی، تطبیق موجود.
 8. **Backup**: Round-trip، گذرواژه اشتباه، FormatVersion قدیمی.
-9. **Migration**: اجرای زنجیره Migration‌ها از نسخه اول تا آخر روی دیتابیس نمونه.
+9. **Migration**: اجرای زنجیره Migrationها از نسخه اول تا آخر روی دیتابیس نمونه؛ تست فعلی Migration اولیه و بکاپ پیش از Migration را اجرا می‌کند.
 10. **Security**: کلید خالی/اشتباه = عدم دسترسی؛ فایل پیوست دست‌کاری‌شده شناسایی می‌شود (GCM Tag).
 
 ## ۳. پوشش و کیفیت
-Domain ≥ ۹۰٪، Application ≥ ۷۰٪ (Coverlet)؛ `TreatWarningsAsErrors`؛ Analyzers (.NET Analyzers، Roslynator اختیاری)؛ `dotnet format --verify-no-changes`؛ بررسی بسته‌های آسیب‌پذیر (`dotnet list package --vulnerable`).
+Domain ≥ ۹۰٪، Application ≥ ۷۰٪ (Coverlet)؛ `TreatWarningsAsErrors`; Analyzers (.NET Analyzers، Roslynator اختیاری)؛ `dotnet format --verify-no-changes`; بررسی بسته‌های آسیب‌پذیر (`dotnet list package --vulnerable`).
 
 ## ۴. CI (GitHub Actions — اولین پیاده‌سازی)
-**اصل: منطق Build در `build/*.sh|ps1`**؛ فایل Workflow فقط آن‌ها را صدا می‌زند تا انتقال به GitLab/Azure DevOps/Gitea (در صورت محدودیت دسترسی) ساده باشد.
+**اصل: منطق Build در `build/*.sh|ps1`**؛ فایل Workflow فقط آن‌ها را صدا می‌زند تا انتقال به GitLab/Azure DevOps/Gitea (در صورت محدودیت دسترسی) ساده شود.
 ```
 .github/workflows/ci.yml
-  job test-core      : ubuntu-latest   → restore, build, test (Domain/Application/Infrastructure/Localization), coverage, format, vulnerable check
-  job build-android  : ubuntu           → workload restore + publish apk (Artifact)، از فاز ۱ به بعد
-  (فاز بعد) build-ios روی macOS و build-windows با شروع پروژه‌های مربوط
-Trigger: PR و push به main؛ Cache NuGet؛ Matrix فقط برای Core؛ MAUI jobs روی PR سبک (build only).
+  job test-core      : ubuntu-latest   → restore, build, test (Domain/Application/Infrastructure/Localization)
+  job build-android  : ubuntu-latest   → install maui-android workload, restore and build net10.0-android
+  job build-windows  : windows-latest  → install maui workload, restore and build net10.0-windows10.0.19041.0
+Trigger: PR و push به main و feature/**؛ تست‌های Core مستقل از MAUI workload اجرا می‌شوند.
 ```
-- نسخه‌دهی: `GitVersion`/`Directory.Build.props` با SemVer؛ `versionCode` اندروید از شماره Build.
+- نسخه‌دهی: `global.json` با roll-forward محدود به Feature Band .NET 10؛ `versionCode` اندروید از شماره Build.
 - امضا و Secrets (Keystore/Provisioning) فقط در Secret Store؛ هرگز در مخزن.
-- **CD** در این فاز: انتشار خودکار نیست؛ Artifact تولید می‌شود. (CD کامل = فاز بعدی در صورت نیاز.)
+- **CD** در این فاز: انتشار خودکار نیست؛ Artifact تولید نمی‌شود. (CD کامل = فاز بعدی در صورت نیاز.)
 - مخزن: `main` محافظت‌شده، PR الزامی، Conventional Commits.

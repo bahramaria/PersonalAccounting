@@ -1,26 +1,49 @@
 using Hesabyar.App.Resources.Strings;
-using Hesabyar.App.Services;
 using Hesabyar.App.Views;
+using Hesabyar.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hesabyar.App;
 
 public sealed class AppShell : Shell
 {
-    public AppShell(IServiceProvider services)
+    public AppShell(IServiceProvider services, ILocalizationService localization)
     {
-        FlowDirection = AppLocalization.CurrentFlowDirection;
+        FlowDirection = ToMauiFlowDirection(localization.FlowDirection);
 
         var tabs = new TabBar();
-        tabs.Items.Add(CreateTab(AppStrings.HomeTab, "home", () => services.GetRequiredService<DashboardPage>()));
-        tabs.Items.Add(CreateTab(AppStrings.TransactionsTab, "transactions",
-            () => new FeaturePlaceholderPage(AppStrings.TransactionsTab, AppStrings.TransactionsPlaceholder)));
-        tabs.Items.Add(CreateTab(AppStrings.AccountsTab, "accounts",
-            () => new FeaturePlaceholderPage(AppStrings.AccountsTab, AppStrings.AccountsPlaceholder)));
-        tabs.Items.Add(CreateTab(AppStrings.ReportsTab, "reports",
-            () => new FeaturePlaceholderPage(AppStrings.ReportsTab, AppStrings.ReportsPlaceholder)));
-        tabs.Items.Add(CreateTab(AppStrings.MoreTab, "more",
-            () => new FeaturePlaceholderPage(AppStrings.MoreTab, AppStrings.MorePlaceholder)));
+        tabs.Items.Add(CreateTab(
+            AppStrings.HomeTab,
+            "home",
+            () => services.GetRequiredService<DashboardPage>()));
+        tabs.Items.Add(CreateTab(
+            AppStrings.TransactionsTab,
+            "transactions",
+            () => new FeaturePlaceholderPage(
+                AppStrings.TransactionsTab,
+                AppStrings.TransactionsPlaceholder,
+                localization)));
+        tabs.Items.Add(CreateTab(
+            AppStrings.AccountsTab,
+            "accounts",
+            () => new FeaturePlaceholderPage(
+                AppStrings.AccountsTab,
+                AppStrings.AccountsPlaceholder,
+                localization)));
+        tabs.Items.Add(CreateTab(
+            AppStrings.ReportsTab,
+            "reports",
+            () => new FeaturePlaceholderPage(
+                AppStrings.ReportsTab,
+                AppStrings.ReportsPlaceholder,
+                localization)));
+        tabs.Items.Add(CreateTab(
+            AppStrings.MoreTab,
+            "more",
+            () => new FeaturePlaceholderPage(
+                AppStrings.MoreTab,
+                AppStrings.MorePlaceholder,
+                localization)));
 
         Items.Add(tabs);
     }
@@ -35,14 +58,25 @@ public sealed class AppShell : Shell
         });
         return tab;
     }
+
+    private static Microsoft.Maui.FlowDirection ToMauiFlowDirection(LayoutDirection direction) =>
+        direction == LayoutDirection.RightToLeft
+            ? Microsoft.Maui.FlowDirection.RightToLeft
+            : Microsoft.Maui.FlowDirection.LeftToRight;
 }
 
 public sealed class FeaturePlaceholderPage : ContentPage
 {
-    public FeaturePlaceholderPage(string title, string description)
+    public FeaturePlaceholderPage(
+        string title,
+        string description,
+        ILocalizationService localization)
     {
         Title = title;
-        FlowDirection = AppLocalization.CurrentFlowDirection;
+        FlowDirection = localization.FlowDirection == LayoutDirection.RightToLeft
+            ? Microsoft.Maui.FlowDirection.RightToLeft
+            : Microsoft.Maui.FlowDirection.LeftToRight;
+
         Content = new VerticalStackLayout
         {
             Padding = 24,

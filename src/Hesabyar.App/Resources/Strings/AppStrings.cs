@@ -23,6 +23,9 @@ public static class AppStrings
     public static string AccountsPlaceholder => Get(nameof(AccountsPlaceholder));
     public static string ReportsPlaceholder => Get(nameof(ReportsPlaceholder));
     public static string MorePlaceholder => Get(nameof(MorePlaceholder));
+    public static string StartupInitializing => Get(nameof(StartupInitializing));
+    public static string StartupFailed => Get(nameof(StartupFailed));
+    public static string Retry => Get(nameof(Retry));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

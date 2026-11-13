@@ -1,14 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Hesabyar.App;
 
 public partial class App : Application
 {
-    private readonly AppShell _shell;
+    private readonly IServiceProvider _services;
 
-    public App(AppShell shell)
+    public App(IServiceProvider services)
     {
         InitializeComponent();
-        _shell = shell;
+        _services = services;
     }
 
-    protected override Window CreateWindow(IActivationState? activationState) => new(_shell);
+    protected override Window CreateWindow(IActivationState? activationState) =>
+        new(_services.GetRequiredService<StartupPage>());
 }

@@ -11,9 +11,12 @@
   <data name="MoreTab" xml:space="preserve"><value>More</value></data>
   <data name="HomeHeading" xml:space="preserve"><value>Personal accounting</value></data>
   <data name="HomeDescription" xml:space="preserve"><value>Your offline-first financial workspace.</value></data>
-  <data name="BalanceUnavailable" xml:space="preserve"><value>Account balances will appear after secure database setup.</value></data>
+  <data name="BalanceUnavailable" xml:space="preserve"><value>Account balances will appear after the local database is initialized.</value></data>
   <data name="TransactionsPlaceholder" xml:space="preserve"><value>Transaction workflows will be added in the next implementation stage.</value></data>
   <data name="AccountsPlaceholder" xml:space="preserve"><value>Account management will be added in the next implementation stage.</value></data>
   <data name="ReportsPlaceholder" xml:space="preserve"><value>Reports will be added after the transaction workflows.</value></data>
   <data name="MorePlaceholder" xml:space="preserve"><value>Settings and additional features will be added in later stages.</value></data>
+  <data name="StartupInitializing" xml:space="preserve"><value>Preparing the local database...</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>The database could not be initialized. Check available storage and try again.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
 </root>

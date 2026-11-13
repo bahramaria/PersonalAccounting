@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Infrastructure.Persistence;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    TimeProvider? timeProvider = null) : DbContext(options)
 {
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
+
     public DbSet<DbAccount> Accounts => Set<DbAccount>();
     public DbSet<DbLedgerTransaction> Transactions => Set<DbLedgerTransaction>();
     public DbSet<DbPosting> Postings => Set<DbPosting>();
@@ -30,14 +34,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     private void ApplyAuditFields()
     {
-        var nowUtc = DateTimeOffset.UtcNow;
+        var nowUtc = _timeProvider.GetUtcNow();
         foreach (var entry in ChangeTracker.Entries<DbEntity>())
         {
             if (entry.State == EntityState.Added)
             {
                 if (entry.Entity.CreatedAtUtc == default)
                     entry.Entity.CreatedAtUtc = nowUtc;
-                entry.Entity.UpdatedAtUtc = entry.Entity.CreatedAtUtc;
+                if (entry.Entity.UpdatedAtUtc == default)
+                    entry.Entity.UpdatedAtUtc = nowUtc;
             }
             else if (entry.State == EntityState.Modified)
             {
