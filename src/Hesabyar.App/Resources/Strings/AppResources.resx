@@ -40,4 +40,9 @@
   <data name="AccountsLoadFailed" xml:space="preserve"><value>Could not load accounts.</value></data>
   <data name="AccountsEmpty" xml:space="preserve"><value>No accounts have been added yet.</value></data>
   <data name="AccountCreateFailed" xml:space="preserve"><value>Could not create the account.</value></data>
+  <data name="EditAccount" xml:space="preserve"><value>Edit account</value></data>
+  <data name="ArchiveAccount" xml:space="preserve"><value>Archive account</value></data>
+  <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>This account will be removed from the active list while its financial history is preserved. Continue?</value></data>
+  <data name="AccountUpdateFailed" xml:space="preserve"><value>Could not update the account.</value></data>
+  <data name="AccountArchiveFailed" xml:space="preserve"><value>Could not archive the account.</value></data>
 </root>

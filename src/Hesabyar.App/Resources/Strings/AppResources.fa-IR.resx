@@ -40,4 +40,9 @@
   <data name="AccountsLoadFailed" xml:space="preserve"><value>بارگذاری حساب‌ها انجام نشد.</value></data>
   <data name="AccountsEmpty" xml:space="preserve"><value>هنوز حسابی ثبت نشده است.</value></data>
   <data name="AccountCreateFailed" xml:space="preserve"><value>ایجاد حساب انجام نشد.</value></data>
+  <data name="EditAccount" xml:space="preserve"><value>ویرایش حساب</value></data>
+  <data name="ArchiveAccount" xml:space="preserve"><value>بایگانی حساب</value></data>
+  <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>حساب از فهرست فعال خارج می‌شود و سوابق مالی آن حفظ خواهد شد. ادامه می‌دهید؟</value></data>
+  <data name="AccountUpdateFailed" xml:space="preserve"><value>ویرایش حساب انجام نشد.</value></data>
+  <data name="AccountArchiveFailed" xml:space="preserve"><value>بایگانی حساب انجام نشد.</value></data>
 </root>

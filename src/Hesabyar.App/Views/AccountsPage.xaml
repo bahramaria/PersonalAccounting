@@ -20,7 +20,8 @@
                FontSize="14" />
         <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Accounts}"
-                        SelectionMode="None">
+                        SelectionMode="Single"
+                        SelectionChanged="OnAccountSelectionChanged">
             <CollectionView.EmptyView>
                 <Label Text="{x:Static strings:AppStrings.AccountsEmpty}"
                        HorizontalOptions="Center"

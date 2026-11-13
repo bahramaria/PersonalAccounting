@@ -146,6 +146,74 @@ public sealed class AccountingServiceTests
         Assert.Equal("account.parent.invalid", invalid.Error.Code);
     }
 
+    [Fact]
+    public async Task RenameAccount_UpdatesNameWithoutChangingBalance()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var service = new AccountService(repository, new FixedClock(NowUtc));
+        var created = await service.CreateAsync(new CreateAccountRequest(
+            "Old name", AccountType.Asset, AccountKind.Bank,
+            OpeningBalanceMinor: 750_000, OpeningDate: BusinessDate));
+
+        var renamed = await service.RenameAsync(created.Value, "New name");
+        var account = await repository.GetAccountAsync(created.Value, default);
+
+        Assert.True(created.IsSuccess);
+        Assert.True(renamed.IsSuccess);
+        Assert.Equal("New name", account!.Name);
+        Assert.Equal(750_000, await repository.GetBalanceMinorAsync(created.Value, default));
+    }
+
+    [Fact]
+    public async Task ArchiveAccount_HidesAccountButPreservesItsLedgerHistory()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var service = new AccountService(repository, new FixedClock(NowUtc));
+        var created = await service.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank,
+            OpeningBalanceMinor: 900_000, OpeningDate: BusinessDate));
+
+        var archived = await service.ArchiveAsync(created.Value);
+        var activeAccounts = await repository.GetAccountsAsync(includeArchived: false, default);
+        var allAccounts = await repository.GetAccountsAsync(includeArchived: true, default);
+        var balance = await repository.GetBalanceMinorAsync(created.Value, default);
+
+        Assert.True(created.IsSuccess);
+        Assert.True(archived.IsSuccess);
+        Assert.DoesNotContain(activeAccounts, x => x.Id == created.Value);
+        Assert.Contains(allAccounts, x => x.Id == created.Value && x.IsArchived);
+        Assert.Equal(900_000, balance);
+        Assert.Equal(2, await db.Postings.CountAsync());
+    }
+
+    [Fact]
+    public async Task RenameArchivedAccount_IsRejected()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var service = new AccountService(new EfAccountingRepository(db), new FixedClock(NowUtc));
+        var created = await service.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank));
+        Assert.True((await service.ArchiveAsync(created.Value)).IsSuccess);
+
+        var renamed = await service.RenameAsync(created.Value, "Renamed");
+
+        Assert.True(renamed.IsFailure);
+        Assert.Equal("account.archived", renamed.Error.Code);
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;

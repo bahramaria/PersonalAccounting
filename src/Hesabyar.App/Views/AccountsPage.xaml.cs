@@ -86,6 +86,50 @@ public partial class AccountsPage : ContentPage
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
     }
 
+    private async void OnAccountSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is not AccountListItem account)
+            return;
+
+        if (sender is CollectionView collectionView)
+            collectionView.SelectedItem = null;
+
+        var action = await DisplayActionSheetAsync(
+            account.Name,
+            AppStrings.Cancel,
+            null,
+            AppStrings.EditAccount,
+            AppStrings.ArchiveAccount);
+
+        if (action == AppStrings.EditAccount)
+        {
+            var name = await DisplayPromptAsync(
+                AppStrings.EditAccount,
+                AppStrings.AccountNamePrompt,
+                AppStrings.Save,
+                AppStrings.Cancel,
+                initialValue: account.Name,
+                maxLength: 120);
+
+            if (string.IsNullOrWhiteSpace(name) || string.Equals(name.Trim(), account.Name, StringComparison.Ordinal))
+                return;
+
+            if (!await _viewModel.RenameAsync(account.Id, name.Trim()))
+                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        }
+        else if (action == AppStrings.ArchiveAccount)
+        {
+            var confirmed = await DisplayAlertAsync(
+                AppStrings.ArchiveAccount,
+                AppStrings.ArchiveAccountConfirmation,
+                AppStrings.ArchiveAccount,
+                AppStrings.Cancel);
+
+            if (confirmed && !await _viewModel.ArchiveAsync(account.Id))
+                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        }
+    }
+
     private static string NormalizeDigits(string value)
     {
         var result = new System.Text.StringBuilder(value.Length);

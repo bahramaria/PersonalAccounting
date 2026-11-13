@@ -117,6 +117,94 @@ public sealed class AccountsViewModel : ObservableObject
         }
     }
 
+    public async Task<bool> RenameAsync(Guid accountId, string name, CancellationToken cancellationToken = default)
+    {
+        if (IsBusy)
+            return false;
+
+        IsBusy = true;
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<AccountService>();
+            var result = await service.RenameAsync(accountId, name, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                StatusMessage = result.Error.Message ?? AppStrings.AccountUpdateFailed;
+                return false;
+            }
+
+            await ReloadAccountsAsync(cancellationToken);
+            return true;
+        }
+        catch (Exception)
+        {
+            StatusMessage = AppStrings.AccountUpdateFailed;
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task<bool> ArchiveAsync(Guid accountId, CancellationToken cancellationToken = default)
+    {
+        if (IsBusy)
+            return false;
+
+        IsBusy = true;
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<AccountService>();
+            var result = await service.ArchiveAsync(accountId, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                StatusMessage = result.Error.Message ?? AppStrings.AccountArchiveFailed;
+                return false;
+            }
+
+            await ReloadAccountsAsync(cancellationToken);
+            return true;
+        }
+        catch (Exception)
+        {
+            StatusMessage = AppStrings.AccountArchiveFailed;
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task ReloadAccountsAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<AccountService>();
+        var result = await service.GetAccountsAsync(cancellationToken: cancellationToken);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            StatusMessage = AppStrings.AccountsLoadFailed;
+            return;
+        }
+
+        Accounts.Clear();
+        foreach (var item in result.Value.Where(x =>
+                     x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card
+                         or AccountKind.Wallet or AccountKind.CreditCard))
+        {
+            Accounts.Add(new AccountListItem(
+                item.Account.Id,
+                item.Account.Name,
+                GetKindName(item.Account.Kind),
+                FormatBalance(item.BalanceMinor)));
+        }
+
+        StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
+    }
+
     private async Task LoadAfterCreateAsync(CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();

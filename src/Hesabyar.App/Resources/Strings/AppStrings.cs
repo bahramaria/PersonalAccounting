@@ -48,6 +48,11 @@ public static class AppStrings
     public static string AccountsLoadFailed => Get(nameof(AccountsLoadFailed));
     public static string AccountsEmpty => Get(nameof(AccountsEmpty));
     public static string AccountCreateFailed => Get(nameof(AccountCreateFailed));
+    public static string EditAccount => Get(nameof(EditAccount));
+    public static string ArchiveAccount => Get(nameof(ArchiveAccount));
+    public static string ArchiveAccountConfirmation => Get(nameof(ArchiveAccountConfirmation));
+    public static string AccountUpdateFailed => Get(nameof(AccountUpdateFailed));
+    public static string AccountArchiveFailed => Get(nameof(AccountArchiveFailed));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
