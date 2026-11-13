@@ -183,27 +183,32 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             .OrderByDescending(x => x.BusinessDate)
             .ThenByDescending(x => x.CreatedAtUtc);
 
-        return orderedTransactions.Select(x =>
-        {
-            var positive = x.Postings.FirstOrDefault(p => p.AmountMinor > 0);
-            var negative = x.Postings.FirstOrDefault(p => p.AmountMinor < 0);
-            var amount = x.Postings.Where(p => p.AmountMinor > 0).Sum(p => p.AmountMinor);
-            return new TransactionSnapshot(
-                x.Id,
-                x.BusinessDate,
-                x.Kind,
-                amount,
-                x.Kind == TransactionKind.Income ? positive?.AccountId ?? Guid.Empty : negative?.AccountId ?? Guid.Empty,
-                x.Kind == TransactionKind.Transfer || x.Kind == TransactionKind.Expense ? positive?.AccountId : negative?.AccountId,
-                x.Description,
-                x.IsConfirmed);
-        }).ToArray();
+        return orderedTransactions.Select(ToTransactionSnapshot).ToArray();
     }
 
     public async Task<TransactionSnapshot?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken)
     {
-        var transactions = await GetTransactionsAsync(null, null, null, cancellationToken);
-        return transactions.SingleOrDefault(x => x.Id == transactionId);
+        var transaction = await db.Transactions.AsNoTracking().Include(x => x.Postings)
+            .SingleOrDefaultAsync(x => x.Id == transactionId && !x.IsDeleted &&
+                (x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer),
+                cancellationToken);
+        return transaction is null ? null : ToTransactionSnapshot(transaction);
+    }
+
+    private static TransactionSnapshot ToTransactionSnapshot(DbLedgerTransaction transaction)
+    {
+        var positive = transaction.Postings.FirstOrDefault(p => p.AmountMinor > 0);
+        var negative = transaction.Postings.FirstOrDefault(p => p.AmountMinor < 0);
+        var amount = transaction.Postings.Where(p => p.AmountMinor > 0).Sum(p => p.AmountMinor);
+        return new TransactionSnapshot(
+            transaction.Id,
+            transaction.BusinessDate,
+            transaction.Kind,
+            amount,
+            transaction.Kind == TransactionKind.Income ? positive?.AccountId ?? Guid.Empty : negative?.AccountId ?? Guid.Empty,
+            transaction.Kind == TransactionKind.Transfer || transaction.Kind == TransactionKind.Expense ? positive?.AccountId : negative?.AccountId,
+            transaction.Description,
+            transaction.IsConfirmed);
     }
 
     public async Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken)
