@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
+    <ProjectReference Include="../Hesabyar.Domain/Hesabyar.Domain.csproj" />
+  </ItemGroup>
+</Project>
