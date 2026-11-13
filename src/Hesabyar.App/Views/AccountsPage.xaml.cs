@@ -68,10 +68,7 @@ public partial class AccountsPage : ContentPage
             initialValue: "0",
             keyboard: Keyboard.Numeric);
 
-        if (openingText is null)
-            return;
-
-        var normalized = NormalizeDigits(openingText)
+        var normalized = NormalizeDigits(openingText ?? "0")
             .Replace(",", string.Empty, StringComparison.Ordinal)
             .Replace("٬", string.Empty, StringComparison.Ordinal)
             .Replace(" ", string.Empty, StringComparison.Ordinal);
