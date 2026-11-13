@@ -311,6 +311,36 @@ public sealed class AccountingServiceTests
         Assert.True(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == original.Value && x.IsDeleted));
     }
 
+    [Fact]
+    public async Task UpdateTransaction_WithInvalidReplacement_PreservesOriginalLedgerEntry()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var bank = await accounts.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank, OpeningBalanceMinor: 500_000, OpeningDate: BusinessDate));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+        var original = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 75_000, bank.Value, food.Value, "Original"));
+
+        var invalidUpdate = await transactions.UpdateAsync(original.Value,
+            income: new IncomeRequest(BusinessDate, 90_000, bank.Value, food.Value, "Invalid"));
+
+        Assert.True(invalidUpdate.IsFailure);
+        Assert.Equal("transaction.update.invalid", invalidUpdate.Error.Code);
+        var active = await transactions.GetTransactionsAsync();
+        Assert.Single(active);
+        Assert.Equal(original.Value, active[0].Id);
+        Assert.Equal(425_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.False(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == original.Value && x.IsDeleted));
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
