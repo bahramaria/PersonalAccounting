@@ -4,6 +4,7 @@
     <Project Path="src/Hesabyar.Application/Hesabyar.Application.csproj" />
     <Project Path="src/Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
     <Project Path="src/Hesabyar.Localization/Hesabyar.Localization.csproj" />
+    <Project Path="src/Hesabyar.App/Hesabyar.App.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hesabyar.Domain.Tests/Hesabyar.Domain.Tests.csproj" />

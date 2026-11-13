@@ -5,10 +5,10 @@
 - .NET 10 solution foundation with Domain, Application, Infrastructure, and Localization projects.
 - Currency-aware Money, CurrencyCode, Account, and balanced double-entry LedgerTransaction.
 - Manual transactions are confirmed when created; SMS/import sources remain unconfirmed until explicitly confirmed.
-- EF Core SQLite model and the initial `202611130001_InitialAccountingSchema` migration for Accounts, Transactions, and Postings.
-- Design-time DbContext factory and pinned local `dotnet-ef` tool manifest.
-- Database initialization service that applies pending migrations and creates a pre-migration SQLite backup when an existing file database is present.
-- Migration integration tests use SQLite migrations rather than EnsureCreated.
+- EF Core SQLite model and initial migration for Accounts, Transactions, and Postings.
+- Design-time DbContext factory, pinned dotnet-ef tool manifest, and migration startup service with pre-migration SQLite backup.
+- Migration integration tests run against SQLite migrations.
+- Initial .NET MAUI application scaffold for Android and Windows with Shell tabs, DI, CommunityToolkit.Mvvm, Persian resources, and RTL defaults.
 - Account and transaction application services, EF repository, and existing core tests.
 
 ## Not yet implemented or validated

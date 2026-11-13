@@ -16,7 +16,7 @@ public sealed class AppDbContextTests
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
         await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var cash = new DbAccount { Name = "Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" };
         var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
@@ -45,7 +45,7 @@ public sealed class AppDbContextTests
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
         await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
         db.Accounts.Add(new DbAccount
         {
             Name = "Archived", Type = AccountType.Asset, Kind = AccountKind.Cash,
@@ -64,7 +64,7 @@ public sealed class AppDbContextTests
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
         await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var account = new DbAccount { Name = "Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" };
         var transaction = new DbLedgerTransaction

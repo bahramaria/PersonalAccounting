@@ -20,7 +20,7 @@ public sealed class AccountingServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         await using var db = CreateDatabase(connection);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var repository = new EfAccountingRepository(db);
         var service = new AccountService(repository, new FixedClock(NowUtc));
@@ -44,7 +44,7 @@ public sealed class AccountingServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         await using var db = CreateDatabase(connection);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var repository = new EfAccountingRepository(db);
         var clock = new FixedClock(NowUtc);
@@ -74,7 +74,7 @@ public sealed class AccountingServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         await using var db = CreateDatabase(connection);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var repository = new EfAccountingRepository(db);
         var clock = new FixedClock(NowUtc);
@@ -110,7 +110,7 @@ public sealed class AccountingServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         await using var db = CreateDatabase(connection);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var repository = new EfAccountingRepository(db);
         var accounts = new AccountService(repository, new FixedClock(NowUtc));
@@ -131,7 +131,7 @@ public sealed class AccountingServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         await using var db = CreateDatabase(connection);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var service = new AccountService(new EfAccountingRepository(db), new FixedClock(NowUtc));
         var root = await service.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));

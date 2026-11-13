@@ -4,8 +4,8 @@ The repository has a platform-independent Core foundation, an EF Core SQLite rel
 
 ## Roadmap spikes
 
-- [ ] S1 — EF Core + SQLite/SQLCipher on Android, iOS, and Windows; encrypted CRUD, key handling, and migrations. The migration lifecycle is implemented for the SQLite provider, but SQLCipher, native binaries, secure key handling, and device-level validation remain open.
-- [ ] S2 — MAUI RTL spike covering Shell, CollectionView, amount Entry, and charts. The MAUI application shell is scaffolded; RTL behavior still requires screenshots and device review. CollectionView, amount Entry, and charts are not yet validated.
+- [ ] S1 — EF Core + SQLite/SQLCipher on Android/iOS/Windows; encrypted CRUD, key handling, and migrations. The SQLite migration and startup lifecycle are implemented and tested, but SQLCipher, native binaries, secure key handling, and device-level validation remain open.
+- [ ] S2 — MAUI RTL spike covering Shell, CollectionView, amount Entry, and charts. Shell and a basic RTL dashboard are scaffolded; device screenshots and the remaining controls are not validated.
 - [ ] S3 — Persian calendar reference corpus (years 1200–1500) and round-trip property tests.
 - [ ] S4 — Android SMS permission, delivery behavior, and anonymized bank fixtures.
 - [ ] S5 — Local notifications on Android/iOS, including restrictive Android vendors.

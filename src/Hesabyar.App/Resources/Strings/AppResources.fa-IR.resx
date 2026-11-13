@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="HomeTab" xml:space="preserve"><value>خانه</value></data>
+  <data name="TransactionsTab" xml:space="preserve"><value>تراکنش‌ها</value></data>
+  <data name="AccountsTab" xml:space="preserve"><value>حساب‌ها</value></data>
+  <data name="ReportsTab" xml:space="preserve"><value>گزارش‌ها</value></data>
+  <data name="MoreTab" xml:space="preserve"><value>بیشتر</value></data>
+  <data name="HomeHeading" xml:space="preserve"><value>حسابداری شخصی</value></data>
+  <data name="HomeDescription" xml:space="preserve"><value>مدیریت مالی آفلاین و متمرکز شما</value></data>
+  <data name="BalanceUnavailable" xml:space="preserve"><value>موجودی حساب‌ها پس از راه‌اندازی امن پایگاه داده نمایش داده می‌شود.</value></data>
+  <data name="TransactionsPlaceholder" xml:space="preserve"><value>فرآیندهای ثبت و مدیریت تراکنش در مرحله بعد پیاده‌سازی می‌شوند.</value></data>
+  <data name="AccountsPlaceholder" xml:space="preserve"><value>مدیریت حساب‌ها در مرحله بعد پیاده‌سازی می‌شود.</value></data>
+  <data name="ReportsPlaceholder" xml:space="preserve"><value>گزارش‌ها پس از تکمیل فرآیندهای تراکنش اضافه می‌شوند.</value></data>
+  <data name="MorePlaceholder" xml:space="preserve"><value>تنظیمات و امکانات تکمیلی در مراحل بعد اضافه می‌شوند.</value></data>
+</root>
