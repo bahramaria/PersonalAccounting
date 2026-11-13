@@ -17,6 +17,7 @@
 | 13 | CommunityToolkit.Mvvm 8.4.2 برای ViewModelهای MAUI | پیاده‌سازی دستی INotifyPropertyChanged | مطابق معماری مصوب MAUI/MVVM؛ مجوز MIT و سازگاری NuGet با .NET 10 بررسی شد |
 | 14 | SDK اصلی روی .NET 10 pin می‌شود | انتخاب خودکار بالاترین SDK نصب‌شده | جلوگیری از انتخاب SDK پیش‌نمایش .NET 11 در CI و ثابت‌ماندن toolchain MAUI |
 | 15 | انتخاب TFM پلتفرم MAUI با `MauiTargetFramework` | Override سراسری `TargetFramework` | جلوگیری از سرایت TFM پلتفرم به پروژه‌های Core در Restore/Build چندپلتفرمی |
+| 16 | اعمال TargetFramework مشترک فقط به پروژه‌های غیر MAUI | تعریف TargetFramework سراسری برای تمام پروژه‌ها | MAUI باید از TargetFrameworks چندپلتفرمی استفاده کند و نباید net10.0 عمومی را به‌عنوان TFM خود به ارث ببرد |
 
 ## ریسک‌ها
 | ریسک | اثر | کاهش |
