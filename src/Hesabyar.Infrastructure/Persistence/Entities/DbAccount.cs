@@ -9,7 +9,6 @@ public sealed class DbAccount : DbEntity
     public AccountKind Kind { get; set; }
     public Guid? ParentId { get; set; }
     public required string CurrencyCode { get; set; }
-    public string? SystemKey { get; set; }
     public string? Icon { get; set; }
     public string? Color { get; set; }
     public int SortOrder { get; set; }

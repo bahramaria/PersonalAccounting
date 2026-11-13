@@ -34,7 +34,7 @@ public sealed class AccountingServiceTests
         Assert.True(result.IsSuccess);
         Assert.Equal(2_500_000, await repository.GetBalanceMinorAsync(result.Value, default));
         Assert.Equal(2, await db.Postings.CountAsync());
-        Assert.Equal(1, await db.Transactions.CountAsync());
+        Assert.True((await db.Transactions.SingleAsync()).IsConfirmed);
     }
 
     [Fact]
@@ -64,6 +64,7 @@ public sealed class AccountingServiceTests
         Assert.True(expense.IsSuccess);
         Assert.Equal(875_000, await repository.GetBalanceMinorAsync(bank.Value, default));
         Assert.Equal(125_000, await repository.GetBalanceMinorAsync(food.Value, default));
+        Assert.True(await db.Transactions.OrderByDescending(x => x.CreatedAtUtc).FirstAsync() is { IsConfirmed: true });
     }
 
     [Fact]
