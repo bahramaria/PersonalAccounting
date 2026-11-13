@@ -37,7 +37,7 @@ public partial class AccountsPage : ContentPage
         if (string.IsNullOrWhiteSpace(name))
             return;
 
-        var kindChoice = await DisplayActionSheet(
+        var kindChoice = await DisplayActionSheetAsync(
             AppStrings.AccountKindPrompt,
             AppStrings.Cancel,
             null,
@@ -77,13 +77,13 @@ public partial class AccountsPage : ContentPage
                 System.Globalization.CultureInfo.InvariantCulture, out var openingBalance) ||
             openingBalance < 0)
         {
-            await DisplayAlert(AppStrings.ValidationError, AppStrings.OpeningBalanceInvalid, AppStrings.Ok);
+            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.OpeningBalanceInvalid, AppStrings.Ok);
             return;
         }
 
         var created = await _viewModel.CreateAsync(name.Trim(), kind.Value, openingBalance);
         if (!created)
-            await DisplayAlert(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+            await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
     }
 
     private static string NormalizeDigits(string value)
