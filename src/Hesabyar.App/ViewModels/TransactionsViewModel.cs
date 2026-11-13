@@ -21,7 +21,15 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICa
     public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
 
-    public async Task LoadAsync(string? search = null, CancellationToken cancellationToken = default)
+    public async Task LoadAsync(
+        string? search = null,
+        DateOnly? fromDate = null,
+        DateOnly? toDate = null,
+        Guid? accountId = null,
+        Guid? categoryId = null,
+        long? minimumAmountMinor = null,
+        long? maximumAmountMinor = null,
+        CancellationToken cancellationToken = default)
     {
         if (IsBusy) return;
         IsBusy = true;
@@ -46,7 +54,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICa
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
 
             var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
-                .GetTransactionsAsync(search, cancellationToken: cancellationToken);
+                .GetTransactionsAsync(search, fromDate, toDate, accountId, categoryId, minimumAmountMinor, maximumAmountMinor, cancellationToken);
             Transactions.Clear();
             foreach (var item in snapshots)
             {

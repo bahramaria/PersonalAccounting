@@ -341,6 +341,46 @@ public sealed class AccountingServiceTests
         Assert.False(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == original.Value && x.IsDeleted));
     }
 
+    [Fact]
+    public async Task Transactions_CanBeFilteredByDateAccountCategoryAndAmount()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+
+        var bank = await accounts.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank,
+            OpeningBalanceMinor: 1_000_000, OpeningDate: BusinessDate));
+        var wallet = await accounts.CreateAsync(new CreateAccountRequest("Wallet", AccountType.Asset, AccountKind.Wallet));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+        var travel = await accounts.CreateAsync(new CreateAccountRequest("Travel", AccountType.Expense, AccountKind.Category));
+
+        var recentFood = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 100_000, bank.Value, food.Value, "Groceries"));
+        var olderTravel = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate.AddDays(-2), 300_000, bank.Value, travel.Value, "Trip"));
+        var walletFood = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 50_000, wallet.Value, food.Value, "Snack"));
+
+        Assert.True(recentFood.IsSuccess);
+        Assert.True(olderTravel.IsSuccess);
+        Assert.True(walletFood.IsSuccess);
+
+        Assert.Equal(2, (await transactions.GetTransactionsAsync(fromDate: BusinessDate)).Count);
+        Assert.Equal(2, (await transactions.GetTransactionsAsync(accountId: bank.Value)).Count);
+        Assert.Equal(2, (await transactions.GetTransactionsAsync(categoryId: food.Value)).Count);
+        Assert.Single(await transactions.GetTransactionsAsync(minimumAmountMinor: 200_000));
+        Assert.Equal(2, (await transactions.GetTransactionsAsync(maximumAmountMinor: 100_000)).Count);
+        Assert.Single(await transactions.GetTransactionsAsync(
+            fromDate: BusinessDate, accountId: bank.Value, categoryId: food.Value,
+            minimumAmountMinor: 100_000, maximumAmountMinor: 100_000));
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;

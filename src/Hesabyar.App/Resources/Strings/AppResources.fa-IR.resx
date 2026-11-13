@@ -81,4 +81,14 @@
   <data name="TransactionAmountInvalid" xml:space="preserve"><value>مبلغ باید عدد صحیح و بزرگ‌تر از صفر باشد.</value></data>
   <data name="TransactionDateInvalid" xml:space="preserve"><value>تاریخ شمسی معتبر را با قالب سال/ماه/روز وارد کنید.</value></data>
   <data name="UnknownAccount" xml:space="preserve"><value>حساب نامشخص</value></data>
+  <data name="TransactionFilters" xml:space="preserve"><value>فیلترها</value></data>
+  <data name="TransactionFilterAll" xml:space="preserve"><value>همه</value></data>
+  <data name="TransactionFromDate" xml:space="preserve"><value>از تاریخ شمسی (خالی = همه)</value></data>
+  <data name="TransactionToDate" xml:space="preserve"><value>تا تاریخ شمسی (خالی = همه)</value></data>
+  <data name="TransactionAccountFilter" xml:space="preserve"><value>فیلتر بر اساس حساب</value></data>
+  <data name="TransactionCategoryFilter" xml:space="preserve"><value>فیلتر بر اساس دسته‌بندی</value></data>
+  <data name="TransactionMinimumAmount" xml:space="preserve"><value>حداقل مبلغ به ریال (خالی = بدون محدودیت)</value></data>
+  <data name="TransactionMaximumAmount" xml:space="preserve"><value>حداکثر مبلغ به ریال (خالی = بدون محدودیت)</value></data>
+  <data name="TransactionDateRangeInvalid" xml:space="preserve"><value>تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.</value></data>
+  <data name="TransactionAmountRangeInvalid" xml:space="preserve"><value>حداقل مبلغ نمی‌تواند از حداکثر مبلغ بیشتر باشد.</value></data>
 </root>

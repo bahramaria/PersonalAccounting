@@ -90,6 +90,16 @@ public static class AppStrings
     public static string TransactionAmountInvalid => Get(nameof(TransactionAmountInvalid));
     public static string TransactionDateInvalid => Get(nameof(TransactionDateInvalid));
     public static string UnknownAccount => Get(nameof(UnknownAccount));
+    public static string TransactionFilters => Get(nameof(TransactionFilters));
+    public static string TransactionFilterAll => Get(nameof(TransactionFilterAll));
+    public static string TransactionFromDate => Get(nameof(TransactionFromDate));
+    public static string TransactionToDate => Get(nameof(TransactionToDate));
+    public static string TransactionAccountFilter => Get(nameof(TransactionAccountFilter));
+    public static string TransactionCategoryFilter => Get(nameof(TransactionCategoryFilter));
+    public static string TransactionMinimumAmount => Get(nameof(TransactionMinimumAmount));
+    public static string TransactionMaximumAmount => Get(nameof(TransactionMaximumAmount));
+    public static string TransactionDateRangeInvalid => Get(nameof(TransactionDateRangeInvalid));
+    public static string TransactionAmountRangeInvalid => Get(nameof(TransactionAmountRangeInvalid));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

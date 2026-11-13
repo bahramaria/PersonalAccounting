@@ -81,4 +81,14 @@
   <data name="TransactionAmountInvalid" xml:space="preserve"><value>Amount must be a positive whole number.</value></data>
   <data name="TransactionDateInvalid" xml:space="preserve"><value>Enter a valid Persian date in YYYY/MM/DD format.</value></data>
   <data name="UnknownAccount" xml:space="preserve"><value>Unknown account</value></data>
+  <data name="TransactionFilters" xml:space="preserve"><value>Filters</value></data>
+  <data name="TransactionFilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="TransactionFromDate" xml:space="preserve"><value>From date (Persian, blank for any)</value></data>
+  <data name="TransactionToDate" xml:space="preserve"><value>To date (Persian, blank for any)</value></data>
+  <data name="TransactionAccountFilter" xml:space="preserve"><value>Filter by account</value></data>
+  <data name="TransactionCategoryFilter" xml:space="preserve"><value>Filter by category</value></data>
+  <data name="TransactionMinimumAmount" xml:space="preserve"><value>Minimum amount (IRR, blank for any)</value></data>
+  <data name="TransactionMaximumAmount" xml:space="preserve"><value>Maximum amount (IRR, blank for any)</value></data>
+  <data name="TransactionDateRangeInvalid" xml:space="preserve"><value>From date must not be later than to date.</value></data>
+  <data name="TransactionAmountRangeInvalid" xml:space="preserve"><value>Minimum amount must not exceed maximum amount.</value></data>
 </root>

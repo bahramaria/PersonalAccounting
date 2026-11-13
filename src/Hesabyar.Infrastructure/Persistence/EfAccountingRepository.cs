@@ -155,6 +155,10 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         string? search,
         DateOnly? fromDate,
         DateOnly? toDate,
+        Guid? accountId,
+        Guid? categoryId,
+        long? minimumAmountMinor,
+        long? maximumAmountMinor,
         CancellationToken cancellationToken)
     {
         var query = db.Transactions.AsNoTracking().Include(x => x.Postings)
@@ -164,6 +168,14 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             query = query.Where(x => x.BusinessDate >= fromDate.Value);
         if (toDate is not null)
             query = query.Where(x => x.BusinessDate <= toDate.Value);
+        if (accountId is Guid selectedAccountId)
+            query = query.Where(x => x.Postings.Any(p => p.AccountId == selectedAccountId));
+        if (categoryId is Guid selectedCategoryId)
+            query = query.Where(x => x.Postings.Any(p => p.AccountId == selectedCategoryId));
+        if (minimumAmountMinor is long minimum)
+            query = query.Where(x => x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor) >= minimum);
+        if (maximumAmountMinor is long maximum)
+            query = query.Where(x => x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor) <= maximum);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().Replace("ي", "ی", StringComparison.Ordinal)

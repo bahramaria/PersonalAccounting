@@ -5,7 +5,7 @@
              xmlns:strings="clr-namespace:Hesabyar.App.Resources.Strings"
              x:Class="Hesabyar.App.Views.TransactionsPage"
              x:DataType="viewModels:TransactionsViewModel">
-    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="{x:Static strings:AppStrings.TransactionsHeading}" FontSize="26"
                    FontAttributes="Bold" VerticalOptions="Center" />
@@ -14,8 +14,9 @@
         </Grid>
         <SearchBar Grid.Row="1" Placeholder="{x:Static strings:AppStrings.TransactionSearchPlaceholder}"
                    SearchButtonPressed="OnSearchButtonPressed" />
-        <Label Grid.Row="2" Text="{Binding StatusMessage}" FontSize="13" />
-        <CollectionView Grid.Row="3" ItemsSource="{Binding Transactions}" SelectionMode="Single"
+        <Button Grid.Row="2" Text="{x:Static strings:AppStrings.TransactionFilters}" Clicked="OnFiltersClicked" />
+        <Label Grid.Row="3" Text="{Binding StatusMessage}" FontSize="13" />
+        <CollectionView Grid.Row="4" ItemsSource="{Binding Transactions}" SelectionMode="Single"
                         SelectionChanged="OnTransactionSelectionChanged">
             <CollectionView.EmptyView>
                 <Label Text="{x:Static strings:AppStrings.TransactionsEmpty}"
