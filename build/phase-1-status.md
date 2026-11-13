@@ -10,6 +10,7 @@
 - Migration integration tests run against SQLite migrations; the backup test verifies that pre-existing data is retained in the safety copy and that repeated startup is idempotent.
 - MAUI Android/Windows shell scaffold with MVVM, DI, Persian resources, and page-level FlowDirection from ILocalizationService.
 - MAUI startup invokes DatabaseInitializer before displaying Shell; SQLite WAL, foreign keys, and busy timeout are configured per connection.
+- Android explicitly enables native RTL and disables OS Auto Backup while the database is still unencrypted.
 - CI separates Core tests from platform-specific Android and Windows builds.
 
 ## Not yet implemented or validated

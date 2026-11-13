@@ -46,7 +46,7 @@ public interface IEntitlementService { bool IsEnabled(FeatureKey key); }   // MV
 - **MVVM**: `CommunityToolkit.Mvvm` (`[ObservableProperty]`, `[RelayCommand]`); ViewModelها `partial` و بدون ارجاع به View.
 - **Shell**: ناوبری با Route ثبت‌شده؛ تب‌های خانه، تراکنش‌ها، حساب‌ها، گزارش‌ها و بیشتر. در این مرحله فقط خانه عملیاتی است و تب‌های دیگر Placeholder هستند.
 - **DI**: `MauiProgram` نقطه Composition Root است؛ ثبت سرویس‌های زیرساخت از `AddHesabyarInfrastructure` انجام می‌شود.
-- **RTL**: `ILocalizationService.FlowDirection` جهت Shell و هر Page را تعیین می‌کند؛ متن‌ها از `.resx` می‌آیند. این اسکلت، رفتار RTL روی دستگاه را تأیید نمی‌کند.
+- **RTL**: `ILocalizationService.FlowDirection` جهت Shell و هر Page را تعیین می‌کند؛ متن‌ها از `.resx` می‌آیند. Android با `supportsRtl=true` ساخته می‌شود. این اسکلت، رفتار RTL روی دستگاه را تأیید نمی‌کند.
 - **DesignTokens**: `ResourceDictionary` برای رنگ و سبک پایه؛ فونت Vazirmatn و Light/Dark کامل هنوز باید اضافه و ارزیابی شوند.
 - **State**: ViewModelها `Transient`؛ سرویس‌های پایدار در صورت نیاز `Singleton`.
 
@@ -54,6 +54,7 @@ public interface IEntitlementService { bool IsEnabled(FeatureKey key); }   // MV
 - `AppDbContext` با `IDbContextFactory<AppDbContext>` و Migrationهای EF Core.
 - در اسکلت فعلی، Provider برابر Microsoft EF Core SQLite و **بدون رمزنگاری** است؛ SQLCipher و کلید امن تا تکمیل Spike S1 فعال نمی‌شوند.
 - `StartupPage` پیش از نمایش Shell، `DatabaseInitializer` را اجرا می‌کند: وجود Migration معوق را بررسی، در صورت وجود دیتابیس فایل‌محور از آن نسخه پشتیبان می‌گیرد و سپس `MigrateAsync` را اجرا می‌کند.
+- تا قبل از پیاده‌سازی بکاپ رمزنگاری‌شده، Android `allowBackup=false` دارد تا دیتابیس محلیِ فعلاً بدون رمزنگاری وارد Android Auto Backup نشود.
 - `SqliteConnectionPragmaInterceptor`: `journal_mode=WAL`, `foreign_keys=ON`, `busy_timeout=5000`.
 - زمان Audit از `TimeProvider` تزریق‌شده گرفته می‌شود؛ تاریخ‌های حسابداری همچنان `DateOnly` میلادی‌اند.
 - **یک نویسنده**: صف نوشتن (`IWriteQueue`/SemaphoreSlim) باید پیش از هم‌زمانی نوشتن از چند Feature اضافه شود.
