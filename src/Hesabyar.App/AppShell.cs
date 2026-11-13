@@ -26,10 +26,7 @@ public sealed class AppShell : Shell
         tabs.Items.Add(CreateTab(
             AppStrings.AccountsTab,
             "accounts",
-            () => new FeaturePlaceholderPage(
-                AppStrings.AccountsTab,
-                AppStrings.AccountsPlaceholder,
-                localization)));
+            () => services.GetRequiredService<AccountsPage>()));
         tabs.Items.Add(CreateTab(
             AppStrings.ReportsTab,
             "reports",

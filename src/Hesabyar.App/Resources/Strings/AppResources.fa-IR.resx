@@ -19,4 +19,25 @@
   <data name="StartupInitializing" xml:space="preserve"><value>در حال آماده‌سازی پایگاه داده محلی...</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>آماده‌سازی پایگاه داده انجام نشد. فضای ذخیره‌سازی را بررسی و دوباره تلاش کنید.</value></data>
   <data name="Retry" xml:space="preserve"><value>تلاش دوباره</value></data>
+  <data name="AccountsHeading" xml:space="preserve"><value>حساب‌های من</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>افزودن حساب</value></data>
+  <data name="AccountNamePrompt" xml:space="preserve"><value>نام حساب را وارد کنید</value></data>
+  <data name="Save" xml:space="preserve"><value>ذخیره</value></data>
+  <data name="Cancel" xml:space="preserve"><value>انصراف</value></data>
+  <data name="AccountKindPrompt" xml:space="preserve"><value>نوع حساب را انتخاب کنید</value></data>
+  <data name="AccountKindCash" xml:space="preserve"><value>نقدی</value></data>
+  <data name="AccountKindBank" xml:space="preserve"><value>بانکی</value></data>
+  <data name="AccountKindCard" xml:space="preserve"><value>کارت بانکی</value></data>
+  <data name="AccountKindWallet" xml:space="preserve"><value>کیف پول</value></data>
+  <data name="AccountKindCreditCard" xml:space="preserve"><value>کارت اعتباری</value></data>
+  <data name="OpeningBalance" xml:space="preserve"><value>موجودی اولیه</value></data>
+  <data name="OpeningBalancePrompt" xml:space="preserve"><value>موجودی اولیه به ریال (در صورت نداشتن، صفر وارد کنید)</value></data>
+  <data name="Skip" xml:space="preserve"><value>رد کردن</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>خطای اعتبارسنجی</value></data>
+  <data name="OpeningBalanceInvalid" xml:space="preserve"><value>موجودی اولیه باید یک عدد صحیح و نامنفی باشد.</value></data>
+  <data name="Ok" xml:space="preserve"><value>تأیید</value></data>
+  <data name="CurrencyRial" xml:space="preserve"><value>ریال</value></data>
+  <data name="AccountsLoadFailed" xml:space="preserve"><value>بارگذاری حساب‌ها انجام نشد.</value></data>
+  <data name="AccountsEmpty" xml:space="preserve"><value>هنوز حسابی ثبت نشده است.</value></data>
+  <data name="AccountCreateFailed" xml:space="preserve"><value>ایجاد حساب انجام نشد.</value></data>
 </root>

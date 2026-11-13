@@ -27,5 +27,27 @@ public static class AppStrings
     public static string StartupFailed => Get(nameof(StartupFailed));
     public static string Retry => Get(nameof(Retry));
 
+    public static string AccountsHeading => Get(nameof(AccountsHeading));
+    public static string AddAccount => Get(nameof(AddAccount));
+    public static string AccountNamePrompt => Get(nameof(AccountNamePrompt));
+    public static string Save => Get(nameof(Save));
+    public static string Cancel => Get(nameof(Cancel));
+    public static string AccountKindPrompt => Get(nameof(AccountKindPrompt));
+    public static string AccountKindCash => Get(nameof(AccountKindCash));
+    public static string AccountKindBank => Get(nameof(AccountKindBank));
+    public static string AccountKindCard => Get(nameof(AccountKindCard));
+    public static string AccountKindWallet => Get(nameof(AccountKindWallet));
+    public static string AccountKindCreditCard => Get(nameof(AccountKindCreditCard));
+    public static string OpeningBalance => Get(nameof(OpeningBalance));
+    public static string OpeningBalancePrompt => Get(nameof(OpeningBalancePrompt));
+    public static string Skip => Get(nameof(Skip));
+    public static string ValidationError => Get(nameof(ValidationError));
+    public static string OpeningBalanceInvalid => Get(nameof(OpeningBalanceInvalid));
+    public static string Ok => Get(nameof(Ok));
+    public static string CurrencyRial => Get(nameof(CurrencyRial));
+    public static string AccountsLoadFailed => Get(nameof(AccountsLoadFailed));
+    public static string AccountsEmpty => Get(nameof(AccountsEmpty));
+    public static string AccountCreateFailed => Get(nameof(AccountCreateFailed));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

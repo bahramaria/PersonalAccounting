@@ -19,4 +19,25 @@
   <data name="StartupInitializing" xml:space="preserve"><value>Preparing the local database...</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>The database could not be initialized. Check available storage and try again.</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="AccountsHeading" xml:space="preserve"><value>My accounts</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="AccountNamePrompt" xml:space="preserve"><value>Enter the account name</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AccountKindPrompt" xml:space="preserve"><value>Choose an account type</value></data>
+  <data name="AccountKindCash" xml:space="preserve"><value>Cash</value></data>
+  <data name="AccountKindBank" xml:space="preserve"><value>Bank</value></data>
+  <data name="AccountKindCard" xml:space="preserve"><value>Bank card</value></data>
+  <data name="AccountKindWallet" xml:space="preserve"><value>Wallet</value></data>
+  <data name="AccountKindCreditCard" xml:space="preserve"><value>Credit card</value></data>
+  <data name="OpeningBalance" xml:space="preserve"><value>Opening balance</value></data>
+  <data name="OpeningBalancePrompt" xml:space="preserve"><value>Opening balance in IRR (enter zero if none)</value></data>
+  <data name="Skip" xml:space="preserve"><value>Skip</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Validation error</value></data>
+  <data name="OpeningBalanceInvalid" xml:space="preserve"><value>Opening balance must be a non-negative whole number.</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="CurrencyRial" xml:space="preserve"><value>IRR</value></data>
+  <data name="AccountsLoadFailed" xml:space="preserve"><value>Could not load accounts.</value></data>
+  <data name="AccountsEmpty" xml:space="preserve"><value>No accounts have been added yet.</value></data>
+  <data name="AccountCreateFailed" xml:space="preserve"><value>Could not create the account.</value></data>
 </root>
