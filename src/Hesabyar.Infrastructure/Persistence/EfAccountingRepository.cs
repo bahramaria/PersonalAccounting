@@ -175,11 +175,15 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
 
         var transactions = await query
             .OrderByDescending(x => x.BusinessDate)
-            .ThenByDescending(x => x.CreatedAtUtc)
             .Take(50_000)
             .ToListAsync(cancellationToken);
 
-        return transactions.Select(x =>
+        // SQLite cannot translate DateTimeOffset ordering; apply the secondary sort after materialization.
+        var orderedTransactions = transactions
+            .OrderByDescending(x => x.BusinessDate)
+            .ThenByDescending(x => x.CreatedAtUtc);
+
+        return orderedTransactions.Select(x =>
         {
             var positive = x.Postings.FirstOrDefault(p => p.AmountMinor > 0);
             var negative = x.Postings.FirstOrDefault(p => p.AmountMinor < 0);
