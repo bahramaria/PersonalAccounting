@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MauiTargetFramework)' != ''">$(MauiTargetFramework)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Hesabyar.App</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -23,8 +24,8 @@
   <ItemGroup>
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#2D5B50" BaseSize="128,128" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" GlobalPropertiesToRemove="TargetFramework" />
-    <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" GlobalPropertiesToRemove="TargetFramework" />
-    <ProjectReference Include="../Hesabyar.Localization/Hesabyar.Localization.csproj" GlobalPropertiesToRemove="TargetFramework" />
+    <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
+    <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
+    <ProjectReference Include="../Hesabyar.Localization/Hesabyar.Localization.csproj" />
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@
 | 12 | جدول تعطیلات = داده نسخه‌دار | محاسبه ثابت | وابسته به رویداد قمری |
 | 13 | CommunityToolkit.Mvvm 8.4.2 برای ViewModelهای MAUI | پیاده‌سازی دستی INotifyPropertyChanged | مطابق معماری مصوب MAUI/MVVM؛ مجوز MIT و سازگاری NuGet با .NET 10 بررسی شد |
 | 14 | SDK اصلی روی .NET 10 pin می‌شود | انتخاب خودکار بالاترین SDK نصب‌شده | جلوگیری از انتخاب SDK پیش‌نمایش .NET 11 در CI و ثابت‌ماندن toolchain MAUI |
+| 15 | انتخاب TFM پلتفرم MAUI با `MauiTargetFramework` | Override سراسری `TargetFramework` | جلوگیری از سرایت TFM پلتفرم به پروژه‌های Core در Restore/Build چندپلتفرمی |
 
 ## ریسک‌ها
 | ریسک | اثر | کاهش |
