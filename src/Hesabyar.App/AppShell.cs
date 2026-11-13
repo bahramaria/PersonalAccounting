@@ -59,8 +59,8 @@ public sealed class AppShell : Shell
         return tab;
     }
 
-    private static Microsoft.Maui.FlowDirection ToMauiFlowDirection(LayoutDirection direction) =>
-        direction == LayoutDirection.RightToLeft
+    private static Microsoft.Maui.FlowDirection ToMauiFlowDirection(Hesabyar.Localization.LayoutDirection direction) =>
+        direction == Hesabyar.Localization.LayoutDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
 }
@@ -73,7 +73,7 @@ public sealed class FeaturePlaceholderPage : ContentPage
         ILocalizationService localization)
     {
         Title = title;
-        FlowDirection = localization.FlowDirection == LayoutDirection.RightToLeft
+        FlowDirection = localization.FlowDirection == Hesabyar.Localization.LayoutDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
 
