@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Hesabyar.App.Views.DashboardPage">
+             xmlns:viewModels="clr-namespace:Hesabyar.App.ViewModels"
+             x:Class="Hesabyar.App.Views.DashboardPage"
+             x:DataType="viewModels:DashboardViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="16">
             <Label Text="{Binding Heading}" FontSize="28" FontAttributes="Bold" />
