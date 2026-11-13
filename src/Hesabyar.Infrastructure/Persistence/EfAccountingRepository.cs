@@ -200,6 +200,28 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         }).ToArray();
     }
 
+    public async Task<TransactionSnapshot?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken)
+    {
+        var transactions = await GetTransactionsAsync(null, null, null, cancellationToken);
+        return transactions.SingleOrDefault(x => x.Id == transactionId);
+    }
+
+    public async Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var existing = await db.Transactions.Include(x => x.Postings)
+            .SingleOrDefaultAsync(x => x.Id == transactionId && !x.IsDeleted, cancellationToken);
+        if (existing is null)
+            return false;
+
+        existing.IsDeleted = true;
+        existing.UpdatedAtUtc = nowUtc;
+        db.Transactions.Add(ToEntity(replacement));
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return true;
+    }
+
     public async Task SoftDeleteTransactionAsync(Guid transactionId, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var transaction = await db.Transactions.SingleAsync(x => x.Id == transactionId, cancellationToken);
