@@ -238,7 +238,7 @@ public sealed class AccountingServiceTests
 
         var archived = await service.ArchiveAsync(created.Value);
         Assert.True(archived.IsSuccess);
-        Assert.Null(await repository.GetAccountAsync(created.Value, default));
+        Assert.True((await repository.GetAccountAsync(created.Value, default))!.IsArchived);
         Assert.Empty(await db.Postings.ToListAsync());
     }
 
