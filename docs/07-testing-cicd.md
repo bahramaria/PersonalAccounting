@@ -34,7 +34,7 @@ Domain ≥ ۹۰٪، Application ≥ ۷۰٪ (Coverlet)؛ `TreatWarningsAsErrors`;
   job test-core      : ubuntu-latest   → restore, build, test (Domain/Application/Infrastructure/Localization)
   job build-android  : ubuntu-latest   → install maui-android workload, restore and build net10.0-android
   job build-windows  : windows-latest  → install maui-windows workload, restore and build net10.0-windows10.0.19041.0
-Trigger: PR و push به main و feature/**؛ تست‌های Core مستقل از MAUI workload اجرا می‌شوند.
+Trigger: PR و push به main و feature/**؛ تست‌های Core مستقل از MAUI workload اجرا می‌شوند. اجرای جدید روی همان branch، CI قدیمی همان branch را لغو می‌کند.
 ```
 - نسخه‌دهی: `global.json` با roll-forward محدود به Feature Band .NET 10؛ `versionCode` اندروید از شماره Build.
 - امضا و Secrets (Keystore/Provisioning) فقط در Secret Store؛ هرگز در مخزن.
