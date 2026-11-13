@@ -1,5 +1,6 @@
 using Hesabyar.Localization.Calendar;
 using Hesabyar.Localization.Numbers;
+using Hesabyar.Localization;
 namespace Hesabyar.Localization.Tests;
 public sealed class LocalizationTests
 {
@@ -16,6 +17,20 @@ public sealed class LocalizationTests
         Assert.True(new NumberNormalizer().TryParseAmount(input, out var actual));
         Assert.Equal(expected, actual);
     }
+    [Fact]
+    public void IsolateLeftToRight_WrapsNumericTextWithUnicodeIsolates()
+    {
+        var result = BidiTextFormatter.IsolateLeftToRight("-۱۲۳٬۴۵۶");
+
+        Assert.Equal("\u2066-۱۲۳٬۴۵۶\u2069", result);
+    }
+
+    [Fact]
+    public void IsolateLeftToRight_RejectsNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => BidiTextFormatter.IsolateLeftToRight(null!));
+    }
+
     [Fact]
     public void PersianDate_RoundTrips()
     {

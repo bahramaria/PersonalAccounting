@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
+using Hesabyar.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hesabyar.App.ViewModels;
@@ -58,7 +59,7 @@ public sealed class AccountsViewModel : ObservableObject
                     item.Account.Id,
                     item.Account.Name,
                     GetKindName(item.Account.Kind),
-                    $"{item.BalanceMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture)} {AppStrings.CurrencyRial}"));
+                    FormatBalance(item.BalanceMinor)));
             }
 
             StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
@@ -136,10 +137,19 @@ public sealed class AccountsViewModel : ObservableObject
                 item.Account.Id,
                 item.Account.Name,
                 GetKindName(item.Account.Kind),
-                $"{item.BalanceMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture)} {AppStrings.CurrencyRial}"));
+                FormatBalance(item.BalanceMinor)));
         }
 
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
+    }
+
+    private static string FormatBalance(long balanceMinor)
+    {
+        var formattedAmount = balanceMinor.ToString(
+            "N0",
+            System.Globalization.CultureInfo.CurrentCulture);
+
+        return $"{BidiTextFormatter.IsolateLeftToRight(formattedAmount)} {AppStrings.CurrencyRial}";
     }
 
     private static string GetKindName(AccountKind kind) => kind switch
