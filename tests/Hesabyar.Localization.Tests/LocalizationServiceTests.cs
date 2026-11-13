@@ -6,9 +6,9 @@ namespace Hesabyar.Localization.Tests;
 public sealed class LocalizationServiceTests
 {
     [Theory]
-    [InlineData("fa-IR", LayoutDirection.RightToLeft)]
-    [InlineData("en-US", LayoutDirection.LeftToRight)]
-    public void FlowDirection_FollowsCurrentUiCulture(string cultureName, LayoutDirection expected)
+    [InlineData("fa-IR", TextDirection.RightToLeft)]
+    [InlineData("en-US", TextDirection.LeftToRight)]
+    public void FlowDirection_FollowsCurrentUiCulture(string cultureName, TextDirection expected)
     {
         var previousCulture = CultureInfo.CurrentUICulture;
 

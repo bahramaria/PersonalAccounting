@@ -9,7 +9,7 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
-        FlowDirection = localization.FlowDirection == LayoutDirection.RightToLeft
+        FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
     }

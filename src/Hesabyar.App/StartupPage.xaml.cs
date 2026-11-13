@@ -21,7 +21,7 @@ public partial class StartupPage : ContentPage
         _databaseInitializer = databaseInitializer;
         _services = services;
 
-        FlowDirection = localization.FlowDirection == Hesabyar.Localization.LayoutDirection.RightToLeft
+        FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
 

@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Hesabyar.Localization;
 
-public enum LayoutDirection
+public enum TextDirection
 {
     LeftToRight,
     RightToLeft
@@ -10,13 +10,13 @@ public enum LayoutDirection
 
 public interface ILocalizationService
 {
-    LayoutDirection FlowDirection { get; }
+    TextDirection FlowDirection { get; }
 }
 
 public sealed class CultureLocalizationService : ILocalizationService
 {
-    public LayoutDirection FlowDirection =>
+    public TextDirection FlowDirection =>
         CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
-            ? LayoutDirection.RightToLeft
-            : LayoutDirection.LeftToRight;
+            ? TextDirection.RightToLeft
+            : TextDirection.LeftToRight;
 }
