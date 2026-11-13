@@ -214,6 +214,34 @@ public sealed class AccountingServiceTests
         Assert.Equal("account.archived", renamed.Error.Code);
     }
 
+    [Fact]
+    public async Task Category_CanBeCreatedRenamedAndArchivedWithoutChangingLedgerData()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var service = new AccountService(repository, new FixedClock(NowUtc));
+
+        var created = await service.CreateAsync(new CreateAccountRequest(
+            "Food", AccountType.Expense, AccountKind.Category));
+        Assert.True(created.IsSuccess);
+
+        var renamed = await service.RenameAsync(created.Value, "Groceries");
+        Assert.True(renamed.IsSuccess);
+
+        var category = await repository.GetAccountAsync(created.Value, default);
+        Assert.Equal("Groceries", category!.Name);
+        Assert.Equal(AccountKind.Category, category.Kind);
+
+        var archived = await service.ArchiveAsync(created.Value);
+        Assert.True(archived.IsSuccess);
+        Assert.Null(await repository.GetAccountAsync(created.Value, default));
+        Assert.Empty(await db.Postings.ToListAsync());
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;

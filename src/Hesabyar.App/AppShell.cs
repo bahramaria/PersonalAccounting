@@ -28,6 +28,10 @@ public sealed class AppShell : Shell
             "accounts",
             () => services.GetRequiredService<AccountsPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.CategoriesTab,
+            "categories",
+            () => services.GetRequiredService<CategoriesPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.ReportsTab,
             "reports",
             () => new FeaturePlaceholderPage(

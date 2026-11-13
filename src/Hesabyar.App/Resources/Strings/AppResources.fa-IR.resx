@@ -45,4 +45,18 @@
   <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>حساب از فهرست فعال خارج می‌شود و سوابق مالی آن حفظ خواهد شد. ادامه می‌دهید؟</value></data>
   <data name="AccountUpdateFailed" xml:space="preserve"><value>ویرایش حساب انجام نشد.</value></data>
   <data name="AccountArchiveFailed" xml:space="preserve"><value>بایگانی حساب انجام نشد.</value></data>
+  <data name="CategoriesTab" xml:space="preserve"><value>دسته‌ها</value></data>
+  <data name="CategoriesHeading" xml:space="preserve"><value>مدیریت دسته‌ها</value></data>
+  <data name="AddCategory" xml:space="preserve"><value>افزودن دسته</value></data>
+  <data name="CategoryTypePrompt" xml:space="preserve"><value>نوع دسته را انتخاب کنید</value></data>
+  <data name="ExpenseCategory" xml:space="preserve"><value>هزینه</value></data>
+  <data name="IncomeCategory" xml:space="preserve"><value>درآمد</value></data>
+  <data name="CategoryEdit" xml:space="preserve"><value>ویرایش دسته</value></data>
+  <data name="CategoryArchive" xml:space="preserve"><value>بایگانی دسته</value></data>
+  <data name="CategoryArchiveConfirmation" xml:space="preserve"><value>این دسته از فهرست فعال خارج می‌شود. سوابق تراکنش‌های قبلی حفظ خواهند شد. ادامه می‌دهید؟</value></data>
+  <data name="CategoriesEmpty" xml:space="preserve"><value>هنوز دسته‌ای ثبت نشده است.</value></data>
+  <data name="CategoriesLoadFailed" xml:space="preserve"><value>بارگذاری دسته‌ها انجام نشد.</value></data>
+  <data name="CategoryCreateFailed" xml:space="preserve"><value>ایجاد دسته انجام نشد.</value></data>
+  <data name="CategoryUpdateFailed" xml:space="preserve"><value>ویرایش دسته انجام نشد.</value></data>
+  <data name="CategoryArchiveFailed" xml:space="preserve"><value>بایگانی دسته انجام نشد.</value></data>
 </root>

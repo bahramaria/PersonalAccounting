@@ -14,6 +14,7 @@ public static class AppStrings
     public static string HomeTab => Get(nameof(HomeTab));
     public static string TransactionsTab => Get(nameof(TransactionsTab));
     public static string AccountsTab => Get(nameof(AccountsTab));
+    public static string CategoriesTab => Get(nameof(CategoriesTab));
     public static string ReportsTab => Get(nameof(ReportsTab));
     public static string MoreTab => Get(nameof(MoreTab));
     public static string HomeHeading => Get(nameof(HomeHeading));
@@ -53,6 +54,19 @@ public static class AppStrings
     public static string ArchiveAccountConfirmation => Get(nameof(ArchiveAccountConfirmation));
     public static string AccountUpdateFailed => Get(nameof(AccountUpdateFailed));
     public static string AccountArchiveFailed => Get(nameof(AccountArchiveFailed));
+    public static string CategoriesHeading => Get(nameof(CategoriesHeading));
+    public static string AddCategory => Get(nameof(AddCategory));
+    public static string CategoryTypePrompt => Get(nameof(CategoryTypePrompt));
+    public static string ExpenseCategory => Get(nameof(ExpenseCategory));
+    public static string IncomeCategory => Get(nameof(IncomeCategory));
+    public static string CategoryEdit => Get(nameof(CategoryEdit));
+    public static string CategoryArchive => Get(nameof(CategoryArchive));
+    public static string CategoryArchiveConfirmation => Get(nameof(CategoryArchiveConfirmation));
+    public static string CategoriesEmpty => Get(nameof(CategoriesEmpty));
+    public static string CategoriesLoadFailed => Get(nameof(CategoriesLoadFailed));
+    public static string CategoryCreateFailed => Get(nameof(CategoryCreateFailed));
+    public static string CategoryUpdateFailed => Get(nameof(CategoryUpdateFailed));
+    public static string CategoryArchiveFailed => Get(nameof(CategoryArchiveFailed));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

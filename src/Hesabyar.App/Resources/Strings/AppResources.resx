@@ -45,4 +45,18 @@
   <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>This account will be removed from the active list while its financial history is preserved. Continue?</value></data>
   <data name="AccountUpdateFailed" xml:space="preserve"><value>Could not update the account.</value></data>
   <data name="AccountArchiveFailed" xml:space="preserve"><value>Could not archive the account.</value></data>
+  <data name="CategoriesTab" xml:space="preserve"><value>Categories</value></data>
+  <data name="CategoriesHeading" xml:space="preserve"><value>Manage categories</value></data>
+  <data name="AddCategory" xml:space="preserve"><value>Add category</value></data>
+  <data name="CategoryTypePrompt" xml:space="preserve"><value>Choose a category type</value></data>
+  <data name="ExpenseCategory" xml:space="preserve"><value>Expense</value></data>
+  <data name="IncomeCategory" xml:space="preserve"><value>Income</value></data>
+  <data name="CategoryEdit" xml:space="preserve"><value>Edit category</value></data>
+  <data name="CategoryArchive" xml:space="preserve"><value>Archive category</value></data>
+  <data name="CategoryArchiveConfirmation" xml:space="preserve"><value>This category will be removed from the active list. Existing transaction history will be preserved. Continue?</value></data>
+  <data name="CategoriesEmpty" xml:space="preserve"><value>No categories have been added yet.</value></data>
+  <data name="CategoriesLoadFailed" xml:space="preserve"><value>Could not load categories.</value></data>
+  <data name="CategoryCreateFailed" xml:space="preserve"><value>Could not create the category.</value></data>
+  <data name="CategoryUpdateFailed" xml:space="preserve"><value>Could not update the category.</value></data>
+  <data name="CategoryArchiveFailed" xml:space="preserve"><value>Could not archive the category.</value></data>
 </root>
