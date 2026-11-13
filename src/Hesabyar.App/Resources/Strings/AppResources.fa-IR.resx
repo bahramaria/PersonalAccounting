@@ -59,4 +59,26 @@
   <data name="CategoryCreateFailed" xml:space="preserve"><value>ایجاد دسته انجام نشد.</value></data>
   <data name="CategoryUpdateFailed" xml:space="preserve"><value>ویرایش دسته انجام نشد.</value></data>
   <data name="CategoryArchiveFailed" xml:space="preserve"><value>بایگانی دسته انجام نشد.</value></data>
+  <data name="TransactionsHeading" xml:space="preserve"><value>مدیریت تراکنش‌ها</value></data>
+  <data name="AddTransaction" xml:space="preserve"><value>ثبت تراکنش</value></data>
+  <data name="TransactionAmountPrompt" xml:space="preserve"><value>مبلغ به ریال</value></data>
+  <data name="TransactionAccountPrompt" xml:space="preserve"><value>انتخاب حساب</value></data>
+  <data name="TransactionDestinationPrompt" xml:space="preserve"><value>انتخاب حساب مقصد</value></data>
+  <data name="TransactionCategoryPrompt" xml:space="preserve"><value>انتخاب دسته</value></data>
+  <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>شرح (اختیاری)</value></data>
+  <data name="TransactionDatePrompt" xml:space="preserve"><value>تاریخ (سال-ماه-روز)</value></data>
+  <data name="TransactionsEmpty" xml:space="preserve"><value>هنوز تراکنشی ثبت نشده است.</value></data>
+  <data name="TransactionLoadFailed" xml:space="preserve"><value>بارگذاری تراکنش‌ها انجام نشد.</value></data>
+  <data name="TransactionCreateFailed" xml:space="preserve"><value>ذخیره تراکنش انجام نشد.</value></data>
+  <data name="TransactionDelete" xml:space="preserve"><value>حذف تراکنش</value></data>
+  <data name="TransactionDeleteConfirmation" xml:space="preserve"><value>تراکنش از سوابق فعال حذف می‌شود. ادامه می‌دهید؟</value></data>
+  <data name="TransactionEdit" xml:space="preserve"><value>ویرایش تراکنش</value></data>
+  <data name="TransactionDuplicate" xml:space="preserve"><value>تکثیر تراکنش</value></data>
+  <data name="Expense" xml:space="preserve"><value>هزینه</value></data>
+  <data name="Income" xml:space="preserve"><value>درآمد</value></data>
+  <data name="Transfer" xml:space="preserve"><value>انتقال</value></data>
+  <data name="TransactionSearchPlaceholder" xml:space="preserve"><value>جستجو در شرح تراکنش‌ها</value></data>
+  <data name="TransactionAmountInvalid" xml:space="preserve"><value>مبلغ باید عدد صحیح و بزرگ‌تر از صفر باشد.</value></data>
+  <data name="TransactionDateInvalid" xml:space="preserve"><value>تاریخ معتبر را با قالب سال-ماه-روز وارد کنید.</value></data>
+  <data name="UnknownAccount" xml:space="preserve"><value>حساب نامشخص</value></data>
 </root>

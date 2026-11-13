@@ -107,5 +107,77 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
         return Result<Guid>.Success(await repository.CreateTransactionAsync(transaction, cancellationToken));
     }
 
+    public async Task<Result<Guid>> UpdateAsync(
+        Guid transactionId,
+        ExpenseRequest? expense = null,
+        IncomeRequest? income = null,
+        TransferRequest? transfer = null,
+        CancellationToken cancellationToken = default)
+    {
+        var transactions = await repository.GetTransactionsAsync(null, null, null, cancellationToken);
+        var existing = transactions.SingleOrDefault(x => x.Id == transactionId);
+        if (existing is null)
+            return Result<Guid>.Failure("transaction.not_found", "Transaction was not found.");
+
+        var replacement = existing.Kind switch
+        {
+            TransactionKind.Expense when expense is not null => await CreateExpenseAsync(expense, cancellationToken),
+            TransactionKind.Income when income is not null => await CreateIncomeAsync(income, cancellationToken),
+            TransactionKind.Transfer when transfer is not null => await CreateTransferAsync(transfer, cancellationToken),
+            _ => Result<Guid>.Failure("transaction.update.invalid", "The replacement does not match the transaction type.")
+        };
+
+        if (replacement.IsFailure)
+            return replacement;
+
+        await repository.SoftDeleteTransactionAsync(transactionId, clock.UtcNow, cancellationToken);
+        return replacement;
+    }
+
+    public Task<IReadOnlyList<TransactionSnapshot>> GetTransactionsAsync(
+        string? search = null,
+        DateOnly? fromDate = null,
+        DateOnly? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (fromDate is not null && toDate is not null && fromDate > toDate)
+            throw new ArgumentException("The start date cannot be later than the end date.");
+
+        return repository.GetTransactionsAsync(search, fromDate, toDate, cancellationToken);
+    }
+
+    public async Task<Result<bool>> DeleteAsync(Guid transactionId, CancellationToken cancellationToken = default)
+    {
+        var transactions = await repository.GetTransactionsAsync(null, null, null, cancellationToken);
+        if (!transactions.Any(x => x.Id == transactionId))
+            return Result<bool>.Failure("transaction.not_found", "Transaction was not found.");
+
+        await repository.SoftDeleteTransactionAsync(transactionId, clock.UtcNow, cancellationToken);
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<Guid>> DuplicateAsync(Guid transactionId, CancellationToken cancellationToken = default)
+    {
+        var transactions = await repository.GetTransactionsAsync(null, null, null, cancellationToken);
+        var item = transactions.SingleOrDefault(x => x.Id == transactionId);
+        if (item is null)
+            return Result<Guid>.Failure("transaction.not_found", "Transaction was not found.");
+
+        var date = clock.UtcNow.Date;
+        var businessDate = DateOnly.FromDateTime(date);
+        Result<Guid> created = item.Kind switch
+        {
+            TransactionKind.Expense when item.CounterpartyAccountId is Guid categoryId =>
+                await CreateExpenseAsync(new ExpenseRequest(businessDate, item.AmountMinor, item.AccountId, categoryId, item.Description), cancellationToken),
+            TransactionKind.Income when item.CounterpartyAccountId is Guid categoryId =>
+                await CreateIncomeAsync(new IncomeRequest(businessDate, item.AmountMinor, item.AccountId, categoryId, item.Description), cancellationToken),
+            TransactionKind.Transfer when item.CounterpartyAccountId is Guid destinationId =>
+                await CreateTransferAsync(new TransferRequest(businessDate, item.AmountMinor, item.AccountId, destinationId, item.Description), cancellationToken),
+            _ => Result<Guid>.Failure("transaction.duplicate.unsupported", "This transaction cannot be duplicated.")
+        };
+
+        return created;
+    }
+
     private static bool IsActive(AccountSnapshot? account) => account is not null && !account.IsArchived;
 }

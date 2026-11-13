@@ -1,4 +1,5 @@
 using Hesabyar.Application.Accounts;
+using Hesabyar.Application.Transactions;
 using Hesabyar.Application.Common;
 using Hesabyar.App.Services;
 using Hesabyar.App.ViewModels;
@@ -37,9 +38,12 @@ public static class MauiProgram
         builder.Services.AddTransient<StartupPage>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<AccountService>();
+        builder.Services.AddTransient<TransactionService>();
         builder.Services.AddTransient<AccountsViewModel>();
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddTransient<AccountsPage>();
+        builder.Services.AddTransient<TransactionsViewModel>();
+        builder.Services.AddTransient<TransactionsPage>();
         builder.Services.AddTransient<CategoriesViewModel>();
         builder.Services.AddTransient<CategoriesPage>();
 

@@ -68,5 +68,28 @@ public static class AppStrings
     public static string CategoryUpdateFailed => Get(nameof(CategoryUpdateFailed));
     public static string CategoryArchiveFailed => Get(nameof(CategoryArchiveFailed));
 
+    public static string TransactionsHeading => Get(nameof(TransactionsHeading));
+    public static string AddTransaction => Get(nameof(AddTransaction));
+    public static string TransactionAmountPrompt => Get(nameof(TransactionAmountPrompt));
+    public static string TransactionAccountPrompt => Get(nameof(TransactionAccountPrompt));
+    public static string TransactionDestinationPrompt => Get(nameof(TransactionDestinationPrompt));
+    public static string TransactionCategoryPrompt => Get(nameof(TransactionCategoryPrompt));
+    public static string TransactionDescriptionPrompt => Get(nameof(TransactionDescriptionPrompt));
+    public static string TransactionDatePrompt => Get(nameof(TransactionDatePrompt));
+    public static string TransactionsEmpty => Get(nameof(TransactionsEmpty));
+    public static string TransactionLoadFailed => Get(nameof(TransactionLoadFailed));
+    public static string TransactionCreateFailed => Get(nameof(TransactionCreateFailed));
+    public static string TransactionDelete => Get(nameof(TransactionDelete));
+    public static string TransactionDeleteConfirmation => Get(nameof(TransactionDeleteConfirmation));
+    public static string TransactionEdit => Get(nameof(TransactionEdit));
+    public static string TransactionDuplicate => Get(nameof(TransactionDuplicate));
+    public static string Expense => Get(nameof(Expense));
+    public static string Income => Get(nameof(Income));
+    public static string Transfer => Get(nameof(Transfer));
+    public static string TransactionSearchPlaceholder => Get(nameof(TransactionSearchPlaceholder));
+    public static string TransactionAmountInvalid => Get(nameof(TransactionAmountInvalid));
+    public static string TransactionDateInvalid => Get(nameof(TransactionDateInvalid));
+    public static string UnknownAccount => Get(nameof(UnknownAccount));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

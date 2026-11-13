@@ -59,4 +59,26 @@
   <data name="CategoryCreateFailed" xml:space="preserve"><value>Could not create the category.</value></data>
   <data name="CategoryUpdateFailed" xml:space="preserve"><value>Could not update the category.</value></data>
   <data name="CategoryArchiveFailed" xml:space="preserve"><value>Could not archive the category.</value></data>
+  <data name="TransactionsHeading" xml:space="preserve"><value>Transactions</value></data>
+  <data name="AddTransaction" xml:space="preserve"><value>Add transaction</value></data>
+  <data name="TransactionAmountPrompt" xml:space="preserve"><value>Amount in IRR</value></data>
+  <data name="TransactionAccountPrompt" xml:space="preserve"><value>Select account</value></data>
+  <data name="TransactionDestinationPrompt" xml:space="preserve"><value>Select destination account</value></data>
+  <data name="TransactionCategoryPrompt" xml:space="preserve"><value>Select category</value></data>
+  <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>Description (optional)</value></data>
+  <data name="TransactionDatePrompt" xml:space="preserve"><value>Date (YYYY-MM-DD)</value></data>
+  <data name="TransactionsEmpty" xml:space="preserve"><value>No transactions have been recorded.</value></data>
+  <data name="TransactionLoadFailed" xml:space="preserve"><value>Could not load transactions.</value></data>
+  <data name="TransactionCreateFailed" xml:space="preserve"><value>Could not save the transaction.</value></data>
+  <data name="TransactionDelete" xml:space="preserve"><value>Delete transaction</value></data>
+  <data name="TransactionDeleteConfirmation" xml:space="preserve"><value>This transaction will be removed from active records. Continue?</value></data>
+  <data name="TransactionEdit" xml:space="preserve"><value>Edit transaction</value></data>
+  <data name="TransactionDuplicate" xml:space="preserve"><value>Duplicate transaction</value></data>
+  <data name="Expense" xml:space="preserve"><value>Expense</value></data>
+  <data name="Income" xml:space="preserve"><value>Income</value></data>
+  <data name="Transfer" xml:space="preserve"><value>Transfer</value></data>
+  <data name="TransactionSearchPlaceholder" xml:space="preserve"><value>Search transaction descriptions</value></data>
+  <data name="TransactionAmountInvalid" xml:space="preserve"><value>Amount must be a positive whole number.</value></data>
+  <data name="TransactionDateInvalid" xml:space="preserve"><value>Enter a valid date in YYYY-MM-DD format.</value></data>
+  <data name="UnknownAccount" xml:space="preserve"><value>Unknown account</value></data>
 </root>

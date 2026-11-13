@@ -2,6 +2,7 @@ using Hesabyar.Application.Accounts;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Domain.ValueObjects;
+using Hesabyar.Application.Transactions;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -148,6 +149,56 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         db.Transactions.Add(ToEntity(transaction));
         await db.SaveChangesAsync(cancellationToken);
         return transaction.Id;
+    }
+
+    public async Task<IReadOnlyList<TransactionSnapshot>> GetTransactionsAsync(
+        string? search,
+        DateOnly? fromDate,
+        DateOnly? toDate,
+        CancellationToken cancellationToken)
+    {
+        var query = db.Transactions.AsNoTracking().Include(x => x.Postings)
+            .Where(x => x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer)
+            .AsQueryable();
+        if (fromDate is not null)
+            query = query.Where(x => x.BusinessDate >= fromDate.Value);
+        if (toDate is not null)
+            query = query.Where(x => x.BusinessDate <= toDate.Value);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(x => x.Description != null && x.Description.Contains(term));
+        }
+
+        var transactions = await query
+            .OrderByDescending(x => x.BusinessDate)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .Take(500)
+            .ToListAsync(cancellationToken);
+
+        return transactions.Select(x =>
+        {
+            var positive = x.Postings.FirstOrDefault(p => p.AmountMinor > 0);
+            var negative = x.Postings.FirstOrDefault(p => p.AmountMinor < 0);
+            var amount = x.Postings.Where(p => p.AmountMinor > 0).Sum(p => p.AmountMinor);
+            return new TransactionSnapshot(
+                x.Id,
+                x.BusinessDate,
+                x.Kind,
+                amount,
+                x.Kind == TransactionKind.Income ? positive?.AccountId ?? Guid.Empty : negative?.AccountId ?? Guid.Empty,
+                x.Kind == TransactionKind.Transfer || x.Kind == TransactionKind.Expense ? positive?.AccountId : negative?.AccountId,
+                x.Description,
+                x.IsConfirmed);
+        }).ToArray();
+    }
+
+    public async Task SoftDeleteTransactionAsync(Guid transactionId, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
+        var transaction = await db.Transactions.SingleAsync(x => x.Id == transactionId, cancellationToken);
+        transaction.IsDeleted = true;
+        transaction.UpdatedAtUtc = nowUtc;
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     private static AccountSnapshot ToSnapshot(DbAccount account) =>

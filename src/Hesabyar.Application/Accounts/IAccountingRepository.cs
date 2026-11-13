@@ -1,3 +1,4 @@
+using Hesabyar.Application.Transactions;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Domain.ValueObjects;
@@ -16,4 +17,6 @@ public interface IAccountingRepository
     Task RenameAccountAsync(Guid accountId, string name, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task ArchiveAccountAsync(Guid accountId, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task<Guid> CreateTransactionAsync(LedgerTransaction transaction, CancellationToken cancellationToken);
+    Task<IReadOnlyList<TransactionSnapshot>> GetTransactionsAsync(string? search, DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
+    Task SoftDeleteTransactionAsync(Guid transactionId, DateTimeOffset nowUtc, CancellationToken cancellationToken);
 }

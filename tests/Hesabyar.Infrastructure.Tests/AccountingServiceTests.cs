@@ -242,6 +242,43 @@ public sealed class AccountingServiceTests
         Assert.Empty(await db.Postings.ToListAsync());
     }
 
+
+    [Fact]
+    public async Task Transactions_CanBeListedDuplicatedAndSoftDeleted()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var bank = await accounts.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank, OpeningBalanceMinor: 1_000_000, OpeningDate: BusinessDate));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+        var expense = await transactions.CreateExpenseAsync(new ExpenseRequest(BusinessDate, 125_000, bank.Value, food.Value, "Lunch"));
+
+        Assert.True(expense.IsSuccess);
+        var listed = await transactions.GetTransactionsAsync("Lunch");
+        Assert.Single(listed);
+        Assert.Equal(expense.Value, listed[0].Id);
+        Assert.Equal(bank.Value, listed[0].AccountId);
+        Assert.Equal(food.Value, listed[0].CounterpartyAccountId);
+
+        var duplicate = await transactions.DuplicateAsync(expense.Value);
+        Assert.True(duplicate.IsSuccess);
+        Assert.Equal(2, (await transactions.GetTransactionsAsync()).Count);
+
+        var deleted = await transactions.DeleteAsync(expense.Value);
+        Assert.True(deleted.IsSuccess);
+        var remaining = await transactions.GetTransactionsAsync();
+        Assert.Single(remaining);
+        Assert.Equal(875_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.True(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == expense.Value && x.IsDeleted));
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
