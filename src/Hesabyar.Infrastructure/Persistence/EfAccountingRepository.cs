@@ -18,7 +18,7 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
 
     public async Task<IReadOnlyList<AccountSnapshot>> GetAccountsAsync(bool includeArchived, CancellationToken cancellationToken)
     {
-        var query = db.Accounts.AsNoTracking();
+        var query = db.Accounts.AsNoTracking().Where(x => x.Kind != AccountKind.System);
         if (!includeArchived)
             query = query.Where(x => !x.IsArchived);
 
@@ -30,17 +30,30 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         return accounts.Select(ToSnapshot).ToArray();
     }
 
-    public Task<long> GetBalanceMinorAsync(Guid accountId, CancellationToken cancellationToken)
+    public async Task<long> GetBalanceMinorAsync(Guid accountId, CancellationToken cancellationToken)
     {
-        return db.Postings
+        var total = await db.Postings
             .Where(x => x.AccountId == accountId && !x.Transaction.IsDeleted)
             .Select(x => (long?)x.AmountMinor)
-            .SumAsync(cancellationToken)
-            .ContinueWith(
-                task => task.Result ?? 0L,
-                cancellationToken,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
+            .SumAsync(cancellationToken);
+
+        return total ?? 0L;
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, long>> GetBalancesMinorAsync(
+        IReadOnlyCollection<Guid> accountIds,
+        CancellationToken cancellationToken)
+    {
+        if (accountIds.Count == 0)
+            return new Dictionary<Guid, long>();
+
+        var balances = await db.Postings
+            .Where(x => accountIds.Contains(x.AccountId) && !x.Transaction.IsDeleted)
+            .GroupBy(x => x.AccountId)
+            .Select(group => new { AccountId = group.Key, Balance = group.Sum(x => x.AmountMinor) })
+            .ToDictionaryAsync(x => x.AccountId, x => x.Balance, cancellationToken);
+
+        return balances;
     }
 
     public Task<bool> HasTransactionsAsync(Guid accountId, CancellationToken cancellationToken)

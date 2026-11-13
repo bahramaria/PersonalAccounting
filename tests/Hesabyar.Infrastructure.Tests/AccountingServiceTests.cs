@@ -32,8 +32,7 @@ public sealed class AccountingServiceTests
             OpeningDate: BusinessDate));
 
         Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.Equal(2_500_000, await repository.GetBalanceMinorAsync(result.Value.Value, default));
+        Assert.Equal(2_500_000, await repository.GetBalanceMinorAsync(result.Value, default));
         Assert.Equal(2, await db.Postings.CountAsync());
         Assert.Equal(1, await db.Transactions.CountAsync());
     }
@@ -60,11 +59,11 @@ public sealed class AccountingServiceTests
         Assert.True(food.IsSuccess);
 
         var expense = await transactions.CreateExpenseAsync(new ExpenseRequest(
-            BusinessDate, 125_000, bank.Value!.Value, food.Value!.Value, "Lunch"));
+            BusinessDate, 125_000, bank.Value, food.Value, "Lunch"));
 
         Assert.True(expense.IsSuccess);
-        Assert.Equal(875_000, await repository.GetBalanceMinorAsync(bank.Value.Value, default));
-        Assert.Equal(125_000, await repository.GetBalanceMinorAsync(food.Value.Value, default));
+        Assert.Equal(875_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.Equal(125_000, await repository.GetBalanceMinorAsync(food.Value, default));
     }
 
     [Fact]
@@ -92,15 +91,15 @@ public sealed class AccountingServiceTests
         Assert.True(salary.IsSuccess);
 
         var income = await transactions.CreateIncomeAsync(new IncomeRequest(
-            BusinessDate, 500_000, bank.Value!.Value, salary.Value!.Value));
+            BusinessDate, 500_000, bank.Value, salary.Value));
         var transfer = await transactions.CreateTransferAsync(new TransferRequest(
-            BusinessDate, 300_000, bank.Value.Value, wallet.Value!.Value));
+            BusinessDate, 300_000, bank.Value, wallet.Value));
 
         Assert.True(income.IsSuccess);
         Assert.True(transfer.IsSuccess);
-        Assert.Equal(2_200_000, await repository.GetBalanceMinorAsync(bank.Value.Value, default));
-        Assert.Equal(300_000, await repository.GetBalanceMinorAsync(wallet.Value.Value, default));
-        Assert.Equal(-500_000, await repository.GetBalanceMinorAsync(salary.Value.Value, default));
+        Assert.Equal(2_200_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.Equal(300_000, await repository.GetBalanceMinorAsync(wallet.Value, default));
+        Assert.Equal(-500_000, await repository.GetBalanceMinorAsync(salary.Value, default));
     }
 
     [Fact]
@@ -117,7 +116,7 @@ public sealed class AccountingServiceTests
         var bank = await accounts.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank));
 
         var result = await transactions.CreateTransferAsync(new TransferRequest(
-            BusinessDate, 100, bank.Value!.Value, bank.Value.Value));
+            BusinessDate, 100, bank.Value, bank.Value));
 
         Assert.True(result.IsFailure);
         Assert.Equal("transaction.transfer.same_account", result.Error.Code);
@@ -135,9 +134,9 @@ public sealed class AccountingServiceTests
         var service = new AccountService(new EfAccountingRepository(db), new FixedClock(NowUtc));
         var root = await service.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
         var child = await service.CreateAsync(new CreateAccountRequest(
-            "Restaurant", AccountType.Expense, AccountKind.Category, ParentId: root.Value!.Value));
+            "Restaurant", AccountType.Expense, AccountKind.Category, ParentId: root.Value));
         var invalid = await service.CreateAsync(new CreateAccountRequest(
-            "Fast food", AccountType.Expense, AccountKind.Category, ParentId: child.Value!.Value));
+            "Fast food", AccountType.Expense, AccountKind.Category, ParentId: child.Value));
 
         Assert.True(root.IsSuccess);
         Assert.True(child.IsSuccess);

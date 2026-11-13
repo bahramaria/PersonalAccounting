@@ -31,22 +31,28 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
             return Result<Guid>.Failure("account.currency.invalid", "Currency code is invalid.");
         }
 
-        if (request.Kind == AccountKind.Category)
+        if (request.Kind == AccountKind.Category && request.ParentId is Guid parentId)
         {
-            if (request.ParentId is Guid parentId)
+            var parent = await repository.GetAccountAsync(parentId, cancellationToken);
+            if (parent is null || parent.IsArchived || parent.Kind != AccountKind.Category ||
+                parent.Type != request.Type || parent.ParentId is not null)
             {
-                var parent = await repository.GetAccountAsync(parentId, cancellationToken);
-                if (parent is null || parent.IsArchived || parent.Kind != AccountKind.Category ||
-                    parent.Type != request.Type || parent.ParentId is not null)
-                {
-                    return Result<Guid>.Failure("account.parent.invalid", "A category can only have a root category of the same type as its parent.");
-                }
+                return Result<Guid>.Failure("account.parent.invalid", "A category can only have a root category of the same type as its parent.");
             }
         }
-        else if (request.ParentId is not null)
+        else if (request.Kind != AccountKind.Category && request.ParentId is not null)
         {
             return Result<Guid>.Failure("account.parent.not_supported", "Only categories can have a parent.");
         }
+
+        if (request.CardLast4 is not null &&
+            (request.CardLast4.Length != 4 || request.CardLast4.Any(c => !char.IsAsciiDigit(c))))
+        {
+            return Result<Guid>.Failure("account.card_last4.invalid", "Card suffix must contain exactly four digits.");
+        }
+
+        if (request.BankName?.Length > 80 || request.AccountNumberMasked?.Length > 40)
+            return Result<Guid>.Failure("account.bank_details.too_long", "Bank account details exceed the supported length.");
 
         LedgerTransaction? openingTransaction = null;
         var nowUtc = clock.UtcNow;
@@ -97,15 +103,15 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
         CancellationToken cancellationToken = default)
     {
         var accounts = await repository.GetAccountsAsync(includeArchived, cancellationToken);
-        var balances = new List<AccountBalance>(accounts.Count);
+        var accountIds = accounts.Select(x => x.Id).ToArray();
+        var balances = await repository.GetBalancesMinorAsync(accountIds, cancellationToken);
+        var result = accounts
+            .Select(account => new AccountBalance(
+                account,
+                balances.TryGetValue(account.Id, out var balance) ? balance : 0L))
+            .ToArray();
 
-        foreach (var account in accounts)
-        {
-            var balance = await repository.GetBalanceMinorAsync(account.Id, cancellationToken);
-            balances.Add(new AccountBalance(account, balance));
-        }
-
-        return Result<IReadOnlyList<AccountBalance>>.Success(balances);
+        return Result<IReadOnlyList<AccountBalance>>.Success(result);
     }
 
     public async Task<Result<bool>> RenameAsync(Guid accountId, string name, CancellationToken cancellationToken = default)
@@ -116,6 +122,9 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
         var account = await repository.GetAccountAsync(accountId, cancellationToken);
         if (account is null)
             return Result<bool>.Failure("account.not_found", "Account was not found.");
+
+        if (account.Kind == AccountKind.System)
+            return Result<bool>.Failure("account.system.read_only", "System accounts cannot be renamed.");
 
         if (account.IsArchived)
             return Result<bool>.Failure("account.archived", "Archived accounts cannot be renamed.");
@@ -129,6 +138,9 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
         var account = await repository.GetAccountAsync(accountId, cancellationToken);
         if (account is null)
             return Result<bool>.Failure("account.not_found", "Account was not found.");
+
+        if (account.Kind == AccountKind.System)
+            return Result<bool>.Failure("account.system.read_only", "System accounts cannot be archived.");
 
         if (account.IsArchived)
             return Result<bool>.Success(true);
