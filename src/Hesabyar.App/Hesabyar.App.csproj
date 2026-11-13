@@ -24,6 +24,7 @@
   <ItemGroup>
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#2D5B50" BaseSize="128,128" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Maui.Controls" />
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
     <ProjectReference Include="../Hesabyar.Localization/Hesabyar.Localization.csproj" />
