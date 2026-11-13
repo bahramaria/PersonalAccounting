@@ -23,10 +23,18 @@
   </PropertyGroup>
   <ItemGroup>
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#2D5B50" BaseSize="128,128" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
     <ProjectReference Include="../Hesabyar.Localization/Hesabyar.Localization.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android' Or '$(MauiTargetFramework)' == 'net10.0-android'">
+    <Compile Remove="Platforms/Windows/**/*.cs" />
+    <MauiXaml Remove="Platforms/Windows/**/*.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0' Or '$(MauiTargetFramework)' == 'net10.0-windows10.0.19041.0'">
+    <Compile Remove="Platforms/Android/**/*.cs" />
+    <MauiXaml Remove="Platforms/Android/**/*.xaml" />
   </ItemGroup>
 </Project>

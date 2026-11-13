@@ -54,7 +54,7 @@ public partial class StartupPage : ContentPage
             var backupDirectory = Path.Combine(FileSystem.AppDataDirectory, "migration-backups");
             await _databaseInitializer.InitializeAsync(backupDirectory);
 
-            var window = Application.Current?.Windows.FirstOrDefault();
+            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null)
                 throw new InvalidOperationException("The application window is not available.");
 

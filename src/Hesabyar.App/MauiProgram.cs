@@ -1,4 +1,3 @@
-using System.Globalization;
 using Hesabyar.Application.Common;
 using Hesabyar.App.Services;
 using Hesabyar.App.ViewModels;
@@ -7,7 +6,6 @@ using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Time;
 using Hesabyar.Localization;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App;
@@ -21,7 +19,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
 
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
         builder.Services.AddSingleton<IClock, SystemClock>();
         builder.Services.AddSingleton<ILocalizationService, CultureLocalizationService>();
 
@@ -38,10 +36,6 @@ public static class MauiProgram
         builder.Services.AddTransient<StartupPage>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<DashboardPage>();
-
-#if DEBUG
-        builder.Logging.AddDebug();
-#endif
 
         return builder.Build();
     }

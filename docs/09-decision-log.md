@@ -27,6 +27,7 @@
 | 23 | Windows TFM از فاز ۱ برای ساخت/ارزیابی اسکلت وجود دارد؛ انتشار محصول Windows همچنان در ۱٫۲ است | حذف Windows از Solution تا فاز ۱٫۲ | امکان ارزیابی زودهنگام Shell و Persistence روی Windows بدون ادعای آمادگی انتشار |
 | 24 | `com.example.hesabyar` شناسه موقت Package تا تعیین نام/شناسه نهایی | تثبیت زودهنگام شناسه | شناسه نهایی هنوز تصمیم‌گیری نشده است |
 | 25 | `ILocalizationService.FlowDirection` جهت Shell و Pageها را تعیین می‌کند | FlowDirection ثابت در XAML | جلوگیری از پخش منطق RTL بین صفحات |
+| 26 | `Microsoft.Maui.Controls 10.0.120` به‌صورت Central Package Management قفل می‌شود | اتکا به UseMaui بدون PackageReference صریح | MAUI از .NET 8 به بعد به PackageReference صریح نیاز دارد؛ نسخه پایدار NuGet برای .NET 10 بررسی شد |
 
 ## ریسک‌ها
 | ریسک | اثر | کاهش |

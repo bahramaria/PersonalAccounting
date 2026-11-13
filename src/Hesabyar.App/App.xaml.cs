@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using MauiApplication = Microsoft.Maui.Controls.Application;
 
 namespace Hesabyar.App;
 
-public partial class App : MauiApplication
+public partial class App : Microsoft.Maui.Controls.Application
 {
     private readonly IServiceProvider _services;
 
