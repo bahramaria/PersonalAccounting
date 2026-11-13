@@ -16,7 +16,9 @@ public interface IAccountingRepository
     Task<Guid> CreateAccountAsync(Account account, LedgerTransaction? openingTransaction, CancellationToken cancellationToken);
     Task RenameAccountAsync(Guid accountId, string name, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task ArchiveAccountAsync(Guid accountId, DateTimeOffset nowUtc, CancellationToken cancellationToken);
-    Task<Guid> CreateTransactionAsync(LedgerTransaction transaction, CancellationToken cancellationToken);\n    Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken);
+    Task<Guid> CreateTransactionAsync(LedgerTransaction transaction, CancellationToken cancellationToken);
+    Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task<IReadOnlyList<TransactionSnapshot>> GetTransactionsAsync(string? search, DateOnly? fromDate, DateOnly? toDate, CancellationToken cancellationToken);
-    Task SoftDeleteTransactionAsync(Guid transactionId, DateTimeOffset nowUtc, CancellationToken cancellationToken);\n    Task<TransactionSnapshot?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken);
+    Task SoftDeleteTransactionAsync(Guid transactionId, DateTimeOffset nowUtc, CancellationToken cancellationToken);
+    Task<TransactionSnapshot?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken);
 }
