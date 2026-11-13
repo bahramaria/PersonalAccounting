@@ -166,14 +166,17 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             query = query.Where(x => x.BusinessDate <= toDate.Value);
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim();
-            query = query.Where(x => x.Description != null && x.Description.Contains(term));
+            var term = search.Trim().Replace("ي", "ی", StringComparison.Ordinal)
+                .Replace("ك", "ک", StringComparison.Ordinal)
+                .Replace("ى", "ی", StringComparison.Ordinal);
+            query = query.Where(x => x.Description != null &&
+                x.Description.Replace("ي", "ی").Replace("ك", "ک").Replace("ى", "ی").Contains(term));
         }
 
         var transactions = await query
             .OrderByDescending(x => x.BusinessDate)
             .ThenByDescending(x => x.CreatedAtUtc)
-            .Take(500)
+            .Take(50_000)
             .ToListAsync(cancellationToken);
 
         return transactions.Select(x =>

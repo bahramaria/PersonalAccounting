@@ -66,7 +66,7 @@
   <data name="TransactionDestinationPrompt" xml:space="preserve"><value>Select destination account</value></data>
   <data name="TransactionCategoryPrompt" xml:space="preserve"><value>Select category</value></data>
   <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>Description (optional)</value></data>
-  <data name="TransactionDatePrompt" xml:space="preserve"><value>Date (YYYY-MM-DD)</value></data>
+  <data name="TransactionDatePrompt" xml:space="preserve"><value>Date (Persian YYYY/MM/DD)</value></data>
   <data name="TransactionsEmpty" xml:space="preserve"><value>No transactions have been recorded.</value></data>
   <data name="TransactionLoadFailed" xml:space="preserve"><value>Could not load transactions.</value></data>
   <data name="TransactionCreateFailed" xml:space="preserve"><value>Could not save the transaction.</value></data>
@@ -79,6 +79,6 @@
   <data name="Transfer" xml:space="preserve"><value>Transfer</value></data>
   <data name="TransactionSearchPlaceholder" xml:space="preserve"><value>Search transaction descriptions</value></data>
   <data name="TransactionAmountInvalid" xml:space="preserve"><value>Amount must be a positive whole number.</value></data>
-  <data name="TransactionDateInvalid" xml:space="preserve"><value>Enter a valid date in YYYY-MM-DD format.</value></data>
+  <data name="TransactionDateInvalid" xml:space="preserve"><value>Enter a valid Persian date in YYYY/MM/DD format.</value></data>
   <data name="UnknownAccount" xml:space="preserve"><value>Unknown account</value></data>
 </root>

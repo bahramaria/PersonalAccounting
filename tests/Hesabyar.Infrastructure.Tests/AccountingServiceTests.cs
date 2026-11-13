@@ -279,6 +279,38 @@ public sealed class AccountingServiceTests
         Assert.True(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == expense.Value && x.IsDeleted));
     }
 
+    [Fact]
+    public async Task UpdateTransaction_ReplacesActiveLedgerEntryAndPreservesOldRecord()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var bank = await accounts.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank, OpeningBalanceMinor: 1_000_000, OpeningDate: BusinessDate));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+        var travel = await accounts.CreateAsync(new CreateAccountRequest("Travel", AccountType.Expense, AccountKind.Category));
+        var original = await transactions.CreateExpenseAsync(new ExpenseRequest(BusinessDate, 100_000, bank.Value, food.Value, "Old"));
+
+        var updated = await transactions.UpdateAsync(original.Value,
+            expense: new ExpenseRequest(BusinessDate, 200_000, bank.Value, travel.Value, "Updated"));
+
+        Assert.True(updated.IsSuccess);
+        var active = await transactions.GetTransactionsAsync();
+        Assert.Single(active);
+        Assert.Equal(updated.Value, active[0].Id);
+        Assert.Equal("Updated", active[0].Description);
+        Assert.Equal(800_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.Equal(0, await repository.GetBalanceMinorAsync(food.Value, default));
+        Assert.Equal(200_000, await repository.GetBalanceMinorAsync(travel.Value, default));
+        Assert.True(await db.Transactions.IgnoreQueryFilters().AnyAsync(x => x.Id == original.Value && x.IsDeleted));
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
