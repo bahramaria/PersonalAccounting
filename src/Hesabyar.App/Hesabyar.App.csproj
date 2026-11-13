@@ -21,6 +21,7 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <ItemGroup>
+    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#2D5B50" BaseSize="128,128" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />

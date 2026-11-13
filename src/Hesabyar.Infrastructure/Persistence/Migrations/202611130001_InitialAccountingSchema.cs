@@ -1,4 +1,5 @@
 using Hesabyar.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -92,6 +93,9 @@ public sealed class InitialAccountingSchema : Migration
         migrationBuilder.CreateIndex("IX_Transactions_BusinessDate", "Transactions", "BusinessDate", descending: new[] { true });
         migrationBuilder.CreateIndex("IX_Transactions_PartyId", "Transactions", "PartyId");
     }
+
+    protected override void BuildTargetModel(ModelBuilder modelBuilder) =>
+        new AppDbContextModelSnapshot().BuildTargetModelForMigration(modelBuilder);
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {

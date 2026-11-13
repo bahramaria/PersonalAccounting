@@ -13,6 +13,8 @@ namespace Hesabyar.Infrastructure.Persistence.Migrations;
 [DbContext(typeof(AppDbContext))]
 public sealed class AppDbContextModelSnapshot : ModelSnapshot
 {
+    public void BuildTargetModelForMigration(ModelBuilder modelBuilder) => BuildModel(modelBuilder);
+
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
