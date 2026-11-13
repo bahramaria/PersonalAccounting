@@ -121,7 +121,7 @@ public sealed class DatabaseInitializerTests
                 Assert.Equal(11, categories.Count(x => x.Type == AccountType.Expense));
                 Assert.Equal(2, categories.Count(x => x.Type == AccountType.Income));
 
-                var food = Assert.Single(categories.Where(x => x.SystemKey == "seed:expense:food"));
+                var food = Assert.Single(categories, x => x.SystemKey == "seed:expense:food");
                 foodId = food.Id;
                 food.Name = "خوراک و رستوران";
                 food.IsArchived = true;
@@ -137,7 +137,7 @@ public sealed class DatabaseInitializerTests
                     .ToListAsync();
                 Assert.Equal(13, categories.Count);
 
-                var food = Assert.Single(categories.Where(x => x.Id == foodId));
+                var food = Assert.Single(categories, x => x.Id == foodId);
                 Assert.Equal("خوراک و رستوران", food.Name);
                 Assert.True(food.IsArchived);
             }
