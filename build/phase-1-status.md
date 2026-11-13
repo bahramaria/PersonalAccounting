@@ -17,7 +17,6 @@
   - Validate account status, account/category types, currency equality, positive amount, and transfer source/destination inequality.
   - Persist every operation as a balanced ledger transaction.
 - EF repository implementation and SQLite integration tests.
-- Core CI passes for the current branch head.
 
 ## Not yet implemented
 
