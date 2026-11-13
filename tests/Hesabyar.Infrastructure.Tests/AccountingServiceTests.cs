@@ -2,6 +2,7 @@ using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Common;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Domain.Accounts;
+using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -64,7 +65,7 @@ public sealed class AccountingServiceTests
         Assert.True(expense.IsSuccess);
         Assert.Equal(875_000, await repository.GetBalanceMinorAsync(bank.Value, default));
         Assert.Equal(125_000, await repository.GetBalanceMinorAsync(food.Value, default));
-        Assert.True(await db.Transactions.OrderByDescending(x => x.CreatedAtUtc).FirstAsync() is { IsConfirmed: true });
+        Assert.True(await db.Transactions.SingleAsync(x => x.Kind == TransactionKind.Expense) is { IsConfirmed: true });
     }
 
     [Fact]
