@@ -16,6 +16,7 @@
 - Production SQLCipher provider, native libraries, key storage, and encrypted CRUD validation.
 - Wiring the database initializer into MAUI startup after the secure encrypted provider is selected.
 - Default Persian category/system-account seeding.
+- Fiscal-period persistence and document numbering per fiscal period (Jalali fiscal year by default, custom periods supported, numbering restarts at 1).
 - MAUI RTL behavior on Android/Windows devices and complete S2 coverage.
 - Persian calendar reference corpus and property-based validation.
 - People/debt, cheque, loan, SMS, reminders, reports, export, and backup features beyond the pre-migration safety copy.
