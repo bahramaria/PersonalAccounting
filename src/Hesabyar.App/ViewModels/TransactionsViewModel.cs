@@ -5,11 +5,12 @@ using Hesabyar.Application.Transactions;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
+using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hesabyar.App.ViewModels;
 
-public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory) : ObservableObject
+public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICalendarService calendar) : ObservableObject
 {
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -28,13 +29,14 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory) : O
         {
             using var scope = scopeFactory.CreateScope();
             var accountResult = await scope.ServiceProvider.GetRequiredService<AccountService>()
-                .GetAccountsAsync(cancellationToken: cancellationToken);
+                .GetAccountsAsync(includeArchived: true, cancellationToken: cancellationToken);
             if (!accountResult.IsSuccess || accountResult.Value is null)
             {
                 StatusMessage = AppStrings.TransactionLoadFailed;
                 return;
             }
 
+            var allChoices = accountResult.Value.Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
             var active = accountResult.Value.Where(x => !x.Account.IsArchived).ToArray();
             Accounts = active.Where(x => x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet or AccountKind.CreditCard)
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
@@ -48,15 +50,15 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory) : O
             Transactions.Clear();
             foreach (var item in snapshots)
             {
-                var accountName = Accounts.FirstOrDefault(x => x.Id == item.AccountId)?.Name ?? AppStrings.UnknownAccount;
-                var secondChoices = item.Kind == TransactionKind.Transfer ? Accounts :
-                    item.Kind == TransactionKind.Expense ? ExpenseCategories : IncomeCategories;
+                var accountName = allChoices.FirstOrDefault(x => x.Id == item.AccountId)?.Name ?? AppStrings.UnknownAccount;
                 var secondName = item.CounterpartyAccountId is Guid secondId
-                    ? secondChoices.FirstOrDefault(x => x.Id == secondId)?.Name ?? AppStrings.UnknownAccount
+                    ? allChoices.FirstOrDefault(x => x.Id == secondId)?.Name ?? AppStrings.UnknownAccount
                     : string.Empty;
+                var persianDate = calendar.ToPersian(item.BusinessDate);
+                var dateText = $"{persianDate.Year:0000}/{persianDate.Month:00}/{persianDate.Day:00}";
                 Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                     item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
-                    item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture)));
+                    item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));
             }
             StatusMessage = Transactions.Count == 0 ? AppStrings.TransactionsEmpty : string.Empty;
         }
@@ -124,7 +126,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory) : O
 
 public sealed record TransactionChoice(Guid Id, string Name, AccountType Type);
 public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly BusinessDate, long AmountMinor,
-    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText)
+    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText, string DateText)
 {
     public string KindName => Kind switch
     {
@@ -133,7 +135,6 @@ public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly
         TransactionKind.Transfer => AppStrings.Transfer,
         _ => string.Empty
     };
-    public string DateText => BusinessDate.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture);
     public string DetailText => string.IsNullOrWhiteSpace(Description)
         ? $"{AccountName} • {SecondaryName}" : $"{AccountName} • {SecondaryName} • {Description}";
 }
