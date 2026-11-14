@@ -1,6 +1,8 @@
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.App.Views;
+using Hesabyar.Application.Accounts;
+using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Security;
 using Hesabyar.Localization;
@@ -66,6 +68,28 @@ public partial class StartupPage : ContentPage
             }
             var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null) throw new InvalidOperationException("The application window is not available.");
+
+            if (!Preferences.Get("onboarding.completed", false))
+            {
+                using var scope = _services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                var accounts = await scope.ServiceProvider.GetRequiredService<AccountService>()
+                    .GetAccountsAsync(includeArchived: true);
+                if (!accounts.IsSuccess || accounts.Value is null)
+                    throw new InvalidOperationException("Accounts could not be checked before onboarding.");
+
+                var hasUserAccount = accounts.Value.Any(x =>
+                    x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card
+                        or AccountKind.Wallet or AccountKind.CreditCard);
+                if (hasUserAccount)
+                    Preferences.Set("onboarding.completed", true);
+            }
+
+            if (!Preferences.Get("onboarding.completed", false))
+            {
+                window.Page = _services.GetRequiredService<OnboardingPage>();
+                return;
+            }
+
             window.Page = await _appLock.IsPinEnabledAsync()
                 ? _services.GetRequiredService<PinLockPage>()
                 : _services.GetRequiredService<AppShell>();

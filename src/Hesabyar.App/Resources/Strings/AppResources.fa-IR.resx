@@ -160,4 +160,18 @@
   <data name="BackupEncrypted" xml:space="preserve"><value>رمزنگاری‌شده</value></data>
   <data name="BackupNotEncrypted" xml:space="preserve"><value>بدون رمزنگاری</value></data>
   <data name="BackupDeviceBound" xml:space="preserve"><value>وابسته به همین دستگاه (بدون گذرواژه)</value></data>
+
+  <data name="OnboardingTitle" xml:space="preserve"><value>شروع حسابداری شخصی</value></data>
+  <data name="OnboardingDescription" xml:space="preserve"><value>برای شروع، اولین حساب خود را بسازید. این کار کمتر از یک دقیقه زمان می‌برد.</value></data>
+  <data name="OnboardingAccountName" xml:space="preserve"><value>نام حساب</value></data>
+  <data name="OnboardingAccountType" xml:space="preserve"><value>نوع حساب</value></data>
+  <data name="OnboardingOpeningBalance" xml:space="preserve"><value>موجودی اولیه به ریال (اختیاری)</value></data>
+  <data name="OnboardingEnablePin" xml:space="preserve"><value>فعال‌سازی قفل برنامه با رمز عددی</value></data>
+  <data name="OnboardingCreateAccount" xml:space="preserve"><value>ساخت حساب و شروع</value></data>
+  <data name="OnboardingFirstTransaction" xml:space="preserve"><value>حساب ساخته شد</value></data>
+  <data name="OnboardingFirstTransactionPrompt" xml:space="preserve"><value>حساب شما آماده است. می‌خواهید اولین درآمد یا هزینه را ثبت کنید؟</value></data>
+  <data name="OnboardingInvalidAmount" xml:space="preserve"><value>موجودی اولیه باید عدد صحیح و نامنفی باشد.</value></data>
+  <data name="OnboardingAccountFailed" xml:space="preserve"><value>ساخت حساب انجام نشد. اطلاعات را بررسی و دوباره تلاش کنید.</value></data>
+  <data name="OnboardingPinInvalid" xml:space="preserve"><value>رمز باید ۴ تا ۸ رقم باشد و دو بار یکسان وارد شود. حساب ساخته شد؛ می‌توانید قفل را بعداً از تنظیمات فعال کنید.</value></data>
+  <data name="OnboardingSmsNote" xml:space="preserve"><value>ورود خودکار از پیامک بانکی در مرحله بعد اضافه می‌شود؛ برای شروع به آن نیازی ندارید.</value></data>
 </root>

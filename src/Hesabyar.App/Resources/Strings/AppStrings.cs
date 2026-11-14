@@ -33,6 +33,19 @@ public static class AppStrings
     public static string StartupInitializing => Get(nameof(StartupInitializing));
     public static string StartupFailed => Get(nameof(StartupFailed));
     public static string Retry => Get(nameof(Retry));
+    public static string OnboardingTitle => Get(nameof(OnboardingTitle));
+    public static string OnboardingDescription => Get(nameof(OnboardingDescription));
+    public static string OnboardingAccountName => Get(nameof(OnboardingAccountName));
+    public static string OnboardingAccountType => Get(nameof(OnboardingAccountType));
+    public static string OnboardingOpeningBalance => Get(nameof(OnboardingOpeningBalance));
+    public static string OnboardingEnablePin => Get(nameof(OnboardingEnablePin));
+    public static string OnboardingCreateAccount => Get(nameof(OnboardingCreateAccount));
+    public static string OnboardingFirstTransaction => Get(nameof(OnboardingFirstTransaction));
+    public static string OnboardingFirstTransactionPrompt => Get(nameof(OnboardingFirstTransactionPrompt));
+    public static string OnboardingInvalidAmount => Get(nameof(OnboardingInvalidAmount));
+    public static string OnboardingAccountFailed => Get(nameof(OnboardingAccountFailed));
+    public static string OnboardingPinInvalid => Get(nameof(OnboardingPinInvalid));
+    public static string OnboardingSmsNote => Get(nameof(OnboardingSmsNote));
 
     public static string AccountsHeading => Get(nameof(AccountsHeading));
     public static string AddAccount => Get(nameof(AddAccount));

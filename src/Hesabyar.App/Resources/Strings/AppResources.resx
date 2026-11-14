@@ -160,4 +160,18 @@
   <data name="BackupEncrypted" xml:space="preserve"><value>Encrypted</value></data>
   <data name="BackupNotEncrypted" xml:space="preserve"><value>Not encrypted</value></data>
   <data name="BackupDeviceBound" xml:space="preserve"><value>Device-bound (no password)</value></data>
+
+  <data name="OnboardingTitle" xml:space="preserve"><value>Set up personal accounting</value></data>
+  <data name="OnboardingDescription" xml:space="preserve"><value>Create your first account to get started. This should take less than a minute.</value></data>
+  <data name="OnboardingAccountName" xml:space="preserve"><value>Account name</value></data>
+  <data name="OnboardingAccountType" xml:space="preserve"><value>Account type</value></data>
+  <data name="OnboardingOpeningBalance" xml:space="preserve"><value>Opening balance in IRR (optional)</value></data>
+  <data name="OnboardingEnablePin" xml:space="preserve"><value>Enable app PIN lock</value></data>
+  <data name="OnboardingCreateAccount" xml:space="preserve"><value>Create account and continue</value></data>
+  <data name="OnboardingFirstTransaction" xml:space="preserve"><value>Account created</value></data>
+  <data name="OnboardingFirstTransactionPrompt" xml:space="preserve"><value>Your account is ready. Would you like to record your first income or expense?</value></data>
+  <data name="OnboardingInvalidAmount" xml:space="preserve"><value>Opening balance must be a non-negative whole number.</value></data>
+  <data name="OnboardingAccountFailed" xml:space="preserve"><value>Could not create the account. Check the details and try again.</value></data>
+  <data name="OnboardingPinInvalid" xml:space="preserve"><value>The PIN must contain 4 to 8 matching digits. Your account was created; you can enable the lock later in Settings.</value></data>
+  <data name="OnboardingSmsNote" xml:space="preserve"><value>Bank SMS import will be added in a later stage. You do not need it to get started.</value></data>
 </root>
