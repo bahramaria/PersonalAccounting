@@ -20,6 +20,12 @@ public static class AppStrings
     public static string HomeHeading => Get(nameof(HomeHeading));
     public static string HomeDescription => Get(nameof(HomeDescription));
     public static string BalanceUnavailable => Get(nameof(BalanceUnavailable));
+    public static string DashboardAssets => Get(nameof(DashboardAssets));
+    public static string DashboardLiabilities => Get(nameof(DashboardLiabilities));
+    public static string DashboardNetWorth => Get(nameof(DashboardNetWorth));
+    public static string DashboardRecentTransactions => Get(nameof(DashboardRecentTransactions));
+    public static string DashboardQuickAdd => Get(nameof(DashboardQuickAdd));
+    public static string DashboardLoadFailed => Get(nameof(DashboardLoadFailed));
     public static string TransactionsPlaceholder => Get(nameof(TransactionsPlaceholder));
     public static string AccountsPlaceholder => Get(nameof(AccountsPlaceholder));
     public static string ReportsPlaceholder => Get(nameof(ReportsPlaceholder));

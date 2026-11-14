@@ -160,6 +160,7 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         long? minimumAmountMinor,
         long? maximumAmountMinor,
         TransactionSortOrder sortOrder,
+        int take,
         CancellationToken cancellationToken)
     {
         var query = db.Transactions.AsNoTracking().Include(x => x.Postings)
@@ -189,7 +190,7 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         var orderedQuery = sortOrder == TransactionSortOrder.OldestFirst
             ? query.OrderBy(x => x.BusinessDate)
             : query.OrderByDescending(x => x.BusinessDate);
-        var transactions = await orderedQuery.Take(50_000).ToListAsync(cancellationToken);
+        var transactions = await orderedQuery.Take(take).ToListAsync(cancellationToken);
 
         // SQLite cannot translate DateTimeOffset ordering; apply the secondary sort after materialization.
         var orderedTransactions = sortOrder == TransactionSortOrder.OldestFirst

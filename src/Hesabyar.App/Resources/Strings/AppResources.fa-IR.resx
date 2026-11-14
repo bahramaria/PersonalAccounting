@@ -95,4 +95,10 @@
   <data name="TransactionSortNewest" xml:space="preserve"><value>جدیدترین ابتدا</value></data>
   <data name="TransactionSortOldest" xml:space="preserve"><value>قدیمی‌ترین ابتدا</value></data>
   <data name="TransactionClearFilters" xml:space="preserve"><value>پاک‌کردن فیلترها</value></data>
+  <data name="DashboardAssets" xml:space="preserve"><value>دارایی‌ها</value></data>
+  <data name="DashboardLiabilities" xml:space="preserve"><value>بدهی‌ها</value></data>
+  <data name="DashboardNetWorth" xml:space="preserve"><value>خالص دارایی</value></data>
+  <data name="DashboardRecentTransactions" xml:space="preserve"><value>تراکنش‌های اخیر</value></data>
+  <data name="DashboardQuickAdd" xml:space="preserve"><value>ثبت سریع تراکنش</value></data>
+  <data name="DashboardLoadFailed" xml:space="preserve"><value>دریافت اطلاعات داشبورد ناموفق بود.</value></data>
 </root>

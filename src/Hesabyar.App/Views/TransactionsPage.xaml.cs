@@ -37,6 +37,8 @@ public partial class TransactionsPage : ContentPage
         await ReloadAsync();
     }
     private async void OnAddTransactionClicked(object? sender, EventArgs e) => await ShowEditorAsync(null);
+
+    public Task OpenQuickAddAsync() => ShowEditorAsync(null);
     private async void OnSearchButtonPressed(object? sender, EventArgs e)
     {
         if (sender is SearchBar searchBar)
