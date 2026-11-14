@@ -11,17 +11,28 @@
 
 ## ۲. مدیریت کلید
 ```csharp
-public interface IKeyProvider
+public interface IDatabaseKeyProvider
 {
-    ValueTask<byte[]> GetDatabaseKeyAsync(CancellationToken ct);   // 256-bit
-    Task RotateAsync(CancellationToken ct);
+    string GetDatabasePassword();
+}
+
+public interface IDatabaseKeyInitializer
+{
+    Task InitializeAsync(string migrationBackupDirectory, CancellationToken ct);
+}
+
+public interface IDeviceSecretStore
+{
+    Task<string?> GetAsync(string key);
+    Task SetAsync(string key, string value);
 }
 ```
-- اولین اجرا: تولید کلید تصادفی ۲۵۶ بیتی (CSPRNG) → ذخیره در `SecureStorage` → باز کردن SQLite3 Multiple Ciphers با حالت سازگار SQLCipher v4.
-- Provider از `Microsoft.EntityFrameworkCore.Sqlite.Core` و `SQLite3MC.PCLRaw.bundle` استفاده می‌کند؛ bundle پیش‌فرض SQLite نباید هم‌زمان بارگذاری شود.
-- کلید فقط در SecureStorage سیستم‌عامل نگهداری می‌شود؛ نبود کلید برای دیتابیس رمزنگاری‌شده نباید با تولید کلید جدید پنهان شود.
-- دیتابیس plaintext نسخه‌های قبلی در اولین اجرا به فایل رمزنگاری‌شده تبدیل می‌شود و نسخه پشتیبان رمزنگاری‌شده پیش از جایگزینی نگهداری می‌شود.
-- پیاده‌سازی MVP: `DeviceKeyProvider`. **آماده E2EE**: `PassphraseWrappedKeyProvider` (گذرواژه → KDF مثل Argon2id/PBKDF2 → KEK → Wrap(DEK)). تعویض Provider نباید به Schema دست بزند.
+- اولین اجرا: تولید کلید تصادفی ۲۵۶ بیتی (CSPRNG) → ذخیره در SecureStorage سیستم‌عامل از طریق `MauiSecureStorageAdapter` → بازکردن SQLite3 Multiple Ciphers در حالت سازگار SQLCipher v4.
+- Provider از `Microsoft.EntityFrameworkCore.Sqlite.Core` و `SQLite3MC.PCLRaw.bundle` استفاده می‌کند؛ bundle پیش‌فرض SQLite هم‌زمان بارگذاری نمی‌شود.
+- منطق مستقل `DatabaseKeyProvider` از طریق `IDeviceSecretStore` به SecureStorage وصل شده و در تست‌های Core قابل جایگزینی است.
+- نبود کلید برای دیتابیس رمزنگاری‌شده خطای بسته می‌دهد؛ کلید جدید جایگزین کلید گم‌شده نمی‌شود و دیتابیس قبلی دست‌نخورده می‌ماند.
+- دیتابیس‌های plaintext نسخه‌های قبلی در اولین اجرا با `VACUUM INTO` به SQLCipher v4 تبدیل می‌شوند؛ بکاپ ایمنی رمزنگاری‌شده پیش از جایگزینی حفظ می‌شود.
+- تعویض Provider نباید به Schema دست بزند؛ E2EE و چرخش کلید خارج از دامنه فعلی‌اند.
 - فایل‌های پیوست (از ۱٫۱): رمزنگاری AES-256-GCM جدا؛ SQLCipher فایل‌ها را پوشش نمی‌دهد.
 - الگوریتم و پارامترها (تعداد تکرار KDF و …) را از مستندات روز/OWASP تأیید کنید؛ از حافظه عدد ننویسید.
 
@@ -39,19 +50,19 @@ public interface IKeyProvider
 - Credential و وضعیت محدودیت تلاش در MAUI SecureStorage نگهداری می‌شوند و fallback ناامن وجود ندارد.
 - پس از ۵ تلاش ناموفق، قفل افزایشی ۳۰ ثانیه، ۱ دقیقه، ۵ دقیقه و سپس ۱۵ دقیقه اعمال می‌شود.
 - قفل هنگام شروع و پس از بازگشت از پس‌زمینه، با انتخاب فوری/۳۰ ثانیه/۱ دقیقه/۵ دقیقه فعال می‌شود.
-- این قفل جایگزین رمزنگاری دیتابیس نیست؛ SQLite فعلی رمزنگاری نشده است. فراموشی PIN تا آماده‌شدن بکاپ/بازیابی به معنی از دست‌رفتن دسترسی برنامه است.
+- قفل PIN جایگزین رمزنگاری دیتابیس نیست. رمزنگاری فعال دیتابیس با SQLite3MC در حالت سازگار SQLCipher v4 پیاده‌سازی شده است؛ Build اندروید و ویندوز در CI سبز شده و اعتبارسنجی Runtime روی دستگاه واقعی هنوز لازم است.
 - مرجع پارامتر PBKDF2: [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
 
 ## ۴. بکاپ و ریستور
 فرمت `.hbak` (ZIP):
 ```
-manifest.json   { FormatVersion, AppVersion, SchemaVersion, CreatedAtUtc, DatabaseSizeBytes, DatabaseSha256 }
-data.db         (SQLite database snapshot)
+manifest.json   { FormatVersion=2, AppVersion, SchemaVersion, CreatedAtUtc, DatabaseSizeBytes, DatabaseSha256, DatabaseEncrypted, DeviceBound, DatabaseKey? }
+data.db         (SQLCipher v4 compatible encrypted database snapshot)
 
-بیرون از ZIP: header نسخه‌دار شامل وضعیت رمزنگاری، پارامتر KDF و Salt/Nonce/Tag در صورت رمزنگاری
-attachments/    (فایل‌های رمزنگاری‌شده)
+بیرون از ZIP: header نسخه‌دار AES-GCM و پارامترهای KDF در صورت گذرواژه
+attachments/    (در نسخه ۱٫۱؛ فایل‌های رمزنگاری‌شده)
 ```
-- رمزنگاری کل بسته با گذرواژه کاربر (AES-GCM + KDF)؛ بدون گذرواژه فقط با هشدار.
+- دیتابیس داخل بسته در هر دو حالت رمزنگاری‌شده است. با گذرواژه کاربر، کل آرشیو با AES-GCM + PBKDF2 رمزنگاری می‌شود و کلید دستگاه مبدأ فقط داخل همین آرشیو رمزنگاری‌شده قرار می‌گیرد. بدون گذرواژه، کلید داخل آرشیو قرار نمی‌گیرد و فایل فقط روی دستگاه مبدأ قابل بازیابی است.
 - بکاپ خودکار محلی دوره‌ای (نگهداری N نسخه) + «خروجی به» Share Sheet/پوشه (SAF در Android، Files در iOS، پوشه در Windows).
 - ریستور: اعتبارسنجی Checksum و `FormatVersion`؛ Migration بکاپ‌های قدیمی؛ بکاپ خودکار از وضعیت فعلی پیش از جایگزینی.
 - اشتراک‌گذاری از Share Sheet (تلگرام/بله/ایتا/فایل‌ها)؛ بکاپ ابری مستقیم فعلاً ندارد.
@@ -60,9 +71,9 @@ attachments/    (فایل‌های رمزنگاری‌شده)
 ### وضعیت پیاده‌سازی بکاپ و بازیابی در نسخه داخلی
 
 - فرمت فایل `.hbak` با سربرگ نسخه‌دار و بسته ZIP شامل `manifest.json` و `data.db` است.
-- Snapshot پایگاه داده با SQLite3MC VACUUM INTO snapshot تهیه می‌شود تا داده‌های WAL نیز در نسخه پشتیبان لحاظ شوند.
-- فایل دستی می‌تواند با گذرواژه کاربر رمزنگاری شود: AES-256-GCM و PBKDF2-HMAC-SHA256 با ۶۰۰٬۰۰۰ تکرار؛ Salt شانزده‌بایتی، Nonce دوازده‌بایتی و Tag شانزده‌بایتی.
-- گذرواژه بکاپ حداقل ۸ نویسه است و در ورودی مخفی دریافت می‌شود؛ امکان بازیابی گذرواژه وجود ندارد. فایل بدون گذرواژه فقط پس از هشدار روشن درباره قابل‌خواندن‌بودن اطلاعات مالی ساخته می‌شود.
+- Snapshot پایگاه داده با `VACUUM INTO` ساخته می‌شود و در تمام مسیرها رمزنگاری‌شده باقی می‌ماند؛ WAL و تراکنش‌های ثبت‌شده در Snapshot سازگار لحاظ می‌شوند.
+- بکاپ قابل‌انتقال با گذرواژه کاربر محافظت می‌شود: AES-256-GCM و PBKDF2-HMAC-SHA256 با ۶۰۰٬۰۰۰ تکرار؛ Salt شانزده‌بایتی، Nonce دوازده‌بایتی و Tag شانزده‌بایتی.
+- گذرواژه بکاپ حداقل ۸ نویسه است و در ورودی مخفی دریافت می‌شود؛ امکان بازیابی گذرواژه وجود ندارد. بکاپ بدون گذرواژه همچنان رمزنگاری‌شده است، اما Device-bound خواهد بود.
 - اندازه فایل بکاپ خروجی و ورودی حداکثر ۵۱۲ مگابایت است؛ ساخت بکاپ بزرگ‌تر پیش از نوشتن فایل نهایی رد می‌شود.
 - قبل از بازیابی، ساختار فایل، نسخه فرمت، Checksum، صحت SQLite و نسخه Schema بررسی می‌شوند؛ جزئیات بکاپ و وضعیت رمزنگاری پیش از جایگزینی نمایش داده می‌شوند.
 - پیش از جایگزینی دیتابیس، یک بکاپ ایمنی محلی از وضعیت فعلی ساخته می‌شود. بازیابی ناموفق نباید دیتابیس جاری را تغییر دهد.
@@ -71,7 +82,7 @@ attachments/    (فایل‌های رمزنگاری‌شده)
 - بکاپ خودکار روزانه در فضای خصوصی برنامه با کلید دستگاه و رمزنگاری AES-GCM محافظت می‌شود و هفت نسخه نگهداری می‌شوند. بکاپ دستی با گذرواژه، قابلیت انتقال بین دستگاه‌ها را دارد.
 - بکاپ شامل دیتابیس است؛ پیوست‌ها تا زمان اضافه‌شدن قابلیت پیوست در نسخه ۱٫۱ خارج از دامنه‌اند.
 - بکاپ رمزنگاری‌شده با گذرواژه کاربر و رمزنگاری دیتابیس فعال دو لایه مستقل‌اند.
-- وضعیت S1: پیاده‌سازی SQLite3 Multiple Ciphers با cipher سازگار SQLCipher v4 در حال انجام است؛ تا عبور تست‌های رمزنگاری، مهاجرت داده و Build هر دو پلتفرم، رمزنگاری دیتابیس فعال تأییدشده محسوب نمی‌شود.
+- وضعیت S1: ۳۷ تست Infrastructure، شامل رمزنگاری، مهاجرت کلید و بکاپ بین دو کلید دستگاه، موفق‌اند؛ Build اندروید و ویندوز نیز سبز شده است. اعتبارسنجی Runtime روی دستگاه واقعی همچنان باز است. iOS در TargetFramework فعلی پروژه فعال نیست.
 
 ## ۵. Sync (نسخه ۱٫۲؛ فقط یادداشت طراحی)
 هنگام شروع: سرور ASP.NET Core، `ChangeLog` + `DeviceId` + `Version` در Migration مربوط به Sync اضافه می‌شود (نه قبل از آن)، احراز هویت JWT، تعارض فیلد-سطح LWW، Tombstone از همان `IsDeleted`. E2EE با `PassphraseWrappedKeyProvider` در صورت تقاضا. جزئیات کامل در زمان شروع فاز نوشته می‌شود.

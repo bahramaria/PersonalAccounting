@@ -29,6 +29,9 @@
 | 25 | `ILocalizationService.FlowDirection` جهت Shell و Pageها را تعیین می‌کند | FlowDirection ثابت در XAML | جلوگیری از پخش منطق RTL بین صفحات |
 | 26 | `Microsoft.Maui.Controls 10.0.120` به‌صورت Central Package Management قفل می‌شود | اتکا به UseMaui بدون PackageReference صریح | MAUI از .NET 8 به بعد به PackageReference صریح نیاز دارد؛ نسخه پایدار NuGet برای .NET 10 بررسی شد |
 | 27 | **روش اجرای پروژه، Feature Batch است:** هر گام باید یک قابلیت کامل و قابل استفاده را از Domain تا UI و تست تحویل دهد؛ Commitها درشت‌تر و منطقی باشند، درحالی‌که فازها، معیارهای پذیرش و گیت‌های کیفیت پابرجا می‌مانند | پیاده‌سازی خرد و لایه‌به‌لایه بدون خروجی قابل استفاده | کاهش سربار رفت‌وبرگشت و تحویل پیوسته ارزش محصول؛ جلوگیری از انباشته‌شدن زیرساخت بدون جریان کاربری کامل |
+| 28 | رمزنگاری دیتابیس فعال با `SQLite3MC.PCLRaw.bundle 2.7.0` و `Microsoft.EntityFrameworkCore.Sqlite.Core 10.0.15`؛ cipher برابر SQLCipher v4 (legacy=4) | `Microsoft.EntityFrameworkCore.Sqlite` همراه bundle پیش‌فرض یا SQLCipher native سفارشی | MIT، پشتیبانی .NET 10 و Android/Windows، سازگاری SQLCipher v4 و پرهیز از bundleهای متروک SQLitePCLRaw |
+| 29 | تقویم `.NET PersianCalendar` پس از مقایسه با مرجع مستقل Borkowski برای سال‌های ۱۲۰۰–۱۵۰۰ حفظ می‌شود | جایگزینی زودهنگام با الگوریتم داخلی | آزمون جامع ۱۰۹٬۹۳۸ روز بدون اختلاف اجرا شد؛ الگوریتم داخلی فقط در صورت مشاهده انحراف آینده لازم است |
+| 30 | بکاپ قابل‌انتقال، دیتابیس رمزنگاری‌شده و کلید مبدأ را داخل آرشیو AES-GCM نگه می‌دارد؛ بکاپ بدون گذرواژه Device-bound است | ساخت Snapshot plaintext یا قرار دادن کلید در فایل قابل‌خواندن | جلوگیری از فایل موقت مالی بدون رمزنگاری و امکان بازرمزنگاری دیتابیس با کلید دستگاه مقصد |
 
 ## ریسک‌ها
 | ریسک | اثر | کاهش |
@@ -37,7 +40,7 @@
 | سیاست SMS در Google Play / iOS | متوسط | توزیع بازار، Paste/Share |
 | RTL در MAUI | بالا | Spike S2، Handler سفارشی |
 | یادآور در برندهای سخت‌گیر Android | متوسط | راهنمای باتری، Rolling Scheduler، Spike S5 |
-| انحراف تقویم شمسی .NET | بالا | جدول مرجع + پیاده‌سازی داخلی |
+| انحراف تقویم شمسی .NET | کاهش‌یافته | آزمون جامع ۱۲۰۰–۱۵۰۰ با مرجع Borkowski سبز؛ تغییر الگوریتم در صورت اختلاف آینده |
 | نمونه محدود تحلیل بازار | متوسط | مصاحبه با ۱۰–۱۵ کاربر + بتای بسته |
 | دسترسی به استورها/CI/سرویس ابری | متوسط | وابستگی‌ها پشت Interface؛ اسکریپت CI قابل‌انتقال |
 
@@ -48,4 +51,3 @@
 4. فهرست بانک‌های اولویت‌دار برای پارسر پیامک.
 5. نام نهایی و شناسه Package.
 
-| 28 | رمزنگاری دیتابیس فعال با `SQLite3MC.PCLRaw.bundle 2.7.0` و `Microsoft.EntityFrameworkCore.Sqlite.Core 10.0.15`؛ cipher برابر SQLCipher v4 (legacy=4) | `Microsoft.EntityFrameworkCore.Sqlite` همراه bundle پیش‌فرض یا SQLCipher native سفارشی | MIT، پشتیبانی .NET 10 و Android/Windows، سازگاری SQLCipher v4 و پرهیز از bundleهای متروک SQLitePCLRaw |
