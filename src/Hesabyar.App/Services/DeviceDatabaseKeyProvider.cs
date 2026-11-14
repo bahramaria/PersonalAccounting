@@ -15,8 +15,6 @@ public sealed class DeviceDatabaseKeyProvider(string databasePath) : IDatabaseKe
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(migrationBackupDirectory);
-        SQLitePCL.Batteries_V2.Init();
-
         var password = await SecureStorage.Default.GetAsync(SecureStorageKey);
         if (string.IsNullOrWhiteSpace(password))
         {

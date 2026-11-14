@@ -34,9 +34,9 @@ public sealed class BackupService(
         if (!string.IsNullOrEmpty(password) && password.Length < 8)
             throw new ArgumentException("Backup password must contain at least 8 characters.", nameof(password));
 
-        var destinationDirectory = Path.GetDirectoryName(Path.GetFullPath(destinationPath))!;
-        Directory.CreateDirectory(destinationDirectory);
-        var snapshotPath = Path.Combine(destinationDirectory, $".{Guid.NewGuid():N}.snapshot");
+        var privateDirectory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
+        Directory.CreateDirectory(privateDirectory);
+        var snapshotPath = Path.Combine(privateDirectory, $".{Guid.NewGuid():N}.snapshot");
         try
         {
             await CreateDatabaseSnapshotAsync(snapshotPath, cancellationToken);
@@ -149,7 +149,7 @@ public sealed class BackupService(
         Directory.CreateDirectory(directory);
         var safetyBackup = Path.Combine(directory,
             $"pre-restore-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}.hbak");
-        await CreateBackupAsync(safetyBackup, cancellationToken: cancellationToken);
+        await CreateBackupAsync(safetyBackup, keyProvider?.GetDatabasePassword(), cancellationToken);
 
         var restoreId = Guid.NewGuid().ToString("N");
         var replacementPath = Path.Combine(directory, $".{restoreId}.restore");
@@ -238,7 +238,7 @@ public sealed class BackupService(
             return;
 
         var path = Path.Combine(backupDirectory, $"automatic-{today}-{Guid.NewGuid():N}.hbak");
-        await CreateBackupAsync(path, cancellationToken: cancellationToken);
+        await CreateBackupAsync(path, keyProvider?.GetDatabasePassword(), cancellationToken);
         var backups = Directory.GetFiles(backupDirectory, "automatic-*.hbak")
             .Select(file => new FileInfo(file))
             .OrderByDescending(file => file.CreationTimeUtc)

@@ -109,6 +109,37 @@ public sealed class BackupServiceTests
     }
 
     [Fact]
+    public async Task AutomaticBackup_UsesDeviceKeyEncryption()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var databasePath = Path.Combine(directory, "automatic.db");
+        var backupDirectory = Path.Combine(directory, "automatic");
+        const string password = "automatic-device-key";
+        var keyProvider = new TestDatabaseKeyProvider(password);
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath, Pooling = false
+        }.ToString();
+        var factory = new TestDbContextFactory(connectionString, keyProvider);
+        var service = new BackupService(factory, databasePath, TimeProvider.System, keyProvider);
+        try
+        {
+            await using (var db = factory.CreateDbContext())
+                await db.Database.MigrateAsync();
+            await service.CreateDailyAutomaticBackupAsync(backupDirectory);
+            var backupPath = Assert.Single(Directory.GetFiles(backupDirectory, "automatic-*.hbak"));
+            var summary = await service.InspectBackupAsync(backupPath, password);
+            Assert.True(summary.IsEncrypted);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task UnencryptedBackup_IsClearlyIdentified()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
