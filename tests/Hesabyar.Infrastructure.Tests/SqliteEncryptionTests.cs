@@ -63,73 +63,67 @@ public sealed class SqliteEncryptionTests
     }
 
     [Fact]
-    public async Task VacuumInto_CanExportBetweenPlaintextAndSqlCipherV4()
+    public async Task VacuumInto_CanReencryptEncryptedDatabaseWithAnotherDeviceKey()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var plainPath = Path.Combine(directory, "plain.db");
-        var encryptedPath = Path.Combine(directory, "encrypted.db");
-        var exportedPath = Path.Combine(directory, "exported.db");
-        const string password = "vacuum-into-device-key";
+        var firstEncryptedPath = Path.Combine(directory, "first.db");
+        var secondEncryptedPath = Path.Combine(directory, "second.db");
+        const string firstPassword = "first-device-key";
+        const string secondPassword = "second-device-key";
         try
         {
             await using (var plain = new SqliteConnection(new SqliteConnectionStringBuilder
-            {
-                DataSource = plainPath, Pooling = false
-            }.ToString()))
+            { DataSource = plainPath, Pooling = false }.ToString()))
             {
                 await plain.OpenAsync();
                 await using var create = plain.CreateCommand();
-                create.CommandText = "CREATE TABLE Data (Value TEXT NOT NULL); INSERT INTO Data VALUES ('roundtrip');";
+                create.CommandText = "CREATE TABLE Data (Value TEXT NOT NULL); INSERT INTO Data VALUES ('portable');";
                 await create.ExecuteNonQueryAsync();
                 await using var export = plain.CreateCommand();
                 export.CommandText = "VACUUM INTO $destination;";
                 export.Parameters.AddWithValue("$destination",
-                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(encryptedPath, password));
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(firstEncryptedPath, firstPassword));
                 await export.ExecuteNonQueryAsync();
             }
 
-            var encryptedConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+            var firstConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
                 new SqliteConnectionStringBuilder
-                {
-                    DataSource = encryptedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
-                }.ToString(), password);
-            await using (var encrypted = new SqliteConnection(encryptedConnectionString))
+                { DataSource = firstEncryptedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString(),
+                firstPassword);
+            await using (var first = new SqliteConnection(firstConnectionString))
             {
-                await encrypted.OpenAsync();
-                await using var export = encrypted.CreateCommand();
+                await first.OpenAsync();
+                await using var export = first.CreateCommand();
                 export.CommandText = "VACUUM INTO $destination;";
                 export.Parameters.AddWithValue("$destination",
-                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(exportedPath, password));
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(secondEncryptedPath, secondPassword));
                 await export.ExecuteNonQueryAsync();
             }
 
-            var exportedEncryptedConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+            var secondConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
                 new SqliteConnectionStringBuilder
-                {
-                    DataSource = exportedPath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
-                }.ToString(), password);
-            await using (var exportedEncrypted = new SqliteConnection(exportedEncryptedConnectionString))
-            {
-                await exportedEncrypted.OpenAsync();
-                await using var decrypt = exportedEncrypted.CreateCommand();
-                decrypt.CommandText = "PRAGMA rekey = '';";
-                await decrypt.ExecuteNonQueryAsync();
-            }
-
-            var exportedHeader = new byte[16];
-            await using (var stream = File.OpenRead(exportedPath))
-                await stream.ReadExactlyAsync(exportedHeader);
-            Assert.True(exportedHeader.AsSpan().SequenceEqual("SQLite format 3\\0"u8));
-
-            await using var verify = new SqliteConnection(new SqliteConnectionStringBuilder
-            {
-                DataSource = exportedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
-            }.ToString());
-            await verify.OpenAsync();
-            await using var query = verify.CreateCommand();
+                { DataSource = secondEncryptedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString(),
+                secondPassword);
+            await using var second = new SqliteConnection(secondConnectionString);
+            await second.OpenAsync();
+            await using var query = second.CreateCommand();
             query.CommandText = "SELECT Value FROM Data;";
-            Assert.Equal("roundtrip", await query.ExecuteScalarAsync());
+            Assert.Equal("portable", await query.ExecuteScalarAsync());
+
+            var wrongConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                { DataSource = secondEncryptedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString(),
+                firstPassword);
+            await using var wrong = new SqliteConnection(wrongConnectionString);
+            await Assert.ThrowsAsync<SqliteException>(async () =>
+            {
+                await wrong.OpenAsync();
+                await using var command = wrong.CreateCommand();
+                command.CommandText = "SELECT Value FROM Data;";
+                await command.ExecuteScalarAsync();
+            });
         }
         finally
         {
@@ -137,7 +131,6 @@ public sealed class SqliteEncryptionTests
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
         }
     }
-
     [Fact]
     public async Task EfCoreConnectionInterceptor_AppliesDeviceKeyBeforeOpeningConnection()
     {

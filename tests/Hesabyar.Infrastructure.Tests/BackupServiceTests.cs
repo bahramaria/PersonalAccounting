@@ -57,49 +57,45 @@ public sealed class BackupServiceTests
     }
 
     [Fact]
-    public async Task EncryptedDatabase_BackupRestore_ReencryptsRestoredDatabase()
+    public async Task EncryptedDatabase_BackupRestore_WorksAcrossDeviceKeys()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
-        var databasePath = Path.Combine(directory, "encrypted.db");
-        var backupPath = Path.Combine(directory, "encrypted.hbak");
-        var connectionString = new SqliteConnectionStringBuilder
-        {
-            DataSource = databasePath, ForeignKeys = true, Pooling = false
-        }.ToString();
-        var keyProvider = new TestDatabaseKeyProvider("stable-device-database-key");
-        var factory = new TestDbContextFactory(connectionString, keyProvider);
-        var service = new BackupService(factory, databasePath, TimeProvider.System, keyProvider);
-
+        var sourcePath = Path.Combine(directory, "source.db");
+        var restoredPath = Path.Combine(directory, "restored.db");
+        var backupPath = Path.Combine(directory, "portable.hbak");
+        const string sourcePassword = "source-device-key";
+        const string targetPassword = "target-device-key";
+        var sourceKey = new TestDatabaseKeyProvider(sourcePassword);
+        var targetKey = new TestDatabaseKeyProvider(targetPassword);
+        var sourceConnectionString = new SqliteConnectionStringBuilder
+        { DataSource = sourcePath, ForeignKeys = true, Pooling = false }.ToString();
+        var targetConnectionString = new SqliteConnectionStringBuilder
+        { DataSource = restoredPath, ForeignKeys = true, Pooling = false }.ToString();
+        var sourceFactory = new TestDbContextFactory(sourceConnectionString, sourceKey);
+        var targetFactory = new TestDbContextFactory(targetConnectionString, targetKey);
+        var sourceService = new BackupService(sourceFactory, sourcePath, TimeProvider.System, sourceKey);
+        var targetService = new BackupService(targetFactory, restoredPath, TimeProvider.System, targetKey);
         try
         {
-            await using (var db = factory.CreateDbContext())
+            await using (var db = sourceFactory.CreateDbContext())
             {
                 await db.Database.MigrateAsync();
                 db.Accounts.Add(new DbAccount
-                {
-                    Name = "Encrypted Cash", Type = AccountType.Asset,
-                    Kind = AccountKind.Cash, CurrencyCode = "IRR"
-                });
+                { Name = "Portable Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" });
                 await db.SaveChangesAsync();
             }
+            await sourceService.CreateBackupAsync(backupPath, "portable backup password");
 
-            await service.CreateBackupAsync(backupPath, "portable backup password");
-            await using (var db = factory.CreateDbContext())
-            {
-                db.Accounts.RemoveRange(db.Accounts);
-                await db.SaveChangesAsync();
-            }
-
-            await service.RestoreBackupAsync(backupPath, "portable backup password");
+            await using (var db = targetFactory.CreateDbContext())
+                await db.Database.MigrateAsync();
+            await targetService.RestoreBackupAsync(backupPath, "portable backup password");
 
             var header = new byte[16];
-            await using (var stream = File.OpenRead(databasePath))
-                await stream.ReadExactlyAsync(header);
+            await using (var stream = File.OpenRead(restoredPath)) await stream.ReadExactlyAsync(header);
             Assert.False(header.AsSpan().SequenceEqual("SQLite format 3\\0"u8));
-
-            await using var restored = factory.CreateDbContext();
-            Assert.Equal("Encrypted Cash", await restored.Accounts.Select(x => x.Name).SingleAsync());
+            await using var restored = targetFactory.CreateDbContext();
+            Assert.Equal("Portable Cash", await restored.Accounts.Select(x => x.Name).SingleAsync());
         }
         finally
         {
@@ -107,7 +103,6 @@ public sealed class BackupServiceTests
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
         }
     }
-
     [Fact]
     public async Task AutomaticBackup_UsesDeviceKeyEncryption()
     {
