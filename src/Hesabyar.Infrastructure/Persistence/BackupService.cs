@@ -15,7 +15,7 @@ public sealed class BackupService(
     IDatabaseKeyProvider? keyProvider = null)
 {
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1\n");
-    private const int FormatVersion = 1;
+    private const int FormatVersion = 2;
     private const int KdfIterations = 600_000;
     private const int SaltSize = 16;
     private const int NonceSize = 12;
@@ -50,7 +50,12 @@ public sealed class BackupService(
                 schemaVersion,
                 timeProvider.GetUtcNow(),
                 databaseBytes.LongLength,
-                Convert.ToHexString(SHA256.HashData(databaseBytes)));
+                Convert.ToHexString(SHA256.HashData(databaseBytes)),
+                DatabaseEncrypted: keyProvider is not null,
+                DatabaseKey: keyProvider is not null && !string.IsNullOrEmpty(password)
+                    ? keyProvider.GetDatabasePassword()
+                    : null,
+                DeviceBound: keyProvider is not null && string.IsNullOrEmpty(password));
             using var archiveStream = new MemoryStream();
             using (var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -126,10 +131,11 @@ public sealed class BackupService(
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var manifest = await ReadManifestAsync(archive, cancellationToken);
         var database = await ReadDatabaseAsync(archive, manifest, cancellationToken);
-        await ValidateDatabaseAsync(database, manifest.SchemaVersion, cancellationToken);
+        var databasePassword = ResolveDatabasePassword(manifest);
+        await ValidateDatabaseAsync(database, manifest.SchemaVersion, databasePassword, cancellationToken);
         await ValidateSchemaVersionAsync(manifest.SchemaVersion, cancellationToken);
         return new BackupSummary(manifest.CreatedAtUtc, manifest.AppVersion, manifest.SchemaVersion,
-            manifest.DatabaseSizeBytes, archiveBytes.Length, IsEncrypted(backupPath));
+            manifest.DatabaseSizeBytes, archiveBytes.Length, IsEncrypted(backupPath), manifest.DeviceBound);
     }
 
     public async Task<string> RestoreBackupAsync(
@@ -142,7 +148,8 @@ public sealed class BackupService(
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var manifest = await ReadManifestAsync(archive, cancellationToken);
         var databaseBytes = await ReadDatabaseAsync(archive, manifest, cancellationToken);
-        await ValidateDatabaseAsync(databaseBytes, manifest.SchemaVersion, cancellationToken);
+        var sourceDatabasePassword = ResolveDatabasePassword(manifest);
+        await ValidateDatabaseAsync(databaseBytes, manifest.SchemaVersion, sourceDatabasePassword, cancellationToken);
         await ValidateSchemaVersionAsync(manifest.SchemaVersion, cancellationToken);
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
@@ -158,7 +165,7 @@ public sealed class BackupService(
         var databaseMovedToRollback = false;
         try
         {
-            await CreateRestoreDatabaseAsync(replacementPath, databaseBytes, cancellationToken);
+            await CreateRestoreDatabaseAsync(replacementPath, databaseBytes, sourceDatabasePassword, cancellationToken);
             SqliteConnection.ClearAllPools();
 
             try
@@ -254,84 +261,46 @@ public sealed class BackupService(
 
         var sourceConnectionString = new SqliteConnectionStringBuilder
         {
-            DataSource = databasePath,
-            Mode = SqliteOpenMode.ReadWrite,
-            Pooling = false
+            DataSource = databasePath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
         }.ToString();
         if (keyProvider is not null)
             sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
                 sourceConnectionString, keyProvider.GetDatabasePassword());
+
         await using var source = new SqliteConnection(sourceConnectionString);
         await source.OpenAsync(cancellationToken);
-        if (keyProvider is null)
-        {
-            await using var plainSnapshot = source.CreateCommand();
-            plainSnapshot.CommandText = "VACUUM INTO $destination;";
-            plainSnapshot.Parameters.AddWithValue("$destination",
-                SqliteConnectionStringFactory.CreatePlainSqliteUri(snapshotPath));
-            await plainSnapshot.ExecuteNonQueryAsync(cancellationToken);
-            return;
-        }
-
-        var encryptedSnapshotPath = snapshotPath + ".encrypted";
-        try
-        {
-            await using (var encryptedSnapshot = source.CreateCommand())
-            {
-                encryptedSnapshot.CommandText = "VACUUM INTO $destination;";
-                encryptedSnapshot.Parameters.AddWithValue("$destination",
-                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(
-                        encryptedSnapshotPath, keyProvider.GetDatabasePassword()));
-                await encryptedSnapshot.ExecuteNonQueryAsync(cancellationToken);
-            }
-
-            await source.CloseAsync();
-            SqliteConnection.ClearAllPools();
-            var encryptedSnapshotConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
-                new SqliteConnectionStringBuilder
-                {
-                    DataSource = encryptedSnapshotPath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
-                }.ToString(), keyProvider.GetDatabasePassword());
-            await using (var encryptedSnapshot = new SqliteConnection(encryptedSnapshotConnectionString))
-            {
-                await encryptedSnapshot.OpenAsync(cancellationToken);
-                await using var decrypt = encryptedSnapshot.CreateCommand();
-                decrypt.CommandText = "PRAGMA rekey = '';";
-                await decrypt.ExecuteNonQueryAsync(cancellationToken);
-                await using var integrity = encryptedSnapshot.CreateCommand();
-                integrity.CommandText = "PRAGMA integrity_check;";
-                if (!string.Equals((string?)await integrity.ExecuteScalarAsync(cancellationToken), "ok",
-                    StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("The plaintext backup snapshot failed integrity validation.");
-            }
-
-            SqliteConnection.ClearAllPools();
-            File.Move(encryptedSnapshotPath, snapshotPath);
-        }
-        finally
-        {
-            SqliteConnection.ClearAllPools();
-            if (File.Exists(encryptedSnapshotPath)) File.Delete(encryptedSnapshotPath);
-        }
+        var destinationUri = keyProvider is null
+            ? SqliteConnectionStringFactory.CreatePlainSqliteUri(snapshotPath)
+            : SqliteConnectionStringFactory.CreateSqlCipherV4Uri(snapshotPath, keyProvider.GetDatabasePassword());
+        await using var command = source.CreateCommand();
+        command.CommandText = "VACUUM INTO $destination;";
+        command.Parameters.AddWithValue("$destination", destinationUri);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
-
     private async Task CreateRestoreDatabaseAsync(
-        string replacementPath, byte[] databaseBytes, CancellationToken cancellationToken)
+        string replacementPath, byte[] databaseBytes, string? sourceDatabasePassword,
+        CancellationToken cancellationToken)
     {
-        var plaintextPath = replacementPath + ".plain";
+        var sourcePath = replacementPath + ".source";
         try
         {
-            await File.WriteAllBytesAsync(plaintextPath, databaseBytes, cancellationToken);
+            await File.WriteAllBytesAsync(sourcePath, databaseBytes, cancellationToken);
             if (keyProvider is null)
             {
-                File.Move(plaintextPath, replacementPath);
+                if (sourceDatabasePassword is not null)
+                    throw new InvalidDataException("An encrypted backup requires an initialized database key provider.");
+                File.Move(sourcePath, replacementPath);
                 return;
             }
 
             var sourceConnectionString = new SqliteConnectionStringBuilder
             {
-                DataSource = plaintextPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+                DataSource = sourcePath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
             }.ToString();
+            if (sourceDatabasePassword is not null)
+                sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                    sourceConnectionString, sourceDatabasePassword);
+
             await using var source = new SqliteConnection(sourceConnectionString);
             await source.OpenAsync(cancellationToken);
             var destinationUri = SqliteConnectionStringFactory.CreateSqlCipherV4Uri(
@@ -344,10 +313,9 @@ public sealed class BackupService(
         finally
         {
             SqliteConnection.ClearAllPools();
-            if (File.Exists(plaintextPath)) File.Delete(plaintextPath);
+            if (File.Exists(sourcePath)) File.Delete(sourcePath);
         }
     }
-
     private async Task<string> GetSchemaVersionAsync(CancellationToken cancellationToken)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -433,7 +401,8 @@ public sealed class BackupService(
         var entry = archive.GetEntry(ManifestEntryName)!;
         await using var input = entry.Open();
         var manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(input, JsonOptions, cancellationToken);
-        if (manifest is null || manifest.FormatVersion != FormatVersion || manifest.DatabaseSizeBytes <= 0)
+        if (manifest is null || (manifest.FormatVersion != 1 && manifest.FormatVersion != FormatVersion) ||
+            manifest.DatabaseSizeBytes <= 0)
             throw new InvalidDataException("Backup manifest is invalid or unsupported.");
         return manifest;
     }
@@ -457,18 +426,21 @@ public sealed class BackupService(
         return database;
     }
 
-    private static async Task ValidateDatabaseAsync(byte[] database, string expectedSchemaVersion, CancellationToken cancellationToken)
+    private static async Task ValidateDatabaseAsync(
+        byte[] database, string expectedSchemaVersion, string? databasePassword,
+        CancellationToken cancellationToken)
     {
         var temporaryPath = Path.Combine(Path.GetTempPath(), $"hesabyar-validate-{Guid.NewGuid():N}.db");
         try
         {
             await File.WriteAllBytesAsync(temporaryPath, database, cancellationToken);
-            await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+            var connectionString = new SqliteConnectionStringBuilder
             {
-                DataSource = temporaryPath,
-                Mode = SqliteOpenMode.ReadOnly,
-                Pooling = false
-            }.ToString());
+                DataSource = temporaryPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+            }.ToString();
+            if (databasePassword is not null)
+                connectionString = SqliteConnectionStringFactory.WithSqlCipherV4(connectionString, databasePassword);
+            await using var connection = new SqliteConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
             await using var command = connection.CreateCommand();
             command.CommandText = "PRAGMA integrity_check;";
@@ -507,13 +479,24 @@ public sealed class BackupService(
         return header?.Encrypted ?? throw new InvalidDataException("Backup header is invalid.");
     }
 
+    private string? ResolveDatabasePassword(BackupManifest manifest)
+    {
+        if (!manifest.DatabaseEncrypted) return null;
+        if (!string.IsNullOrWhiteSpace(manifest.DatabaseKey)) return manifest.DatabaseKey;
+        if (manifest.DeviceBound && keyProvider is not null) return keyProvider.GetDatabasePassword();
+        throw new InvalidDataException("The backup database key is missing or the backup is device-bound.");
+    }
+
     private sealed record BackupManifest(
         int FormatVersion,
         string AppVersion,
         string SchemaVersion,
         DateTimeOffset CreatedAtUtc,
         long DatabaseSizeBytes,
-        string DatabaseSha256);
+        string DatabaseSha256,
+        bool DatabaseEncrypted = false,
+        string? DatabaseKey = null,
+        bool DeviceBound = false);
 
     private sealed record BackupEnvelopeHeader(
         bool Encrypted,
@@ -529,4 +512,5 @@ public sealed record BackupSummary(
     string SchemaVersion,
     long DatabaseSizeBytes,
     long BackupFileSizeBytes,
-    bool IsEncrypted);
+    bool IsEncrypted,
+    bool IsDeviceBound = false);
