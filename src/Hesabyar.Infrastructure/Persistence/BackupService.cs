@@ -31,8 +31,9 @@ public sealed class BackupService(
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
-        if (!string.IsNullOrEmpty(password) && password.Length < 8)
-            throw new ArgumentException("Backup password must contain at least 8 characters.", nameof(password));
+        if (!string.IsNullOrEmpty(password) &&
+            (password.Length < 8 || string.IsNullOrWhiteSpace(password)))
+            throw new ArgumentException("Backup password must contain at least 8 non-whitespace characters.", nameof(password));
 
         var privateDirectory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
         Directory.CreateDirectory(privateDirectory);
@@ -241,7 +242,12 @@ public sealed class BackupService(
     {
         Directory.CreateDirectory(backupDirectory);
         var today = timeProvider.GetUtcNow().UtcDateTime.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
-        if (Directory.GetFiles(backupDirectory, $"automatic-{today}-*.hbak").Length > 0)
+        var existingBackups = Directory.GetFiles(backupDirectory, $"automatic-{today}-*.hbak");
+        if (existingBackups.Any(path =>
+            {
+                try { return IsEncrypted(path); }
+                catch (InvalidDataException) { return false; }
+            }))
             return;
 
         var path = Path.Combine(backupDirectory, $"automatic-{today}-{Guid.NewGuid():N}.hbak");
@@ -426,11 +432,13 @@ public sealed class BackupService(
         return database;
     }
 
-    private static async Task ValidateDatabaseAsync(
+    private async Task ValidateDatabaseAsync(
         byte[] database, string expectedSchemaVersion, string? databasePassword,
         CancellationToken cancellationToken)
     {
-        var temporaryPath = Path.Combine(Path.GetTempPath(), $"hesabyar-validate-{Guid.NewGuid():N}.db");
+        var privateDirectory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
+        Directory.CreateDirectory(privateDirectory);
+        var temporaryPath = Path.Combine(privateDirectory, $".{Guid.NewGuid():N}.validate.db");
         try
         {
             await File.WriteAllBytesAsync(temporaryPath, database, cancellationToken);
@@ -482,8 +490,16 @@ public sealed class BackupService(
     private string? ResolveDatabasePassword(BackupManifest manifest)
     {
         if (!manifest.DatabaseEncrypted) return null;
-        if (!string.IsNullOrWhiteSpace(manifest.DatabaseKey)) return manifest.DatabaseKey;
-        if (manifest.DeviceBound && keyProvider is not null) return keyProvider.GetDatabasePassword();
+        if (manifest.DeviceBound)
+        {
+            if (manifest.DatabaseKey is not null)
+                throw new InvalidDataException("A device-bound backup must not expose its database key.");
+            if (keyProvider is not null) return keyProvider.GetDatabasePassword();
+        }
+        else if (!string.IsNullOrWhiteSpace(manifest.DatabaseKey) && manifest.DatabaseKey.Length <= 256)
+        {
+            return manifest.DatabaseKey;
+        }
         throw new InvalidDataException("The backup database key is missing or the backup is device-bound.");
     }
 

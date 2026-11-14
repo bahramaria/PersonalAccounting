@@ -143,7 +143,7 @@
   <data name="BackupHeading" xml:space="preserve"><value>Backup and restore</value></data>
   <data name="BackupCreate" xml:space="preserve"><value>Create backup</value></data>
   <data name="BackupRestore" xml:space="preserve"><value>Restore backup</value></data>
-  <data name="BackupPasswordHint" xml:space="preserve"><value>Use at least 8 characters. Keep this password safe; it cannot be recovered.</value></data>
+  <data name="BackupPasswordHint" xml:space="preserve"><value>Enter at least 8 characters for a portable backup. Leave blank for a backup tied to this device. A password cannot be recovered.</value></data>
   <data name="BackupPasswordPrompt" xml:space="preserve"><value>Backup password (leave empty for an unencrypted file)</value></data>
   <data name="BackupPasswordConfirm" xml:space="preserve"><value>Confirm backup password</value></data>
   <data name="BackupPasswordMismatch" xml:space="preserve"><value>The passwords do not match.</value></data>

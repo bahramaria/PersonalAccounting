@@ -104,6 +104,39 @@ public sealed class BackupServiceTests
         }
     }
     [Fact]
+    public async Task PasswordlessEncryptedBackup_IsDeviceBoundToItsSourceKey()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var sourcePath = Path.Combine(directory, "source.db");
+        var targetPath = Path.Combine(directory, "target.db");
+        var backupPath = Path.Combine(directory, "device-bound.hbak");
+        var sourceKey = new TestDatabaseKeyProvider("source-device-key");
+        var targetKey = new TestDatabaseKeyProvider("target-device-key");
+        var sourceFactory = new TestDbContextFactory(new SqliteConnectionStringBuilder
+        { DataSource = sourcePath, Pooling = false }.ToString(), sourceKey);
+        var targetFactory = new TestDbContextFactory(new SqliteConnectionStringBuilder
+        { DataSource = targetPath, Pooling = false }.ToString(), targetKey);
+        var sourceService = new BackupService(sourceFactory, sourcePath, TimeProvider.System, sourceKey);
+        var targetService = new BackupService(targetFactory, targetPath, TimeProvider.System, targetKey);
+        try
+        {
+            await using (var db = sourceFactory.CreateDbContext()) await db.Database.MigrateAsync();
+            await sourceService.CreateBackupAsync(backupPath);
+            var summary = await sourceService.InspectBackupAsync(backupPath);
+            Assert.False(summary.IsEncrypted);
+            Assert.True(summary.IsDeviceBound);
+
+            await using (var db = targetFactory.CreateDbContext()) await db.Database.MigrateAsync();
+            await Assert.ThrowsAsync<InvalidDataException>(() => targetService.InspectBackupAsync(backupPath));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+    [Fact]
     public async Task AutomaticBackup_UsesDeviceKeyEncryption()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
