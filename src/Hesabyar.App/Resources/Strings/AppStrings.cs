@@ -36,6 +36,7 @@ public static class AppStrings
     public static string OnboardingTitle => Get(nameof(OnboardingTitle));
     public static string OnboardingDescription => Get(nameof(OnboardingDescription));
     public static string OnboardingAccountName => Get(nameof(OnboardingAccountName));
+    public static string OnboardingDefaultAccountName => Get(nameof(OnboardingDefaultAccountName));
     public static string OnboardingAccountType => Get(nameof(OnboardingAccountType));
     public static string OnboardingOpeningBalance => Get(nameof(OnboardingOpeningBalance));
     public static string OnboardingEnablePin => Get(nameof(OnboardingEnablePin));

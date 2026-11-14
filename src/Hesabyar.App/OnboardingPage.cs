@@ -15,9 +15,10 @@ namespace Hesabyar.App;
 public sealed class OnboardingPage : ContentPage
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IServiceProvider _services;
     private readonly AppLockService _appLock;
     private readonly INumberNormalizer _numberNormalizer;
-    private readonly Entry _accountName = new() { Text = "کیف پول نقدی", MaxLength = 120 };
+    private readonly Entry _accountName = new() { Text = AppStrings.OnboardingDefaultAccountName, MaxLength = 120 };
     private readonly Picker _accountType = new() { Title = AppStrings.OnboardingAccountType };
     private readonly Entry _openingBalance = new() { Keyboard = Keyboard.Numeric, Placeholder = "0" };
     private readonly Switch _enablePin = new();
@@ -27,17 +28,19 @@ public sealed class OnboardingPage : ContentPage
 
     public OnboardingPage(
         IServiceScopeFactory scopeFactory,
+        IServiceProvider services,
         AppLockService appLock,
         INumberNormalizer numberNormalizer,
         ILocalizationService localization)
     {
         _scopeFactory = scopeFactory;
+        _services = services;
         _appLock = appLock;
         _numberNormalizer = numberNormalizer;
         Title = AppStrings.OnboardingTitle;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
-            ? FlowDirection.RightToLeft
-            : FlowDirection.LeftToRight;
+            ? Microsoft.Maui.Controls.FlowDirection.RightToLeft
+            : Microsoft.Maui.Controls.FlowDirection.LeftToRight;
 
         _accountType.ItemsSource =
         [
@@ -152,7 +155,7 @@ public sealed class OnboardingPage : ContentPage
             var window = Application.Current?.Windows.FirstOrDefault();
             if (window is null)
                 throw new InvalidOperationException("The application window is not available.");
-            window.Page = _servicesShell();
+            window.Page = _services.GetRequiredService<AppShell>();
             if (startTransaction)
             {
                 await Shell.Current.GoToAsync("//transactions");
@@ -205,7 +208,4 @@ public sealed class OnboardingPage : ContentPage
         await _appLock.SetPinAsync(pin);
     }
 
-    private AppShell _servicesShell() =>
-        Handler?.MauiContext?.Services.GetRequiredService<AppShell>()
-        ?? throw new InvalidOperationException("The application services are not available.");
 }

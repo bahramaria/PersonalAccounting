@@ -8,6 +8,7 @@ using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Time;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
+using Hesabyar.Localization.Numbers;
 using Microsoft.Data.Sqlite;
 using Microsoft.Maui.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ILocalizationService, CultureLocalizationService>();
         builder.Services.AddSingleton<ICalendarService, PersianCalendarService>();
         builder.Services.AddSingleton<IDateCalendarService, DateCalendarService>();
+        builder.Services.AddSingleton<INumberNormalizer, NumberNormalizer>();
         builder.Services.AddSingleton<AppLockService>();
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");

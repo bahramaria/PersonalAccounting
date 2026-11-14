@@ -174,4 +174,5 @@
   <data name="OnboardingAccountFailed" xml:space="preserve"><value>Could not create the account. Check the details and try again.</value></data>
   <data name="OnboardingPinInvalid" xml:space="preserve"><value>The PIN must contain 4 to 8 matching digits. Your account was created; you can enable the lock later in Settings.</value></data>
   <data name="OnboardingSmsNote" xml:space="preserve"><value>Bank SMS import will be added in a later stage. You do not need it to get started.</value></data>
+  <data name="OnboardingDefaultAccountName" xml:space="preserve"><value>Cash wallet</value></data>
 </root>
