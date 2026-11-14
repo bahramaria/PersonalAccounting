@@ -1,6 +1,7 @@
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hesabyar.App.Views;
 
