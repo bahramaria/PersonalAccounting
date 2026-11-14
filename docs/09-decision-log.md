@@ -18,7 +18,7 @@
 | 14 | SDK اصلی روی .NET 10 pin می‌شود | انتخاب خودکار بالاترین SDK نصب‌شده | جلوگیری از انتخاب SDK پیش‌نمایش .NET 11 در CI و ثابت‌ماندن toolchain MAUI |
 | 15 | TFM پلتفرم MAUI با `MauiTargetFramework` | Override سراسری `TargetFramework` | جلوگیری از سرایت TFM پلتفرم به پروژه‌های Core در Restore/Build چندپلتفرمی |
 | 16 | اعمال TargetFramework مشترک فقط به پروژه‌های غیر MAUI | تعریف TargetFramework سراسری برای تمام پروژه‌ها | MAUI از `TargetFrameworks` چندپلتفرمی استفاده می‌کند و نباید `net10.0` عمومی را به‌عنوان TFM خود به ارث ببرد |
-| 17 | Provider فعلی SQLite عادی و فقط برای توسعه/تست است؛ فعال‌سازی SQLCipher تا عبور از S1 ممنوع | ادعای رمزنگاری پیش از تأیید native binaries و مدیریت کلید | جلوگیری از ادعای امنیتی تأییدنشده |
+| 17 | Provider پایگاه داده از SQLite3 Multiple Ciphers با cipher سازگار SQLCipher v4 استفاده می‌کند؛ کلید تصادفی ۲۵۶ بیتی در SecureStorage نگهداری می‌شود | SQLite عادی یا bundle قدیمی e_sqlcipher | نگهداری bundle قدیمی متوقف شده و SQLite3MC مسیر MIT با باینری‌های native چندپلتفرمی و سازگاری SQLCipher v4 فراهم می‌کند؛ تکمیل S1 مشروط به تست رمزنگاری، مهاجرت داده و Build هر دو پلتفرم است |
 | 18 | حالت محصول: حسابداری شخصی (Personal) | حسابداری کسب‌وکار/چندفضایی | دامنه MVP شخصی و تک‌کاربره است |
 | 19 | ارز عملیاتی اولیه IRR؛ آمادگی ساختار برای ارزهای بیشتر | چندارزی در UI از ابتدا | مبلغ‌ها با ریال ذخیره می‌شوند؛ UI چندارزی فعلاً خارج از MVP است |
 | 20 | تقویم شمسی پیش‌فرض با امکان انتخاب میلادی | تقویم ثابت | تاریخ ذخیره‌شده میلادی است و نمایش از Localization انجام می‌شود |
@@ -47,3 +47,5 @@
 3. الگوریتم رسمی اعتبارسنجی شناسه صیاد.
 4. فهرست بانک‌های اولویت‌دار برای پارسر پیامک.
 5. نام نهایی و شناسه Package.
+
+| 28 | رمزنگاری دیتابیس فعال با `SQLite3MC.PCLRaw.bundle 2.7.0` و `Microsoft.EntityFrameworkCore.Sqlite.Core 10.0.15`؛ cipher برابر SQLCipher v4 (legacy=4) | `Microsoft.EntityFrameworkCore.Sqlite` همراه bundle پیش‌فرض یا SQLCipher native سفارشی | MIT، پشتیبانی .NET 10 و Android/Windows، سازگاری SQLCipher v4 و پرهیز از bundleهای متروک SQLitePCLRaw |

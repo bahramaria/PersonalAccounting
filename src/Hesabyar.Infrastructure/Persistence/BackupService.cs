@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Hesabyar.Infrastructure.Security;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,8 @@ namespace Hesabyar.Infrastructure.Persistence;
 public sealed class BackupService(
     IDbContextFactory<AppDbContext> contextFactory,
     string databasePath,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IDatabaseKeyProvider? keyProvider = null)
 {
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1\n");
     private const int FormatVersion = 1;
@@ -156,7 +158,7 @@ public sealed class BackupService(
         var databaseMovedToRollback = false;
         try
         {
-            await File.WriteAllBytesAsync(replacementPath, databaseBytes, cancellationToken);
+            await CreateRestoreDatabaseAsync(replacementPath, databaseBytes, cancellationToken);
             SqliteConnection.ClearAllPools();
 
             try
@@ -256,6 +258,9 @@ public sealed class BackupService(
             Mode = SqliteOpenMode.ReadWrite,
             Pooling = false
         }.ToString();
+        if (keyProvider is not null)
+            sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                sourceConnectionString, keyProvider.GetDatabasePassword());
         var destinationConnectionString = new SqliteConnectionStringBuilder
         {
             DataSource = snapshotPath,
@@ -268,6 +273,42 @@ public sealed class BackupService(
         await source.OpenAsync(cancellationToken);
         await destination.OpenAsync(cancellationToken);
         source.BackupDatabase(destination);
+    }
+
+    private async Task CreateRestoreDatabaseAsync(
+        string replacementPath, byte[] databaseBytes, CancellationToken cancellationToken)
+    {
+        var plaintextPath = replacementPath + ".plain";
+        try
+        {
+            await File.WriteAllBytesAsync(plaintextPath, databaseBytes, cancellationToken);
+            if (keyProvider is null)
+            {
+                File.Move(plaintextPath, replacementPath);
+                return;
+            }
+
+            var sourceConnectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = plaintextPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+            }.ToString();
+            var destinationConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                {
+                    DataSource = replacementPath, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false
+                }.ToString(), keyProvider.GetDatabasePassword());
+
+            await using var source = new SqliteConnection(sourceConnectionString);
+            await using var destination = new SqliteConnection(destinationConnectionString);
+            await source.OpenAsync(cancellationToken);
+            await destination.OpenAsync(cancellationToken);
+            source.BackupDatabase(destination);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(plaintextPath)) File.Delete(plaintextPath);
+        }
     }
 
     private async Task<string> GetSchemaVersionAsync(CancellationToken cancellationToken)

@@ -14,16 +14,19 @@ public partial class StartupPage : ContentPage
     private readonly IServiceProvider _services;
     private readonly AppLockService _appLock;
     private readonly BackupService _backupService;
+    private readonly DeviceDatabaseKeyProvider _databaseKeyProvider;
     private bool _isInitializing;
 
     public StartupPage(DatabaseInitializer databaseInitializer, IServiceProvider services,
-        ILocalizationService localization, AppLockService appLock, BackupService backupService)
+        ILocalizationService localization, AppLockService appLock, BackupService backupService,
+        DeviceDatabaseKeyProvider databaseKeyProvider)
     {
         InitializeComponent();
         _databaseInitializer = databaseInitializer;
         _services = services;
         _appLock = appLock;
         _backupService = backupService;
+        _databaseKeyProvider = databaseKeyProvider;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft : Microsoft.Maui.FlowDirection.LeftToRight;
         StatusLabel.Text = AppStrings.StartupInitializing;
@@ -49,6 +52,7 @@ public partial class StartupPage : ContentPage
         try
         {
             var backupDirectory = Path.Combine(FileSystem.AppDataDirectory, "migration-backups");
+            await _databaseKeyProvider.InitializeAsync(backupDirectory);
             await _databaseInitializer.InitializeAsync(backupDirectory);
             try
             {

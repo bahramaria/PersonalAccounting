@@ -11,6 +11,7 @@ using Hesabyar.Localization.Calendar;
 using Microsoft.Data.Sqlite;
 using Microsoft.Maui.Storage;
 using Microsoft.EntityFrameworkCore;
+using Hesabyar.Infrastructure.Security;
 
 namespace Hesabyar.App;
 
@@ -19,6 +20,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+        SQLitePCL.Batteries_V2.Init();
         builder.UseMauiApp<App>();
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
         builder.Services.AddSingleton<IClock, SystemClock>();
@@ -28,6 +30,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<AppLockService>();
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");
+        var databaseKeyProvider = new DeviceDatabaseKeyProvider(databasePath);
+        builder.Services.AddSingleton(databaseKeyProvider);
+        builder.Services.AddSingleton<IDatabaseKeyProvider>(databaseKeyProvider);
         var connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = databasePath, ForeignKeys = true, Pooling = true
@@ -36,7 +41,8 @@ public static class MauiProgram
         builder.Services.AddSingleton(provider => new BackupService(
             provider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
             databasePath,
-            provider.GetRequiredService<TimeProvider>()));
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<IDatabaseKeyProvider>()));
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<StartupPage>();
         builder.Services.AddTransient<PinLockPage>();
