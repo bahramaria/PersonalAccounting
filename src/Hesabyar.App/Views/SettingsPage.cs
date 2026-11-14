@@ -127,6 +127,10 @@ public sealed class SettingsPage : ContentPage
             }
             await _appLock.SetPinAsync(newPin);
             await DisplayAlertAsync(AppStrings.PinSettings, AppStrings.PinEnabled, AppStrings.Ok);
+            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+            if (window is not null)
+                window.Page = _services.GetRequiredService<PinLockPage>();
+            return;
         }
         else if (selected == AppStrings.PinChange && enabled)
         {
