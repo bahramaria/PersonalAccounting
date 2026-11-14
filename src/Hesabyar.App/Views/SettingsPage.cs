@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.Localization;
+using Hesabyar.Localization.Calendar;
 using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.Views;

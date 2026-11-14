@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hesabyar.App.ViewModels;
 
-public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICalendarService calendar) : ObservableObject
+public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDateCalendarService calendar) : ObservableObject
 {
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -63,8 +63,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICa
                 var secondName = item.CounterpartyAccountId is Guid secondId
                     ? allChoices.FirstOrDefault(x => x.Id == secondId)?.Name ?? AppStrings.UnknownAccount
                     : string.Empty;
-                var persianDate = calendar.ToPersian(item.BusinessDate);
-                var dateText = $"{persianDate.Year:0000}/{persianDate.Month:00}/{persianDate.Day:00}";
+                var dateText = calendar.Format(item.BusinessDate);
                 Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                     item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
                     item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));

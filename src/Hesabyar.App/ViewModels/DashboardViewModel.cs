@@ -13,7 +13,7 @@ namespace Hesabyar.App.ViewModels;
 
 public sealed class DashboardViewModel(
     IServiceScopeFactory scopeFactory,
-    ICalendarService calendar) : ObservableObject
+    IDateCalendarService calendar) : ObservableObject
 {
     private string _assetsMessage = AppStrings.BalanceUnavailable;
     private string _liabilitiesMessage = AppStrings.BalanceUnavailable;
@@ -63,8 +63,7 @@ public sealed class DashboardViewModel(
                 var description = string.IsNullOrWhiteSpace(item.Description)
                     ? names.GetValueOrDefault(item.AccountId, AppStrings.UnknownAccount)
                     : item.Description;
-                var date = calendar.ToPersian(item.BusinessDate);
-                var dateText = $"{date.Year:0000}/{date.Month:00}/{date.Day:00}";
+                var dateText = calendar.Format(item.BusinessDate);
                 RecentTransactions.Add(new DashboardTransactionItem(
                     kind, description!, FormatMoney(item.AmountMinor), dateText));
             }

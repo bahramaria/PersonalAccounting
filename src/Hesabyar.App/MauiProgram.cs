@@ -23,6 +23,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IClock, SystemClock>();
         builder.Services.AddSingleton<ILocalizationService, CultureLocalizationService>();
         builder.Services.AddSingleton<ICalendarService, PersianCalendarService>();
+        builder.Services.AddSingleton<IDateCalendarService, DateCalendarService>();
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");
         var connectionString = new SqliteConnectionStringBuilder

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Hesabyar.App.Services;
+using Hesabyar.Localization.Calendar;
 using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App;
@@ -13,6 +14,8 @@ public partial class App : Microsoft.Maui.Controls.Application
         InitializeComponent();
         AppLocalization.Initialize();
         _services = services;
+        services.GetRequiredService<IDateCalendarService>().CurrentCalendar =
+            Preferences.Get("app.calendar", "persian") == "gregorian" ? CalendarKind.Gregorian : CalendarKind.Persian;
         UserAppTheme = Preferences.Get("app.theme", "system") switch
         {
             "light" => AppTheme.Light,

@@ -11,7 +11,7 @@ namespace Hesabyar.App.Views;
 public partial class TransactionsPage : ContentPage
 {
     private readonly TransactionsViewModel _viewModel;
-    private readonly ICalendarService _calendar;
+    private readonly IDateCalendarService _calendar;
     private string? _searchText;
     private DateOnly? _fromDate;
     private DateOnly? _toDate;
@@ -21,7 +21,7 @@ public partial class TransactionsPage : ContentPage
     private long? _maximumAmountMinor;
     private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
 
-    public TransactionsPage(TransactionsViewModel viewModel, ILocalizationService localization, ICalendarService calendar)
+    public TransactionsPage(TransactionsViewModel viewModel, ILocalizationService localization, IDateCalendarService calendar)
     {
         InitializeComponent();
         _viewModel = viewModel;
@@ -125,15 +125,14 @@ public partial class TransactionsPage : ContentPage
     private string? FormatPersianDate(DateOnly? date)
     {
         if (date is null) return null;
-        var persian = _calendar.ToPersian(date.Value);
-        return $"{persian.Year:0000}/{persian.Month:00}/{persian.Day:00}";
+        return _calendar.Format(date.Value);
     }
 
     private bool TryParseOptionalDate(string value, out DateOnly? date)
     {
         date = null;
         if (string.IsNullOrWhiteSpace(value)) return true;
-        if (!TryParsePersianDate(value, out var parsed)) return false;
+        if (!_calendar.TryParse(value, out var parsed)) return false;
         date = parsed;
         return true;
     }
@@ -231,10 +230,9 @@ public partial class TransactionsPage : ContentPage
         if (secondId is null) return;
 
         var defaultGregorian = existing?.BusinessDate ?? DateOnly.FromDateTime(DateTime.Today);
-        var defaultPersian = _calendar.ToPersian(defaultGregorian);
-        var defaultDate = $"{defaultPersian.Year:0000}/{defaultPersian.Month:00}/{defaultPersian.Day:00}";
+        var defaultDate = _calendar.Format(defaultGregorian);
         var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD", AppStrings.Save, AppStrings.Cancel, initialValue: defaultDate);
-        if (dateText is null || !TryParsePersianDate(dateText, out var date))
+        if (dateText is null || !_calendar.TryParse(dateText, out var date))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionDateInvalid, AppStrings.Ok);
             return;
@@ -256,26 +254,6 @@ public partial class TransactionsPage : ContentPage
             : new[] { selectedName }.Concat(items.Where(x => x.Name != selectedName).Select(x => x.Name)).ToArray();
         var selected = await DisplayActionSheetAsync(title, AppStrings.Cancel, null, labels);
         return selected == AppStrings.Cancel ? null : items.FirstOrDefault(x => x.Name == selected)?.Id;
-    }
-
-    private bool TryParsePersianDate(string value, out DateOnly gregorian)
-    {
-        gregorian = default;
-        var parts = value.Trim().Replace('-', '/').Split('/');
-        if (parts.Length != 3 ||
-            !int.TryParse(NormalizeDigits(parts[0]), out var year) ||
-            !int.TryParse(NormalizeDigits(parts[1]), out var month) ||
-            !int.TryParse(NormalizeDigits(parts[2]), out var day))
-            return false;
-        try
-        {
-            gregorian = _calendar.ToGregorian(new PersianDate(year, month, day));
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return false;
-        }
     }
 
     private static string NormalizeDigits(string value)

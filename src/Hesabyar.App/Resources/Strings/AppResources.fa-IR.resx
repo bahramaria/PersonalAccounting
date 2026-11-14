@@ -66,7 +66,7 @@
   <data name="TransactionDestinationPrompt" xml:space="preserve"><value>انتخاب حساب مقصد</value></data>
   <data name="TransactionCategoryPrompt" xml:space="preserve"><value>انتخاب دسته</value></data>
   <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>شرح (اختیاری)</value></data>
-  <data name="TransactionDatePrompt" xml:space="preserve"><value>تاریخ شمسی (سال/ماه/روز)</value></data>
+  <data name="TransactionDatePrompt" xml:space="preserve"><value>تاریخ بر اساس تقویم انتخاب‌شده (سال/ماه/روز)</value></data>
   <data name="TransactionsEmpty" xml:space="preserve"><value>هنوز تراکنشی ثبت نشده است.</value></data>
   <data name="TransactionLoadFailed" xml:space="preserve"><value>بارگذاری تراکنش‌ها انجام نشد.</value></data>
   <data name="TransactionCreateFailed" xml:space="preserve"><value>ذخیره تراکنش انجام نشد.</value></data>
@@ -79,12 +79,12 @@
   <data name="Transfer" xml:space="preserve"><value>انتقال</value></data>
   <data name="TransactionSearchPlaceholder" xml:space="preserve"><value>جستجو در شرح تراکنش‌ها</value></data>
   <data name="TransactionAmountInvalid" xml:space="preserve"><value>مبلغ باید عدد صحیح و بزرگ‌تر از صفر باشد.</value></data>
-  <data name="TransactionDateInvalid" xml:space="preserve"><value>تاریخ شمسی معتبر را با قالب سال/ماه/روز وارد کنید.</value></data>
+  <data name="TransactionDateInvalid" xml:space="preserve"><value>تاریخ معتبر را مطابق تقویم انتخاب‌شده و با قالب سال/ماه/روز وارد کنید.</value></data>
   <data name="UnknownAccount" xml:space="preserve"><value>حساب نامشخص</value></data>
   <data name="TransactionFilters" xml:space="preserve"><value>فیلترها</value></data>
   <data name="TransactionFilterAll" xml:space="preserve"><value>همه</value></data>
-  <data name="TransactionFromDate" xml:space="preserve"><value>از تاریخ شمسی (خالی = همه)</value></data>
-  <data name="TransactionToDate" xml:space="preserve"><value>تا تاریخ شمسی (خالی = همه)</value></data>
+  <data name="TransactionFromDate" xml:space="preserve"><value>از تاریخ (مطابق تقویم انتخاب‌شده، خالی = همه)</value></data>
+  <data name="TransactionToDate" xml:space="preserve"><value>تا تاریخ (مطابق تقویم انتخاب‌شده، خالی = همه)</value></data>
   <data name="TransactionAccountFilter" xml:space="preserve"><value>فیلتر بر اساس حساب</value></data>
   <data name="TransactionCategoryFilter" xml:space="preserve"><value>فیلتر بر اساس دسته‌بندی</value></data>
   <data name="TransactionMinimumAmount" xml:space="preserve"><value>حداقل مبلغ به ریال (خالی = بدون محدودیت)</value></data>
