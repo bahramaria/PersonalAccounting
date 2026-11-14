@@ -100,7 +100,7 @@ public sealed class SqliteEncryptionTests
                 await using var export = encrypted.CreateCommand();
                 export.CommandText = "VACUUM INTO $destination;";
                 export.Parameters.AddWithValue("$destination",
-                    SqliteConnectionStringFactory.CreatePlainSqliteUri(exportedPath));
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(exportedPath, null));
                 await export.ExecuteNonQueryAsync();
             }
 
