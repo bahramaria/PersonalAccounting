@@ -154,6 +154,7 @@ public static class AppStrings
     public static string BackupCreate => Get(nameof(BackupCreate));
     public static string BackupRestore => Get(nameof(BackupRestore));
     public static string BackupPasswordPrompt => Get(nameof(BackupPasswordPrompt));
+    public static string BackupPasswordHint => Get(nameof(BackupPasswordHint));
     public static string BackupPasswordConfirm => Get(nameof(BackupPasswordConfirm));
     public static string BackupPasswordMismatch => Get(nameof(BackupPasswordMismatch));
     public static string BackupUnencryptedWarning => Get(nameof(BackupUnencryptedWarning));
