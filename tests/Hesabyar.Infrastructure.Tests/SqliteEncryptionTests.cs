@@ -47,10 +47,13 @@ public sealed class SqliteEncryptionTests
                     DataSource = path, Mode = SqliteOpenMode.ReadOnly, Pooling = false
                 }.ToString(), "incorrect-password");
             await using var incorrect = new SqliteConnection(wrongPassword);
-            await incorrect.OpenAsync();
-            await using var invalidCommand = incorrect.CreateCommand();
-            invalidCommand.CommandText = "SELECT Value FROM SecretData;";
-            await Assert.ThrowsAsync<SqliteException>(() => invalidCommand.ExecuteScalarAsync());
+            await Assert.ThrowsAsync<SqliteException>(async () =>
+            {
+                await incorrect.OpenAsync();
+                await using var invalidCommand = incorrect.CreateCommand();
+                invalidCommand.CommandText = "SELECT Value FROM SecretData;";
+                await invalidCommand.ExecuteScalarAsync();
+            });
         }
         finally
         {
