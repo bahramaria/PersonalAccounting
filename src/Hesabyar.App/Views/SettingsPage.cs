@@ -91,9 +91,9 @@ public sealed class SettingsPage : ContentPage
     private async void OnCalendarClicked(object? sender, EventArgs e)
     {
         var isPersian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fa";
-        var persianLabel = isPersian ? "شمسی" : "Persian (Jalali)";
-        var gregorianLabel = isPersian ? "میلادی" : "Gregorian";
-        var selected = await DisplayActionSheetAsync(isPersian ? "تقویم" : "Calendar",
+        var persianLabel = AppStrings.SettingsCalendarPersian;
+        var gregorianLabel = AppStrings.SettingsCalendarGregorian;
+        var selected = await DisplayActionSheetAsync(AppStrings.SettingsCalendar,
             AppStrings.Cancel, null, persianLabel, gregorianLabel);
         if (selected == persianLabel)
             Preferences.Set("app.calendar", "persian");
@@ -121,8 +121,8 @@ public sealed class SettingsPage : ContentPage
         _themeButton.Text = $"{AppStrings.SettingsTheme}: {theme}";
         var isPersian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fa";
         var calendar = _calendar.CurrentCalendar == CalendarKind.Gregorian
-            ? (isPersian ? "میلادی" : "Gregorian")
-            : (isPersian ? "شمسی" : "Persian (Jalali)");
-        _calendarButton.Text = $"{(isPersian ? "تقویم" : "Calendar")}: {calendar}";
+            ? AppStrings.SettingsCalendarGregorian
+            : AppStrings.SettingsCalendarPersian;
+        _calendarButton.Text = $"{AppStrings.SettingsCalendar}: {calendar}";
     }
 }

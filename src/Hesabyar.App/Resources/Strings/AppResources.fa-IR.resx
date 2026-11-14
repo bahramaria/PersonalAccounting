@@ -110,4 +110,7 @@
   <data name="SettingsThemeSystem" xml:space="preserve"><value>مطابق تنظیمات دستگاه</value></data>
   <data name="SettingsThemeLight" xml:space="preserve"><value>روشن</value></data>
   <data name="SettingsThemeDark" xml:space="preserve"><value>تیره</value></data>
+  <data name="SettingsCalendar" xml:space="preserve"><value>تقویم</value></data>
+  <data name="SettingsCalendarPersian" xml:space="preserve"><value>شمسی</value></data>
+  <data name="SettingsCalendarGregorian" xml:space="preserve"><value>میلادی</value></data>
 </root>

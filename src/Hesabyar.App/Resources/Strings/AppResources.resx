@@ -110,4 +110,7 @@
   <data name="SettingsThemeSystem" xml:space="preserve"><value>System default</value></data>
   <data name="SettingsThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="SettingsThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="SettingsCalendar" xml:space="preserve"><value>Calendar</value></data>
+  <data name="SettingsCalendarPersian" xml:space="preserve"><value>Persian (Jalali)</value></data>
+  <data name="SettingsCalendarGregorian" xml:space="preserve"><value>Gregorian</value></data>
 </root>

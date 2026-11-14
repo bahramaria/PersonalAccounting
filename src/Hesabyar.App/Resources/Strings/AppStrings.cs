@@ -120,6 +120,9 @@ public static class AppStrings
     public static string SettingsThemeSystem => Get(nameof(SettingsThemeSystem));
     public static string SettingsThemeLight => Get(nameof(SettingsThemeLight));
     public static string SettingsThemeDark => Get(nameof(SettingsThemeDark));
+    public static string SettingsCalendar => Get(nameof(SettingsCalendar));
+    public static string SettingsCalendarPersian => Get(nameof(SettingsCalendarPersian));
+    public static string SettingsCalendarGregorian => Get(nameof(SettingsCalendarGregorian));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
