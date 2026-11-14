@@ -203,9 +203,20 @@ public sealed class BackupService(
                 throw;
             }
 
-            if (File.Exists(rollbackDatabasePath)) File.Delete(rollbackDatabasePath);
-            foreach (var sidecar in rollbackSidecars)
-                if (File.Exists(sidecar.RollbackPath)) File.Delete(sidecar.RollbackPath);
+            try
+            {
+                if (File.Exists(rollbackDatabasePath)) File.Delete(rollbackDatabasePath);
+                foreach (var sidecar in rollbackSidecars)
+                    if (File.Exists(sidecar.RollbackPath)) File.Delete(sidecar.RollbackPath);
+            }
+            catch (IOException)
+            {
+                // A completed restore remains successful if temporary rollback cleanup is deferred.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // A completed restore remains successful if temporary rollback cleanup is deferred.
+            }
 
             return safetyBackup;
         }

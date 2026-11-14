@@ -300,11 +300,12 @@ public sealed class SettingsPage : ContentPage
     }
 
     private Task<string?> PromptPinAsync(string prompt) =>
-        PromptSecretAsync(prompt, 8, Keyboard.Numeric);
+        PromptSecretAsync(prompt, 8, Keyboard.Numeric, string.Empty);
 
-    private async Task<string?> PromptSecretAsync(string prompt, int maxLength, Keyboard? keyboard = null)
+    private async Task<string?> PromptSecretAsync(
+        string prompt, int maxLength, Keyboard? keyboard = null, string? hint = null)
     {
-        var promptPage = new SecretPromptPage(prompt, AppStrings.BackupPasswordHint,
+        var promptPage = new SecretPromptPage(prompt, hint ?? AppStrings.BackupPasswordHint,
             AppStrings.Continue, AppStrings.Cancel, maxLength, keyboard);
         await Navigation.PushModalAsync(promptPage);
         return await promptPage.Result;
@@ -393,7 +394,7 @@ public sealed class SettingsPage : ContentPage
                     Children =
                     {
                         new Label { Text = prompt, FontAttributes = FontAttributes.Bold },
-                        new Label { Text = hint },
+                        string.IsNullOrWhiteSpace(hint) ? new ContentView() : new Label { Text = hint },
                         _entry,
                         new HorizontalStackLayout
                         {
