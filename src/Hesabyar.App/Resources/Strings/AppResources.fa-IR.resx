@@ -101,4 +101,13 @@
   <data name="DashboardRecentTransactions" xml:space="preserve"><value>تراکنش‌های اخیر</value></data>
   <data name="DashboardQuickAdd" xml:space="preserve"><value>ثبت سریع تراکنش</value></data>
   <data name="DashboardLoadFailed" xml:space="preserve"><value>دریافت اطلاعات داشبورد ناموفق بود.</value></data>
+  <data name="SettingsTab" xml:space="preserve"><value>تنظیمات</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>تنظیمات برنامه</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>زبان برنامه</value></data>
+  <data name="SettingsLanguagePersian" xml:space="preserve"><value>فارسی</value></data>
+  <data name="SettingsLanguageEnglish" xml:space="preserve"><value>انگلیسی</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>ظاهر برنامه</value></data>
+  <data name="SettingsThemeSystem" xml:space="preserve"><value>مطابق تنظیمات دستگاه</value></data>
+  <data name="SettingsThemeLight" xml:space="preserve"><value>روشن</value></data>
+  <data name="SettingsThemeDark" xml:space="preserve"><value>تیره</value></data>
 </root>

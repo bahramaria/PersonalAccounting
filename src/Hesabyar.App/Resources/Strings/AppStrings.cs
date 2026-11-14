@@ -111,5 +111,15 @@ public static class AppStrings
     public static string TransactionSortOldest => Get(nameof(TransactionSortOldest));
     public static string TransactionClearFilters => Get(nameof(TransactionClearFilters));
 
+    public static string SettingsTab => Get(nameof(SettingsTab));
+    public static string SettingsHeading => Get(nameof(SettingsHeading));
+    public static string SettingsLanguage => Get(nameof(SettingsLanguage));
+    public static string SettingsLanguagePersian => Get(nameof(SettingsLanguagePersian));
+    public static string SettingsLanguageEnglish => Get(nameof(SettingsLanguageEnglish));
+    public static string SettingsTheme => Get(nameof(SettingsTheme));
+    public static string SettingsThemeSystem => Get(nameof(SettingsThemeSystem));
+    public static string SettingsThemeLight => Get(nameof(SettingsThemeLight));
+    public static string SettingsThemeDark => Get(nameof(SettingsThemeDark));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App;
 
@@ -10,6 +11,12 @@ public partial class App : Microsoft.Maui.Controls.Application
     {
         InitializeComponent();
         _services = services;
+        UserAppTheme = Preferences.Get("app.theme", "system") switch
+        {
+            "light" => AppTheme.Light,
+            "dark" => AppTheme.Dark,
+            _ => AppTheme.Unspecified
+        };
     }
 
     protected override Window CreateWindow(IActivationState? activationState) =>

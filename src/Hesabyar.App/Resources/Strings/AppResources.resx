@@ -101,4 +101,13 @@
   <data name="DashboardRecentTransactions" xml:space="preserve"><value>Recent transactions</value></data>
   <data name="DashboardQuickAdd" xml:space="preserve"><value>Quick add transaction</value></data>
   <data name="DashboardLoadFailed" xml:space="preserve"><value>Dashboard data could not be loaded.</value></data>
+  <data name="SettingsTab" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="SettingsLanguagePersian" xml:space="preserve"><value>Persian</value></data>
+  <data name="SettingsLanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>Appearance</value></data>
+  <data name="SettingsThemeSystem" xml:space="preserve"><value>System default</value></data>
+  <data name="SettingsThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="SettingsThemeDark" xml:space="preserve"><value>Dark</value></data>
 </root>
