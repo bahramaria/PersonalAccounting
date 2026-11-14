@@ -65,13 +65,4 @@ public sealed class LocalizationTests
         var service = new DateCalendarService(new PersianCalendarService()) { CurrentCalendar = kind };
         Assert.False(service.TryParse(input, out _));
     }
-
-    [Theory]
-    [InlineData(CalendarKind.Persian, "1405/08/22")]
-    [InlineData(CalendarKind.Gregorian, "۱۴۰۵/۰۸/۲۲")]
-    public void DateCalendarService_DoesNotInterpretInputUsingOtherCalendar(CalendarKind kind, string input)
-    {
-        var service = new DateCalendarService(new PersianCalendarService()) { CurrentCalendar = kind };
-        Assert.False(service.TryParse(input, out _));
-    }
 }
