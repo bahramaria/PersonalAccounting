@@ -233,11 +233,7 @@ public sealed class AccountsViewModel : ObservableObject
 
     private static string FormatBalance(long balanceMinor)
     {
-        var formattedAmount = balanceMinor.ToString(
-            "N0",
-            System.Globalization.CultureInfo.CurrentCulture);
-
-        return $"{BidiTextFormatter.IsolateLeftToRight(formattedAmount)} {AppStrings.CurrencyRial}";
+        return MoneyDisplayService.Format(balanceMinor);
     }
 
     private static string GetKindName(AccountKind kind) => kind switch

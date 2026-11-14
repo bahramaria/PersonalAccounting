@@ -5,6 +5,7 @@ using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
+using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.Views;
 
@@ -225,8 +226,19 @@ public partial class TransactionsPage : ContentPage
         var secondChoices = kind == TransactionKind.Transfer
             ? _viewModel.Accounts.Where(x => x.Type == AccountType.Asset && x.Id != accountId).ToArray()
             : kind == TransactionKind.Expense ? _viewModel.ExpenseCategories : _viewModel.IncomeCategories;
-        var secondId = await SelectAsync(kind == TransactionKind.Transfer ? AppStrings.TransactionDestinationPrompt : AppStrings.TransactionCategoryPrompt,
-            secondChoices, existing?.SecondaryId);
+        var preferredCategory = kind switch
+        {
+            TransactionKind.Expense => Preferences.Get("transactions.last-expense-category", string.Empty),
+            TransactionKind.Income => Preferences.Get("transactions.last-income-category", string.Empty),
+            _ => string.Empty
+        };
+        var preferredCategoryId = Guid.TryParse(preferredCategory, out var parsedCategoryId)
+            ? parsedCategoryId
+            : (Guid?)null;
+        var secondId = await SelectAsync(
+            kind == TransactionKind.Transfer ? AppStrings.TransactionDestinationPrompt : AppStrings.TransactionCategoryPrompt,
+            secondChoices,
+            existing?.SecondaryId ?? preferredCategoryId);
         if (secondId is null) return;
 
         var defaultGregorian = existing?.BusinessDate ?? DateOnly.FromDateTime(DateTime.Today);

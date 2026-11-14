@@ -137,6 +137,9 @@ public static class AppStrings
     public static string SettingsCalendar => Get(nameof(SettingsCalendar));
     public static string SettingsCalendarPersian => Get(nameof(SettingsCalendarPersian));
     public static string SettingsCalendarGregorian => Get(nameof(SettingsCalendarGregorian));
+    public static string SettingsAmountsHidden => Get(nameof(SettingsAmountsHidden));
+    public static string SettingsAmountsVisible => Get(nameof(SettingsAmountsVisible));
+    public static string AmountHidden => Get(nameof(AmountHidden));
     public static string PinSettings => Get(nameof(PinSettings));
     public static string PinManage => Get(nameof(PinManage));
     public static string PinEnable => Get(nameof(PinEnable));

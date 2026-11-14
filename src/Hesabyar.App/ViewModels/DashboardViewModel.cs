@@ -79,8 +79,7 @@ public sealed class DashboardViewModel(
         }
     }
 
-    private static string FormatMoney(decimal amount) =>
-        $"{BidiTextFormatter.IsolateLeftToRight(amount.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))} {AppStrings.CurrencyRial}";
+    private static string FormatMoney(decimal amount) => MoneyDisplayService.Format(amount);
 }
 
 public sealed record DashboardTransactionItem(string Kind, string Description, string AmountText, string DateText);

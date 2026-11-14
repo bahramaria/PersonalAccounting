@@ -175,4 +175,8 @@
   <data name="OnboardingPinInvalid" xml:space="preserve"><value>رمز باید ۴ تا ۸ رقم باشد و دو بار یکسان وارد شود. حساب ساخته شد؛ می‌توانید قفل را بعداً از تنظیمات فعال کنید.</value></data>
   <data name="OnboardingSmsNote" xml:space="preserve"><value>ورود خودکار از پیامک بانکی در مرحله بعد اضافه می‌شود؛ برای شروع به آن نیازی ندارید.</value></data>
   <data name="OnboardingDefaultAccountName" xml:space="preserve"><value>کیف پول نقدی</value></data>
+
+  <data name="SettingsAmountsHidden" xml:space="preserve"><value>نمایش مبالغ: مخفی</value></data>
+  <data name="SettingsAmountsVisible" xml:space="preserve"><value>نمایش مبالغ: فعال</value></data>
+  <data name="AmountHidden" xml:space="preserve"><value>••••••</value></data>
 </root>
