@@ -169,6 +169,7 @@ public static class AppStrings
     public static string BackupSummaryFormat => Get(nameof(BackupSummaryFormat));
     public static string BackupEncrypted => Get(nameof(BackupEncrypted));
     public static string BackupNotEncrypted => Get(nameof(BackupNotEncrypted));
+    public static string BackupDeviceBound => Get(nameof(BackupDeviceBound));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

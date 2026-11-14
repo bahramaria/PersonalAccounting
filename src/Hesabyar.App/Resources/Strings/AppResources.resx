@@ -147,7 +147,7 @@
   <data name="BackupPasswordPrompt" xml:space="preserve"><value>Backup password (leave empty for an unencrypted file)</value></data>
   <data name="BackupPasswordConfirm" xml:space="preserve"><value>Confirm backup password</value></data>
   <data name="BackupPasswordMismatch" xml:space="preserve"><value>The passwords do not match.</value></data>
-  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>This backup will not be encrypted. Anyone with the file may read its financial data. Continue?</value></data>
+  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>Without a password, the database remains encrypted with this device's key. This backup can only be restored on this device. Use a password to transfer it to another device. Continue?</value></data>
   <data name="BackupCreated" xml:space="preserve"><value>Backup created. You can now share or save the file.</value></data>
   <data name="BackupRestorePreview" xml:space="preserve"><value>Backup details</value></data>
   <data name="BackupRestoreConfirmation" xml:space="preserve"><value>Restoring replaces the current database. A safety backup of the current data will be created first. Continue?</value></data>
@@ -159,4 +159,5 @@
   <data name="BackupSummaryFormat" xml:space="preserve"><value>Created: {0}&#10;App version: {1}&#10;Database schema: {2}&#10;Database size: {3} MB&#10;Encryption: {4}</value></data>
   <data name="BackupEncrypted" xml:space="preserve"><value>Encrypted</value></data>
   <data name="BackupNotEncrypted" xml:space="preserve"><value>Not encrypted</value></data>
+  <data name="BackupDeviceBound" xml:space="preserve"><value>Device-bound (no password)</value></data>
 </root>

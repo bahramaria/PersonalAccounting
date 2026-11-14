@@ -250,7 +250,8 @@ public sealed class SettingsPage : ContentPage
                 summary.AppVersion,
                 summary.SchemaVersion,
                 (summary.DatabaseSizeBytes / 1024d / 1024d).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
-                summary.IsEncrypted ? AppStrings.BackupEncrypted : AppStrings.BackupNotEncrypted);
+                summary.IsEncrypted ? AppStrings.BackupEncrypted :
+                summary.IsDeviceBound ? AppStrings.BackupDeviceBound : AppStrings.BackupNotEncrypted);
             if (!await DisplayAlertAsync(AppStrings.BackupRestorePreview, details, AppStrings.Continue, AppStrings.Cancel))
                 return;
             if (!await DisplayAlertAsync(AppStrings.BackupRestore, AppStrings.BackupRestoreConfirmation,

@@ -147,7 +147,7 @@
   <data name="BackupPasswordPrompt" xml:space="preserve"><value>گذرواژه بکاپ (برای فایل بدون رمز خالی بگذارید)</value></data>
   <data name="BackupPasswordConfirm" xml:space="preserve"><value>تکرار گذرواژه بکاپ</value></data>
   <data name="BackupPasswordMismatch" xml:space="preserve"><value>گذرواژه‌ها یکسان نیستند.</value></data>
-  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>این نسخه پشتیبان رمزنگاری نمی‌شود. هر شخصی که به فایل دسترسی داشته باشد می‌تواند اطلاعات مالی را بخواند. ادامه می‌دهید؟</value></data>
+  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>بدون گذرواژه، پایگاه داده همچنان با کلید همین دستگاه رمزنگاری می‌شود و نسخه پشتیبان فقط روی همین دستگاه قابل بازیابی است. برای انتقال به دستگاه دیگر، گذرواژه تعیین کنید. ادامه می‌دهید؟</value></data>
   <data name="BackupCreated" xml:space="preserve"><value>نسخه پشتیبان تهیه شد. اکنون می‌توانید آن را ذخیره یا به اشتراک بگذارید.</value></data>
   <data name="BackupRestorePreview" xml:space="preserve"><value>جزئیات نسخه پشتیبان</value></data>
   <data name="BackupRestoreConfirmation" xml:space="preserve"><value>بازیابی، پایگاه داده فعلی را جایگزین می‌کند. پیش از جایگزینی یک نسخه ایمنی از اطلاعات فعلی ساخته می‌شود. ادامه می‌دهید؟</value></data>
@@ -159,4 +159,5 @@
   <data name="BackupSummaryFormat" xml:space="preserve"><value>تاریخ تهیه: {0}&#10;نسخه برنامه: {1}&#10;نسخه ساختار داده: {2}&#10;حجم پایگاه داده: {3} مگابایت&#10;رمزنگاری: {4}</value></data>
   <data name="BackupEncrypted" xml:space="preserve"><value>رمزنگاری‌شده</value></data>
   <data name="BackupNotEncrypted" xml:space="preserve"><value>بدون رمزنگاری</value></data>
+  <data name="BackupDeviceBound" xml:space="preserve"><value>وابسته به همین دستگاه (بدون گذرواژه)</value></data>
 </root>
