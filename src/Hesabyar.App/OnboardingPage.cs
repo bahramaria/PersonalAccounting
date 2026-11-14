@@ -39,8 +39,8 @@ public sealed class OnboardingPage : ContentPage
         _numberNormalizer = numberNormalizer;
         Title = AppStrings.OnboardingTitle;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
-            ? Microsoft.Maui.Controls.FlowDirection.RightToLeft
-            : Microsoft.Maui.Controls.FlowDirection.LeftToRight;
+            ? Microsoft.Maui.FlowDirection.RightToLeft
+            : Microsoft.Maui.FlowDirection.LeftToRight;
 
         _accountType.ItemsSource =
         [
@@ -176,36 +176,83 @@ public sealed class OnboardingPage : ContentPage
 
     private async Task TryEnablePinAsync()
     {
-        var pin = await DisplayPromptAsync(
-            AppStrings.PinEnterNew,
-            AppStrings.PinEnterNew,
-            AppStrings.Continue,
-            AppStrings.Skip,
-            maxLength: 8,
-            keyboard: Keyboard.Numeric,
-            isPassword: true);
-        if (pin is null)
+        var prompt = new PinSetupPromptPage();
+        await Navigation.PushModalAsync(prompt);
+        var credentials = await prompt.Result;
+        if (credentials is null)
             return;
 
-        var confirmation = await DisplayPromptAsync(
-            AppStrings.PinConfirm,
-            AppStrings.PinConfirm,
-            AppStrings.Continue,
-            AppStrings.Skip,
-            maxLength: 8,
-            keyboard: Keyboard.Numeric,
-            isPassword: true);
-        if (confirmation is null)
-            return;
-
-        if (!PinHasher.IsValidPin(pin) ||
-            PinHasher.NormalizePin(pin) != PinHasher.NormalizePin(confirmation))
+        if (!PinHasher.IsValidPin(credentials.Value.Pin) ||
+            PinHasher.NormalizePin(credentials.Value.Pin) != PinHasher.NormalizePin(credentials.Value.Confirmation))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.OnboardingPinInvalid, AppStrings.Ok);
             return;
         }
 
-        await _appLock.SetPinAsync(pin);
+        await _appLock.SetPinAsync(credentials.Value.Pin);
     }
 
+    private sealed class PinSetupPromptPage : ContentPage
+    {
+        private readonly Entry _pin = new()
+        {
+            IsPassword = true,
+            MaxLength = 8,
+            Keyboard = Keyboard.Numeric
+        };
+        private readonly Entry _confirmation = new()
+        {
+            IsPassword = true,
+            MaxLength = 8,
+            Keyboard = Keyboard.Numeric
+        };
+        private readonly TaskCompletionSource<(string Pin, string Confirmation)?> _completion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<(string Pin, string Confirmation)?> Result => _completion.Task;
+
+        public PinSetupPromptPage()
+        {
+            Title = AppStrings.PinSettings;
+            var saveButton = new Button { Text = AppStrings.Continue };
+            var cancelButton = new Button { Text = AppStrings.Cancel };
+            saveButton.Clicked += async (_, _) =>
+            {
+                _completion.TrySetResult((_pin.Text ?? string.Empty, _confirmation.Text ?? string.Empty));
+                await Navigation.PopModalAsync();
+            };
+            cancelButton.Clicked += async (_, _) =>
+            {
+                _completion.TrySetResult(null);
+                await Navigation.PopModalAsync();
+            };
+
+            Content = new VerticalStackLayout
+            {
+                Padding = 24,
+                Spacing = 16,
+                VerticalOptions = LayoutOptions.Center,
+                Children =
+                {
+                    new Label { Text = AppStrings.PinEnterNew },
+                    _pin,
+                    new Label { Text = AppStrings.PinConfirm },
+                    _confirmation,
+                    new HorizontalStackLayout
+                    {
+                        Spacing = 12,
+                        Children = { saveButton, cancelButton }
+                    }
+                }
+            };
+        }
+
+        protected override void OnDisappearing()
+        {
+            _pin.Text = string.Empty;
+            _confirmation.Text = string.Empty;
+            _completion.TrySetResult(null);
+            base.OnDisappearing();
+        }
+    }
 }
