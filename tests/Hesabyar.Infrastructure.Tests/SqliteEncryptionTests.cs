@@ -104,6 +104,11 @@ public sealed class SqliteEncryptionTests
                 await export.ExecuteNonQueryAsync();
             }
 
+            var exportedHeader = new byte[16];
+            await using (var stream = File.OpenRead(exportedPath))
+                await stream.ReadExactlyAsync(exportedHeader);
+            Assert.True(exportedHeader.AsSpan().SequenceEqual("SQLite format 3\\0"u8));
+
             await using var verify = new SqliteConnection(new SqliteConnectionStringBuilder
             {
                 DataSource = exportedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
