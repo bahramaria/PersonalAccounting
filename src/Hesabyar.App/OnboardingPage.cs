@@ -42,13 +42,13 @@ public sealed class OnboardingPage : ContentPage
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
 
-        _accountType.ItemsSource =
-        [
+        _accountType.ItemsSource = new[]
+        {
             AppStrings.AccountKindCash,
             AppStrings.AccountKindBank,
             AppStrings.AccountKindCard,
             AppStrings.AccountKindWallet
-        ];
+        };
         _accountType.SelectedIndex = 0;
         _createButton.Clicked += OnCreateAccountClicked;
 
@@ -152,7 +152,7 @@ public sealed class OnboardingPage : ContentPage
                 AppStrings.Continue,
                 AppStrings.Skip);
 
-            var window = Application.Current?.Windows.FirstOrDefault();
+            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null)
                 throw new InvalidOperationException("The application window is not available.");
             var shell = _services.GetRequiredService<AppShell>();
