@@ -38,6 +38,8 @@ public sealed class BackupService(
         try
         {
             await CreateDatabaseSnapshotAsync(snapshotPath, cancellationToken);
+            if (new FileInfo(snapshotPath).Length > MaximumBackupSize)
+                throw new InvalidDataException("Database snapshot exceeds the maximum backup size.");
             var databaseBytes = await File.ReadAllBytesAsync(snapshotPath, cancellationToken);
             var schemaVersion = await GetSchemaVersionAsync(cancellationToken);
             var manifest = new BackupManifest(
@@ -84,6 +86,9 @@ public sealed class BackupService(
             }
 
             var headerBytes = JsonSerializer.SerializeToUtf8Bytes(header, JsonOptions);
+            var outputSize = (long)Magic.Length + sizeof(int) + headerBytes.Length + payload.Length;
+            if (outputSize > MaximumBackupSize)
+                throw new InvalidDataException("Created backup exceeds the maximum backup size.");
             var temporaryOutputPath = destinationPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
@@ -144,13 +149,64 @@ public sealed class BackupService(
             $"pre-restore-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}.hbak");
         await CreateBackupAsync(safetyBackup, cancellationToken: cancellationToken);
 
-        var replacementPath = Path.Combine(directory, $".{Guid.NewGuid():N}.restore");
+        var restoreId = Guid.NewGuid().ToString("N");
+        var replacementPath = Path.Combine(directory, $".{restoreId}.restore");
+        var rollbackDatabasePath = Path.Combine(directory, $".{restoreId}.rollback");
+        var rollbackSidecars = new List<(string OriginalPath, string RollbackPath)>();
+        var databaseMovedToRollback = false;
         try
         {
             await File.WriteAllBytesAsync(replacementPath, databaseBytes, cancellationToken);
             SqliteConnection.ClearAllPools();
-            DeleteSqliteSidecars();
-            File.Move(replacementPath, databasePath, overwrite: true);
+
+            try
+            {
+                if (File.Exists(databasePath))
+                {
+                    File.Move(databasePath, rollbackDatabasePath);
+                    databaseMovedToRollback = true;
+                }
+
+                foreach (var suffix in new[] { "-wal", "-shm" })
+                {
+                    var sidecarPath = databasePath + suffix;
+                    if (!File.Exists(sidecarPath)) continue;
+                    var rollbackPath = rollbackDatabasePath + suffix;
+                    File.Move(sidecarPath, rollbackPath);
+                    rollbackSidecars.Add((sidecarPath, rollbackPath));
+                }
+
+                File.Move(replacementPath, databasePath);
+            }
+            catch (Exception restoreException)
+            {
+                try
+                {
+                    if (File.Exists(databasePath)) File.Delete(databasePath);
+
+                    foreach (var sidecar in rollbackSidecars.AsEnumerable().Reverse())
+                    {
+                        if (File.Exists(sidecar.RollbackPath))
+                            File.Move(sidecar.RollbackPath, sidecar.OriginalPath);
+                    }
+
+                    if (databaseMovedToRollback && File.Exists(rollbackDatabasePath))
+                        File.Move(rollbackDatabasePath, databasePath);
+                }
+                catch (Exception rollbackException)
+                {
+                    throw new AggregateException(
+                        "Database restore failed and the original database could not be fully reinstated. The safety backup is preserved at: " + safetyBackup,
+                        restoreException, rollbackException);
+                }
+
+                throw;
+            }
+
+            if (File.Exists(rollbackDatabasePath)) File.Delete(rollbackDatabasePath);
+            foreach (var sidecar in rollbackSidecars)
+                if (File.Exists(sidecar.RollbackPath)) File.Delete(sidecar.RollbackPath);
+
             return safetyBackup;
         }
         finally
@@ -360,15 +416,6 @@ public sealed class BackupService(
         var headerBytes = reader.ReadBytes(headerLength);
         var header = JsonSerializer.Deserialize<BackupEnvelopeHeader>(headerBytes, JsonOptions);
         return header?.Encrypted ?? throw new InvalidDataException("Backup header is invalid.");
-    }
-
-    private void DeleteSqliteSidecars()
-    {
-        foreach (var suffix in new[] { "-wal", "-shm" })
-        {
-            var path = databasePath + suffix;
-            if (File.Exists(path)) File.Delete(path);
-        }
     }
 
     private sealed record BackupManifest(

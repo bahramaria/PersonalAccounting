@@ -184,8 +184,7 @@ public sealed class SettingsPage : ContentPage
     {
         try
         {
-            var password = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordPrompt,
-                AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+            var password = await PromptSecretAsync(AppStrings.BackupPasswordPrompt, 128);
             if (password is null) return;
             if (password.Length > 0)
             {
@@ -194,8 +193,7 @@ public sealed class SettingsPage : ContentPage
                     await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.BackupFailed, AppStrings.Ok);
                     return;
                 }
-                var confirmation = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordConfirm,
-                    AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+                var confirmation = await PromptSecretAsync(AppStrings.BackupPasswordConfirm, 128);
                 if (confirmation is null) return;
                 if (!string.Equals(password, confirmation, StringComparison.Ordinal))
                 {
@@ -242,8 +240,7 @@ public sealed class SettingsPage : ContentPage
             await using (var destination = File.Create(temporaryPath))
                 await source.CopyToAsync(destination);
 
-            var password = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordPrompt,
-                AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+            var password = await PromptSecretAsync(AppStrings.BackupPasswordPrompt, 128);
             if (password is null) return;
 
             var summary = await _backupService.InspectBackupAsync(temporaryPath, password);
@@ -303,8 +300,15 @@ public sealed class SettingsPage : ContentPage
     }
 
     private Task<string?> PromptPinAsync(string prompt) =>
-        DisplayPromptAsync(AppStrings.PinSettings, prompt, AppStrings.Continue, AppStrings.Cancel,
-            maxLength: 8, keyboard: Keyboard.Numeric);
+        PromptSecretAsync(prompt, 8, Keyboard.Numeric);
+
+    private async Task<string?> PromptSecretAsync(string prompt, int maxLength, Keyboard? keyboard = null)
+    {
+        var promptPage = new SecretPromptPage(prompt, AppStrings.BackupPasswordHint,
+            AppStrings.Continue, AppStrings.Cancel, maxLength, keyboard);
+        await Navigation.PushModalAsync(promptPage);
+        return await promptPage.Result;
+    }
 
     private static string GetVerificationMessage(PinVerificationResult result) =>
         result.RetryAfter is { } retry
@@ -341,5 +345,71 @@ public sealed class SettingsPage : ContentPage
             300 => AppStrings.PinAutoLock5Minutes,
             _ => AppStrings.PinAutoLockImmediate
         }}";
+    }
+
+    private sealed class SecretPromptPage : ContentPage
+    {
+        private readonly Entry _entry;
+        private readonly TaskCompletionSource<string?> _completion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<string?> Result => _completion.Task;
+
+        public SecretPromptPage(string prompt, string hint, string confirmText, string cancelText,
+            int maxLength, Keyboard? keyboard)
+        {
+            Title = AppStrings.BackupHeading;
+            _entry = new Entry
+            {
+                IsPassword = true,
+                MaxLength = maxLength,
+                Keyboard = keyboard ?? Keyboard.Default,
+                HorizontalOptions = LayoutOptions.Fill
+            };
+
+            var confirmButton = new Button { Text = confirmText };
+            var cancelButton = new Button { Text = cancelText };
+            confirmButton.Clicked += async (_, _) =>
+            {
+                var value = _entry.Text ?? string.Empty;
+                _entry.Text = string.Empty;
+                _completion.TrySetResult(value);
+                await Navigation.PopModalAsync();
+            };
+            cancelButton.Clicked += async (_, _) =>
+            {
+                _entry.Text = string.Empty;
+                _completion.TrySetResult(null);
+                await Navigation.PopModalAsync();
+            };
+
+            Content = new ScrollView
+            {
+                Content = new VerticalStackLayout
+                {
+                    Padding = 24,
+                    Spacing = 16,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label { Text = prompt, FontAttributes = FontAttributes.Bold },
+                        new Label { Text = hint },
+                        _entry,
+                        new HorizontalStackLayout
+                        {
+                            Spacing = 12,
+                            Children = { confirmButton, cancelButton }
+                        }
+                    }
+                }
+            };
+        }
+
+        protected override void OnDisappearing()
+        {
+            _entry.Text = string.Empty;
+            _completion.TrySetResult(null);
+            base.OnDisappearing();
+        }
     }
 }

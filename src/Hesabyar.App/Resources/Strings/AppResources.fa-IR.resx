@@ -143,6 +143,7 @@
   <data name="BackupHeading" xml:space="preserve"><value>پشتیبان‌گیری و بازیابی</value></data>
   <data name="BackupCreate" xml:space="preserve"><value>تهیه نسخه پشتیبان</value></data>
   <data name="BackupRestore" xml:space="preserve"><value>بازیابی نسخه پشتیبان</value></data>
+  <data name="BackupPasswordHint" xml:space="preserve"><value>گذرواژه باید حداقل ۸ نویسه داشته باشد. آن را نگه دارید؛ امکان بازیابی گذرواژه وجود ندارد.</value></data>
   <data name="BackupPasswordPrompt" xml:space="preserve"><value>گذرواژه بکاپ (برای فایل بدون رمز خالی بگذارید)</value></data>
   <data name="BackupPasswordConfirm" xml:space="preserve"><value>تکرار گذرواژه بکاپ</value></data>
   <data name="BackupPasswordMismatch" xml:space="preserve"><value>گذرواژه‌ها یکسان نیستند.</value></data>

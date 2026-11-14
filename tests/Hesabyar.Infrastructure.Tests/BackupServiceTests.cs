@@ -39,8 +39,12 @@ public sealed class BackupServiceTests
                 db.Accounts.RemoveRange(db.Accounts);
                 await db.SaveChangesAsync();
             }
+            await File.WriteAllTextAsync(databasePath + "-wal", "stale WAL sidecar");
+            await File.WriteAllTextAsync(databasePath + "-shm", "stale SHM sidecar");
             var safetyBackup = await service.RestoreBackupAsync(backupPath, "correct horse battery");
             Assert.True(File.Exists(safetyBackup));
+            Assert.False(File.Exists(databasePath + "-wal"));
+            Assert.False(File.Exists(databasePath + "-shm"));
             await using (var db = factory.CreateDbContext())
                 Assert.Equal("Cash", await db.Accounts.Select(x => x.Name).SingleAsync());
         }
