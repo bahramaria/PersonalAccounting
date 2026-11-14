@@ -379,6 +379,18 @@ public sealed class AccountingServiceTests
         Assert.Single(await transactions.GetTransactionsAsync(
             fromDate: BusinessDate, accountId: bank.Value, categoryId: food.Value,
             minimumAmountMinor: 100_000, maximumAmountMinor: 100_000));
+        var transfer = await transactions.CreateTransferAsync(
+            new TransferRequest(BusinessDate, 25_000, bank.Value, wallet.Value, "Transfer"));
+        Assert.True(transfer.IsSuccess);
+        Assert.Equal(3, (await transactions.GetTransactionsAsync(fromDate: BusinessDate)).Count);
+        Assert.Equal(3, (await transactions.GetTransactionsAsync(accountId: bank.Value)).Count);
+        Assert.Equal(2, (await transactions.GetTransactionsAsync(categoryId: food.Value)).Count);
+        Assert.Equal(olderTravel.Value, (await transactions.GetTransactionsAsync(sortOrder: TransactionSortOrder.OldestFirst))[0].Id);
+        await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(
+            fromDate: BusinessDate, toDate: BusinessDate.AddDays(-1)));
+        await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(
+            minimumAmountMinor: 200_000, maximumAmountMinor: 100_000));
+        await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(minimumAmountMinor: -1));
     }
 
     private static AppDbContext CreateDatabase(SqliteConnection connection)

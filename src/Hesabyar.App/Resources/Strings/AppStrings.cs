@@ -100,6 +100,10 @@ public static class AppStrings
     public static string TransactionMaximumAmount => Get(nameof(TransactionMaximumAmount));
     public static string TransactionDateRangeInvalid => Get(nameof(TransactionDateRangeInvalid));
     public static string TransactionAmountRangeInvalid => Get(nameof(TransactionAmountRangeInvalid));
+    public static string TransactionSort => Get(nameof(TransactionSort));
+    public static string TransactionSortNewest => Get(nameof(TransactionSortNewest));
+    public static string TransactionSortOldest => Get(nameof(TransactionSortOldest));
+    public static string TransactionClearFilters => Get(nameof(TransactionClearFilters));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

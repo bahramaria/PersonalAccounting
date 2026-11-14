@@ -14,7 +14,11 @@
         </Grid>
         <SearchBar Grid.Row="1" Placeholder="{x:Static strings:AppStrings.TransactionSearchPlaceholder}"
                    SearchButtonPressed="OnSearchButtonPressed" />
-        <Button Grid.Row="2" Text="{x:Static strings:AppStrings.TransactionFilters}" Clicked="OnFiltersClicked" />
+        <HorizontalStackLayout Grid.Row="2" Spacing="8">
+            <Button Text="{x:Static strings:AppStrings.TransactionFilters}" Clicked="OnFiltersClicked" />
+            <Button Text="{x:Static strings:AppStrings.TransactionSort}" Clicked="OnSortClicked" />
+            <Button Text="{x:Static strings:AppStrings.TransactionClearFilters}" Clicked="OnClearFiltersClicked" />
+        </HorizontalStackLayout>
         <Label Grid.Row="3" Text="{Binding StatusMessage}" FontSize="13" />
         <CollectionView Grid.Row="4" ItemsSource="{Binding Transactions}" SelectionMode="Single"
                         SelectionChanged="OnTransactionSelectionChanged">

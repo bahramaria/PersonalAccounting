@@ -1,4 +1,5 @@
 using Hesabyar.App.Resources.Strings;
+using Hesabyar.Application.Transactions;
 using Hesabyar.App.ViewModels;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
@@ -18,6 +19,7 @@ public partial class TransactionsPage : ContentPage
     private Guid? _categoryFilterId;
     private long? _minimumAmountMinor;
     private long? _maximumAmountMinor;
+    private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
 
     public TransactionsPage(TransactionsViewModel viewModel, ILocalizationService localization, ICalendarService calendar)
     {
@@ -92,9 +94,31 @@ public partial class TransactionsPage : ContentPage
         await ReloadAsync();
     }
 
+    private async void OnSortClicked(object? sender, EventArgs e)
+    {
+        var selected = await DisplayActionSheetAsync(AppStrings.TransactionSort, AppStrings.Cancel, null,
+            AppStrings.TransactionSortNewest, AppStrings.TransactionSortOldest);
+        if (selected == AppStrings.TransactionSortNewest) _sortOrder = TransactionSortOrder.NewestFirst;
+        else if (selected == AppStrings.TransactionSortOldest) _sortOrder = TransactionSortOrder.OldestFirst;
+        else return;
+        await ReloadAsync();
+    }
+
+    private async void OnClearFiltersClicked(object? sender, EventArgs e)
+    {
+        _fromDate = null;
+        _toDate = null;
+        _accountFilterId = null;
+        _categoryFilterId = null;
+        _minimumAmountMinor = null;
+        _maximumAmountMinor = null;
+        _searchText = null;
+        await ReloadAsync();
+    }
+
     private Task ReloadAsync() => _viewModel.LoadAsync(
         _searchText, _fromDate, _toDate, _accountFilterId, _categoryFilterId,
-        _minimumAmountMinor, _maximumAmountMinor);
+        _minimumAmountMinor, _maximumAmountMinor, _sortOrder);
 
     private string? FormatPersianDate(DateOnly? date)
     {
@@ -146,13 +170,18 @@ public partial class TransactionsPage : ContentPage
         {
             if (!await _viewModel.DuplicateAsync(item.Id))
                 await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+            else await ReloadAsync();
         }
         else if (action == AppStrings.TransactionDelete)
         {
             var confirmed = await DisplayAlertAsync(AppStrings.TransactionDelete, AppStrings.TransactionDeleteConfirmation,
                 AppStrings.TransactionDelete, AppStrings.Cancel);
-            if (confirmed && !await _viewModel.DeleteAsync(item.Id))
-                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+            if (confirmed)
+            {
+                if (!await _viewModel.DeleteAsync(item.Id))
+                    await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+                else await ReloadAsync();
+            }
         }
     }
 
@@ -213,6 +242,7 @@ public partial class TransactionsPage : ContentPage
             AppStrings.Save, AppStrings.Skip, initialValue: existing?.Description, maxLength: 500);
         if (!await _viewModel.SaveAsync(existing?.Id, kind.Value, date, amount, accountId.Value, secondId, description))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        else await ReloadAsync();
     }
 
     private async Task<Guid?> SelectAsync(string title, IEnumerable<TransactionChoice> choices, Guid? selectedId)

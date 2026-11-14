@@ -29,6 +29,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICa
         Guid? categoryId = null,
         long? minimumAmountMinor = null,
         long? maximumAmountMinor = null,
+        TransactionSortOrder sortOrder = TransactionSortOrder.NewestFirst,
         CancellationToken cancellationToken = default)
     {
         if (IsBusy) return;
@@ -54,7 +55,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, ICa
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
 
             var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
-                .GetTransactionsAsync(search, fromDate, toDate, accountId, categoryId, minimumAmountMinor, maximumAmountMinor, cancellationToken);
+                .GetTransactionsAsync(search, fromDate, toDate, accountId, categoryId, minimumAmountMinor, maximumAmountMinor, sortOrder, cancellationToken);
             Transactions.Clear();
             foreach (var item in snapshots)
             {

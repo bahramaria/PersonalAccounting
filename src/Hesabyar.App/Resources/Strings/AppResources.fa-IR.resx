@@ -91,4 +91,8 @@
   <data name="TransactionMaximumAmount" xml:space="preserve"><value>حداکثر مبلغ به ریال (خالی = بدون محدودیت)</value></data>
   <data name="TransactionDateRangeInvalid" xml:space="preserve"><value>تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.</value></data>
   <data name="TransactionAmountRangeInvalid" xml:space="preserve"><value>حداقل مبلغ نمی‌تواند از حداکثر مبلغ بیشتر باشد.</value></data>
+  <data name="TransactionSort" xml:space="preserve"><value>مرتب‌سازی</value></data>
+  <data name="TransactionSortNewest" xml:space="preserve"><value>جدیدترین ابتدا</value></data>
+  <data name="TransactionSortOldest" xml:space="preserve"><value>قدیمی‌ترین ابتدا</value></data>
+  <data name="TransactionClearFilters" xml:space="preserve"><value>پاک‌کردن فیلترها</value></data>
 </root>
