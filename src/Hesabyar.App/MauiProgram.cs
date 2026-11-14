@@ -30,9 +30,13 @@ public static class MauiProgram
         builder.Services.AddSingleton<AppLockService>();
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");
-        var databaseKeyProvider = new DeviceDatabaseKeyProvider(databasePath);
-        builder.Services.AddSingleton(databaseKeyProvider);
-        builder.Services.AddSingleton<IDatabaseKeyProvider>(databaseKeyProvider);
+        builder.Services.AddSingleton<IDeviceSecretStore, MauiSecureStorageAdapter>();
+        builder.Services.AddSingleton<DatabaseKeyProvider>(provider =>
+            new DatabaseKeyProvider(databasePath, provider.GetRequiredService<IDeviceSecretStore>()));
+        builder.Services.AddSingleton<IDatabaseKeyProvider>(provider =>
+            provider.GetRequiredService<DatabaseKeyProvider>());
+        builder.Services.AddSingleton<IDatabaseKeyInitializer>(provider =>
+            provider.GetRequiredService<DatabaseKeyProvider>());
         var connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = databasePath, ForeignKeys = true, Pooling = true
