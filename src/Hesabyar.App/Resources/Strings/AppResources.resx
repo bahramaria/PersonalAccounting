@@ -113,4 +113,31 @@
   <data name="SettingsCalendar" xml:space="preserve"><value>Calendar</value></data>
   <data name="SettingsCalendarPersian" xml:space="preserve"><value>Persian (Jalali)</value></data>
   <data name="SettingsCalendarGregorian" xml:space="preserve"><value>Gregorian</value></data>
+  <data name="PinSettings" xml:space="preserve"><value>App lock</value></data>
+  <data name="PinManage" xml:space="preserve"><value>Manage PIN</value></data>
+  <data name="PinEnable" xml:space="preserve"><value>Enable PIN</value></data>
+  <data name="PinChange" xml:space="preserve"><value>Change PIN</value></data>
+  <data name="PinDisable" xml:space="preserve"><value>Disable PIN</value></data>
+  <data name="PinSetupWarning" xml:space="preserve"><value>Experimental security feature</value></data>
+  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>If you forget this PIN, access cannot be recovered until backup and restore are available. There is no recovery bypass. Continue?</value></data>
+  <data name="PinEnterCurrent" xml:space="preserve"><value>Enter current PIN</value></data>
+  <data name="PinEnterNew" xml:space="preserve"><value>Enter a new 4–8 digit PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>Confirm the PIN</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>The PIN entries do not match.</value></data>
+  <data name="PinInvalid" xml:space="preserve"><value>The PIN is incorrect.</value></data>
+  <data name="PinInvalidFormat" xml:space="preserve"><value>PIN must contain 4 to 8 digits.</value></data>
+  <data name="PinEnabled" xml:space="preserve"><value>PIN lock enabled.</value></data>
+  <data name="PinChanged" xml:space="preserve"><value>PIN changed.</value></data>
+  <data name="PinDisabled" xml:space="preserve"><value>PIN lock disabled.</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>Unlock Hesabyar</value></data>
+  <data name="PinUnlockPrompt" xml:space="preserve"><value>Enter PIN</value></data>
+  <data name="PinUnlockDescription" xml:space="preserve"><value>Enter your PIN to access your accounts and transactions.</value></data>
+  <data name="PinUnlockButton" xml:space="preserve"><value>Unlock</value></data>
+  <data name="PinLockedForSeconds" xml:space="preserve"><value>Too many attempts. Try again in {0} seconds.</value></data>
+  <data name="PinAutoLock" xml:space="preserve"><value>Auto-lock</value></data>
+  <data name="PinAutoLockImmediate" xml:space="preserve"><value>Immediately</value></data>
+  <data name="PinAutoLock30Seconds" xml:space="preserve"><value>After 30 seconds</value></data>
+  <data name="PinAutoLock1Minute" xml:space="preserve"><value>After 1 minute</value></data>
+  <data name="PinAutoLock5Minutes" xml:space="preserve"><value>After 5 minutes</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
 </root>

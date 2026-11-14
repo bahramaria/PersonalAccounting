@@ -123,6 +123,33 @@ public static class AppStrings
     public static string SettingsCalendar => Get(nameof(SettingsCalendar));
     public static string SettingsCalendarPersian => Get(nameof(SettingsCalendarPersian));
     public static string SettingsCalendarGregorian => Get(nameof(SettingsCalendarGregorian));
+    public static string PinSettings => Get(nameof(PinSettings));
+    public static string PinManage => Get(nameof(PinManage));
+    public static string PinEnable => Get(nameof(PinEnable));
+    public static string PinChange => Get(nameof(PinChange));
+    public static string PinDisable => Get(nameof(PinDisable));
+    public static string PinSetupWarning => Get(nameof(PinSetupWarning));
+    public static string PinRecoveryUnavailable => Get(nameof(PinRecoveryUnavailable));
+    public static string PinEnterCurrent => Get(nameof(PinEnterCurrent));
+    public static string PinEnterNew => Get(nameof(PinEnterNew));
+    public static string PinConfirm => Get(nameof(PinConfirm));
+    public static string PinMismatch => Get(nameof(PinMismatch));
+    public static string PinInvalid => Get(nameof(PinInvalid));
+    public static string PinInvalidFormat => Get(nameof(PinInvalidFormat));
+    public static string PinEnabled => Get(nameof(PinEnabled));
+    public static string PinChanged => Get(nameof(PinChanged));
+    public static string PinDisabled => Get(nameof(PinDisabled));
+    public static string PinUnlockTitle => Get(nameof(PinUnlockTitle));
+    public static string PinUnlockPrompt => Get(nameof(PinUnlockPrompt));
+    public static string PinUnlockDescription => Get(nameof(PinUnlockDescription));
+    public static string PinUnlockButton => Get(nameof(PinUnlockButton));
+    public static string PinLockedForSeconds => Get(nameof(PinLockedForSeconds));
+    public static string PinAutoLock => Get(nameof(PinAutoLock));
+    public static string PinAutoLockImmediate => Get(nameof(PinAutoLockImmediate));
+    public static string PinAutoLock30Seconds => Get(nameof(PinAutoLock30Seconds));
+    public static string PinAutoLock1Minute => Get(nameof(PinAutoLock1Minute));
+    public static string PinAutoLock5Minutes => Get(nameof(PinAutoLock5Minutes));
+    public static string Continue => Get(nameof(Continue));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

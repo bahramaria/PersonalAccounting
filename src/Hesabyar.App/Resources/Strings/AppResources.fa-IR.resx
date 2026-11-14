@@ -113,4 +113,31 @@
   <data name="SettingsCalendar" xml:space="preserve"><value>تقویم</value></data>
   <data name="SettingsCalendarPersian" xml:space="preserve"><value>شمسی</value></data>
   <data name="SettingsCalendarGregorian" xml:space="preserve"><value>میلادی</value></data>
+  <data name="PinSettings" xml:space="preserve"><value>قفل برنامه</value></data>
+  <data name="PinManage" xml:space="preserve"><value>مدیریت رمز</value></data>
+  <data name="PinEnable" xml:space="preserve"><value>فعال‌سازی رمز</value></data>
+  <data name="PinChange" xml:space="preserve"><value>تغییر رمز</value></data>
+  <data name="PinDisable" xml:space="preserve"><value>غیرفعال‌سازی رمز</value></data>
+  <data name="PinSetupWarning" xml:space="preserve"><value>قابلیت امنیتی آزمایشی</value></data>
+  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>اگر این رمز را فراموش کنید، تا زمان آماده‌شدن قابلیت پشتیبان‌گیری و بازیابی، دسترسی قابل بازگردانی نیست. هیچ راه عبوری از رمز وجود ندارد. ادامه می‌دهید؟</value></data>
+  <data name="PinEnterCurrent" xml:space="preserve"><value>رمز فعلی را وارد کنید</value></data>
+  <data name="PinEnterNew" xml:space="preserve"><value>رمز جدید ۴ تا ۸ رقمی را وارد کنید</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>رمز را دوباره وارد کنید</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>دو رمز واردشده یکسان نیستند.</value></data>
+  <data name="PinInvalid" xml:space="preserve"><value>رمز واردشده صحیح نیست.</value></data>
+  <data name="PinInvalidFormat" xml:space="preserve"><value>رمز باید شامل ۴ تا ۸ رقم باشد.</value></data>
+  <data name="PinEnabled" xml:space="preserve"><value>قفل رمز فعال است.</value></data>
+  <data name="PinChanged" xml:space="preserve"><value>رمز تغییر کرد.</value></data>
+  <data name="PinDisabled" xml:space="preserve"><value>قفل رمز غیرفعال است.</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>بازکردن قفل حسابیار</value></data>
+  <data name="PinUnlockPrompt" xml:space="preserve"><value>رمز را وارد کنید</value></data>
+  <data name="PinUnlockDescription" xml:space="preserve"><value>برای دسترسی به حساب‌ها و تراکنش‌ها، رمز را وارد کنید.</value></data>
+  <data name="PinUnlockButton" xml:space="preserve"><value>بازکردن قفل</value></data>
+  <data name="PinLockedForSeconds" xml:space="preserve"><value>تعداد تلاش‌ها بیش از حد مجاز است. {0} ثانیه دیگر تلاش کنید.</value></data>
+  <data name="PinAutoLock" xml:space="preserve"><value>قفل خودکار</value></data>
+  <data name="PinAutoLockImmediate" xml:space="preserve"><value>بلافاصله</value></data>
+  <data name="PinAutoLock30Seconds" xml:space="preserve"><value>پس از ۳۰ ثانیه</value></data>
+  <data name="PinAutoLock1Minute" xml:space="preserve"><value>پس از ۱ دقیقه</value></data>
+  <data name="PinAutoLock5Minutes" xml:space="preserve"><value>پس از ۵ دقیقه</value></data>
+  <data name="Continue" xml:space="preserve"><value>ادامه</value></data>
 </root>
