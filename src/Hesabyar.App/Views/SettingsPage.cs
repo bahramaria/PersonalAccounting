@@ -12,18 +12,23 @@ public sealed class SettingsPage : ContentPage
     private readonly IServiceProvider _services;
     private readonly Button _languageButton;
     private readonly Button _themeButton;
+    private readonly Button _calendarButton;
+    private readonly IDateCalendarService _calendar;
 
-    public SettingsPage(IServiceProvider services, ILocalizationService localization)
+    public SettingsPage(IServiceProvider services, ILocalizationService localization, IDateCalendarService calendar)
     {
         _services = services;
+        _calendar = calendar;
         Title = AppStrings.SettingsHeading;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
             : Microsoft.Maui.FlowDirection.LeftToRight;
         _languageButton = new Button { HorizontalOptions = LayoutOptions.Fill };
         _themeButton = new Button { HorizontalOptions = LayoutOptions.Fill };
+        _calendarButton = new Button { HorizontalOptions = LayoutOptions.Fill };
         _languageButton.Clicked += OnLanguageClicked;
         _themeButton.Clicked += OnThemeClicked;
+        _calendarButton.Clicked += OnCalendarClicked;
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
@@ -34,7 +39,8 @@ public sealed class SettingsPage : ContentPage
                 {
                     new Label { Text = AppStrings.SettingsHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
                     _languageButton,
-                    _themeButton
+                    _themeButton,
+                    _calendarButton
                 }
             }
         };
@@ -82,6 +88,25 @@ public sealed class SettingsPage : ContentPage
         RefreshLabels();
     }
 
+    private async void OnCalendarClicked(object? sender, EventArgs e)
+    {
+        var isPersian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fa";
+        var persianLabel = isPersian ? "شمسی" : "Persian (Jalali)";
+        var gregorianLabel = isPersian ? "میلادی" : "Gregorian";
+        var selected = await DisplayActionSheetAsync(isPersian ? "تقویم" : "Calendar",
+            AppStrings.Cancel, null, persianLabel, gregorianLabel);
+        if (selected == persianLabel)
+            Preferences.Set("app.calendar", "persian");
+        else if (selected == gregorianLabel)
+            Preferences.Set("app.calendar", "gregorian");
+        else
+            return;
+
+        _calendar.CurrentCalendar = Preferences.Get("app.calendar", "persian") == "gregorian"
+            ? CalendarKind.Gregorian : CalendarKind.Persian;
+        RefreshLabels();
+    }
+
     private void RefreshLabels()
     {
         var language = Preferences.Get("app.language", "fa-IR") == "en-US"
@@ -94,5 +119,10 @@ public sealed class SettingsPage : ContentPage
         };
         _languageButton.Text = $"{AppStrings.SettingsLanguage}: {language}";
         _themeButton.Text = $"{AppStrings.SettingsTheme}: {theme}";
+        var isPersian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fa";
+        var calendar = _calendar.CurrentCalendar == CalendarKind.Gregorian
+            ? (isPersian ? "میلادی" : "Gregorian")
+            : (isPersian ? "شمسی" : "Persian (Jalali)");
+        _calendarButton.Text = $"{(isPersian ? "تقویم" : "Calendar")}: {calendar}";
     }
 }
