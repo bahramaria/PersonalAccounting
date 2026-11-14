@@ -155,11 +155,12 @@ public sealed class OnboardingPage : ContentPage
             var window = Application.Current?.Windows.FirstOrDefault();
             if (window is null)
                 throw new InvalidOperationException("The application window is not available.");
-            window.Page = _services.GetRequiredService<AppShell>();
+            var shell = _services.GetRequiredService<AppShell>();
+            window.Page = shell;
             if (startTransaction)
             {
-                await Shell.Current.GoToAsync("//transactions");
-                if (Shell.Current.CurrentPage is TransactionsPage page)
+                await shell.GoToAsync("//transactions");
+                if (shell.CurrentPage is TransactionsPage page)
                     await page.OpenQuickAddAsync();
             }
         }
