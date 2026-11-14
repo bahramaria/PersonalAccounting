@@ -13,15 +13,17 @@ public partial class StartupPage : ContentPage
     private readonly DatabaseInitializer _databaseInitializer;
     private readonly IServiceProvider _services;
     private readonly AppLockService _appLock;
+    private readonly BackupService _backupService;
     private bool _isInitializing;
 
     public StartupPage(DatabaseInitializer databaseInitializer, IServiceProvider services,
-        ILocalizationService localization, AppLockService appLock)
+        ILocalizationService localization, AppLockService appLock, BackupService backupService)
     {
         InitializeComponent();
         _databaseInitializer = databaseInitializer;
         _services = services;
         _appLock = appLock;
+        _backupService = backupService;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft : Microsoft.Maui.FlowDirection.LeftToRight;
         StatusLabel.Text = AppStrings.StartupInitializing;
@@ -48,6 +50,15 @@ public partial class StartupPage : ContentPage
         {
             var backupDirectory = Path.Combine(FileSystem.AppDataDirectory, "migration-backups");
             await _databaseInitializer.InitializeAsync(backupDirectory);
+            try
+            {
+                await _backupService.CreateDailyAutomaticBackupAsync(
+                    Path.Combine(FileSystem.AppDataDirectory, "backups", "automatic"));
+            }
+            catch (IOException)
+            {
+                // Automatic backup failure must not prevent access to the application.
+            }
             var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null) throw new InvalidOperationException("The application window is not available.");
             window.Page = await _appLock.IsPinEnabledAsync()

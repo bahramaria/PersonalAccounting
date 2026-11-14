@@ -150,6 +150,24 @@ public static class AppStrings
     public static string PinAutoLock1Minute => Get(nameof(PinAutoLock1Minute));
     public static string PinAutoLock5Minutes => Get(nameof(PinAutoLock5Minutes));
     public static string Continue => Get(nameof(Continue));
+    public static string BackupHeading => Get(nameof(BackupHeading));
+    public static string BackupCreate => Get(nameof(BackupCreate));
+    public static string BackupRestore => Get(nameof(BackupRestore));
+    public static string BackupPasswordPrompt => Get(nameof(BackupPasswordPrompt));
+    public static string BackupPasswordConfirm => Get(nameof(BackupPasswordConfirm));
+    public static string BackupPasswordMismatch => Get(nameof(BackupPasswordMismatch));
+    public static string BackupUnencryptedWarning => Get(nameof(BackupUnencryptedWarning));
+    public static string BackupCreated => Get(nameof(BackupCreated));
+    public static string BackupRestorePreview => Get(nameof(BackupRestorePreview));
+    public static string BackupRestoreConfirmation => Get(nameof(BackupRestoreConfirmation));
+    public static string BackupRestored => Get(nameof(BackupRestored));
+    public static string BackupInvalid => Get(nameof(BackupInvalid));
+    public static string BackupWrongPassword => Get(nameof(BackupWrongPassword));
+    public static string BackupFailed => Get(nameof(BackupFailed));
+    public static string BackupNoFileSelected => Get(nameof(BackupNoFileSelected));
+    public static string BackupSummaryFormat => Get(nameof(BackupSummaryFormat));
+    public static string BackupEncrypted => Get(nameof(BackupEncrypted));
+    public static string BackupNotEncrypted => Get(nameof(BackupNotEncrypted));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

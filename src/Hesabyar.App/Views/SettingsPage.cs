@@ -4,6 +4,8 @@ using Hesabyar.App.Services;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Hesabyar.Infrastructure.Persistence;
 
 namespace Hesabyar.App.Views;
 
@@ -17,13 +19,17 @@ public sealed class SettingsPage : ContentPage
     private readonly Button _calendarButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _pinButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _autoLockButton = new() { HorizontalOptions = LayoutOptions.Fill };
+    private readonly Button _backupButton = new() { HorizontalOptions = LayoutOptions.Fill };
+    private readonly Button _restoreButton = new() { HorizontalOptions = LayoutOptions.Fill };
+    private readonly BackupService _backupService;
 
     public SettingsPage(IServiceProvider services, ILocalizationService localization,
-        IDateCalendarService calendar, AppLockService appLock)
+        IDateCalendarService calendar, AppLockService appLock, BackupService backupService)
     {
         _services = services;
         _calendar = calendar;
         _appLock = appLock;
+        _backupService = backupService;
         Title = AppStrings.SettingsHeading;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft : Microsoft.Maui.FlowDirection.LeftToRight;
@@ -32,6 +38,8 @@ public sealed class SettingsPage : ContentPage
         _calendarButton.Clicked += OnCalendarClicked;
         _pinButton.Clicked += OnPinClicked;
         _autoLockButton.Clicked += OnAutoLockClicked;
+        _backupButton.Clicked += OnBackupClicked;
+        _restoreButton.Clicked += OnRestoreClicked;
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
@@ -40,7 +48,9 @@ public sealed class SettingsPage : ContentPage
                 Children =
                 {
                     new Label { Text = AppStrings.SettingsHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
-                    _languageButton, _themeButton, _calendarButton, _pinButton, _autoLockButton
+                    _languageButton, _themeButton, _calendarButton, _pinButton, _autoLockButton,
+                    new Label { Text = AppStrings.BackupHeading, FontSize = 20, FontAttributes = FontAttributes.Bold },
+                    _backupButton, _restoreButton
                 }
             }
         };
@@ -169,6 +179,112 @@ public sealed class SettingsPage : ContentPage
         await RefreshPinLabelAsync();
     }
 
+
+    private async void OnBackupClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            var password = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordPrompt,
+                AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+            if (password is null) return;
+            if (password.Length > 0)
+            {
+                if (password.Length < 8)
+                {
+                    await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.BackupFailed, AppStrings.Ok);
+                    return;
+                }
+                var confirmation = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordConfirm,
+                    AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+                if (confirmation is null) return;
+                if (!string.Equals(password, confirmation, StringComparison.Ordinal))
+                {
+                    await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.BackupPasswordMismatch, AppStrings.Ok);
+                    return;
+                }
+            }
+            else if (!await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupUnencryptedWarning,
+                         AppStrings.Continue, AppStrings.Cancel))
+            {
+                return;
+            }
+
+            var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
+            var path = Path.Combine(FileSystem.CacheDirectory, $"hesabyar-{timestamp}.hbak");
+            await _backupService.CreateBackupAsync(path, password);
+            await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupCreated, AppStrings.Ok);
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = AppStrings.BackupHeading,
+                File = new ShareFile(path)
+            });
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupFailed, AppStrings.Ok);
+        }
+    }
+
+    private async void OnRestoreClicked(object? sender, EventArgs e)
+    {
+        string? temporaryPath = null;
+        try
+        {
+            var selected = await FilePicker.Default.PickAsync();
+            if (selected is null)
+            {
+                await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupNoFileSelected, AppStrings.Ok);
+                return;
+            }
+
+            temporaryPath = Path.Combine(FileSystem.CacheDirectory, $"restore-{Guid.NewGuid():N}.hbak");
+            await using (var source = await selected.OpenReadAsync())
+            await using (var destination = File.Create(temporaryPath))
+                await source.CopyToAsync(destination);
+
+            var password = await DisplayPromptAsync(AppStrings.BackupHeading, AppStrings.BackupPasswordPrompt,
+                AppStrings.Continue, AppStrings.Cancel, maxLength: 128);
+            if (password is null) return;
+
+            var summary = await _backupService.InspectBackupAsync(temporaryPath, password);
+            var details = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                AppStrings.BackupSummaryFormat,
+                summary.CreatedAtUtc.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture),
+                summary.AppVersion,
+                summary.SchemaVersion,
+                (summary.DatabaseSizeBytes / 1024d / 1024d).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                summary.IsEncrypted ? AppStrings.BackupEncrypted : AppStrings.BackupNotEncrypted);
+            if (!await DisplayAlertAsync(AppStrings.BackupRestorePreview, details, AppStrings.Continue, AppStrings.Cancel))
+                return;
+            if (!await DisplayAlertAsync(AppStrings.BackupRestore, AppStrings.BackupRestoreConfirmation,
+                    AppStrings.Continue, AppStrings.Cancel))
+                return;
+
+            await _backupService.RestoreBackupAsync(temporaryPath, password);
+            await DisplayAlertAsync(AppStrings.BackupRestore, AppStrings.BackupRestored, AppStrings.Ok);
+            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+            if (window is not null)
+                window.Page = _services.GetRequiredService<StartupPage>();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupWrongPassword, AppStrings.Ok);
+        }
+        catch (InvalidDataException)
+        {
+            await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupInvalid, AppStrings.Ok);
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync(AppStrings.BackupHeading, AppStrings.BackupFailed, AppStrings.Ok);
+        }
+        finally
+        {
+            if (temporaryPath is not null && File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+
     private async void OnAutoLockClicked(object? sender, EventArgs e)
     {
         var selected = await DisplayActionSheetAsync(AppStrings.PinAutoLock, AppStrings.Cancel, null,
@@ -216,6 +332,8 @@ public sealed class SettingsPage : ContentPage
         var calendar = _calendar.CurrentCalendar == CalendarKind.Gregorian
             ? AppStrings.SettingsCalendarGregorian : AppStrings.SettingsCalendarPersian;
         _calendarButton.Text = $"{AppStrings.SettingsCalendar}: {calendar}";
+        _backupButton.Text = AppStrings.BackupCreate;
+        _restoreButton.Text = AppStrings.BackupRestore;
         _autoLockButton.Text = $"{AppStrings.PinAutoLock}: {Preferences.Get("security.auto-lock-seconds", 0) switch
         {
             30 => AppStrings.PinAutoLock30Seconds,

@@ -10,6 +10,7 @@ using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Data.Sqlite;
 using Microsoft.Maui.Storage;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.App;
 
@@ -32,6 +33,10 @@ public static class MauiProgram
             DataSource = databasePath, ForeignKeys = true, Pooling = true
         }.ToString();
         builder.Services.AddHesabyarInfrastructure(connectionString);
+        builder.Services.AddSingleton(provider => new BackupService(
+            provider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+            databasePath,
+            provider.GetRequiredService<TimeProvider>()));
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<StartupPage>();
         builder.Services.AddTransient<PinLockPage>();

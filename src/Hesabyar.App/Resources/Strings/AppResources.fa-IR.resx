@@ -119,7 +119,7 @@
   <data name="PinChange" xml:space="preserve"><value>تغییر رمز</value></data>
   <data name="PinDisable" xml:space="preserve"><value>غیرفعال‌سازی رمز</value></data>
   <data name="PinSetupWarning" xml:space="preserve"><value>قابلیت امنیتی آزمایشی</value></data>
-  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>اگر این رمز را فراموش کنید، تا زمان آماده‌شدن قابلیت پشتیبان‌گیری و بازیابی، دسترسی قابل بازگردانی نیست. هیچ راه عبوری از رمز وجود ندارد. ادامه می‌دهید؟</value></data>
+  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>امکان بازنشانی یا عبور از این رمز وجود ندارد. برای بازیابی دسترسی باید برنامه را دوباره نصب و نسخه پشتیبانی را که پیش از فراموشی رمز تهیه کرده‌اید بازیابی کنید. تغییرات پس از آن نسخه از دست می‌روند. ادامه می‌دهید؟</value></data>
   <data name="PinEnterCurrent" xml:space="preserve"><value>رمز فعلی را وارد کنید</value></data>
   <data name="PinEnterNew" xml:space="preserve"><value>رمز جدید ۴ تا ۸ رقمی را وارد کنید</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>رمز را دوباره وارد کنید</value></data>
@@ -140,4 +140,22 @@
   <data name="PinAutoLock1Minute" xml:space="preserve"><value>پس از ۱ دقیقه</value></data>
   <data name="PinAutoLock5Minutes" xml:space="preserve"><value>پس از ۵ دقیقه</value></data>
   <data name="Continue" xml:space="preserve"><value>ادامه</value></data>
+  <data name="BackupHeading" xml:space="preserve"><value>پشتیبان‌گیری و بازیابی</value></data>
+  <data name="BackupCreate" xml:space="preserve"><value>تهیه نسخه پشتیبان</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>بازیابی نسخه پشتیبان</value></data>
+  <data name="BackupPasswordPrompt" xml:space="preserve"><value>گذرواژه بکاپ (برای فایل بدون رمز خالی بگذارید)</value></data>
+  <data name="BackupPasswordConfirm" xml:space="preserve"><value>تکرار گذرواژه بکاپ</value></data>
+  <data name="BackupPasswordMismatch" xml:space="preserve"><value>گذرواژه‌ها یکسان نیستند.</value></data>
+  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>این نسخه پشتیبان رمزنگاری نمی‌شود. هر شخصی که به فایل دسترسی داشته باشد می‌تواند اطلاعات مالی را بخواند. ادامه می‌دهید؟</value></data>
+  <data name="BackupCreated" xml:space="preserve"><value>نسخه پشتیبان تهیه شد. اکنون می‌توانید آن را ذخیره یا به اشتراک بگذارید.</value></data>
+  <data name="BackupRestorePreview" xml:space="preserve"><value>جزئیات نسخه پشتیبان</value></data>
+  <data name="BackupRestoreConfirmation" xml:space="preserve"><value>بازیابی، پایگاه داده فعلی را جایگزین می‌کند. پیش از جایگزینی یک نسخه ایمنی از اطلاعات فعلی ساخته می‌شود. ادامه می‌دهید؟</value></data>
+  <data name="BackupRestored" xml:space="preserve"><value>بازیابی انجام شد. برنامه دوباره راه‌اندازی می‌شود.</value></data>
+  <data name="BackupInvalid" xml:space="preserve"><value>فایل انتخاب‌شده نسخه پشتیبان معتبر یا پشتیبانی‌شده حسابیار نیست.</value></data>
+  <data name="BackupWrongPassword" xml:space="preserve"><value>گذرواژه وارد نشده یا نادرست است، یا فایل پشتیبان تغییر کرده است.</value></data>
+  <data name="BackupFailed" xml:space="preserve"><value>عملیات پشتیبان‌گیری ناموفق بود. فضای ذخیره‌سازی را بررسی و دوباره تلاش کنید.</value></data>
+  <data name="BackupNoFileSelected" xml:space="preserve"><value>فایلی انتخاب نشده است.</value></data>
+  <data name="BackupSummaryFormat" xml:space="preserve"><value>تاریخ تهیه: {0}&#10;نسخه برنامه: {1}&#10;نسخه ساختار داده: {2}&#10;حجم پایگاه داده: {3} مگابایت&#10;رمزنگاری: {4}</value></data>
+  <data name="BackupEncrypted" xml:space="preserve"><value>رمزنگاری‌شده</value></data>
+  <data name="BackupNotEncrypted" xml:space="preserve"><value>بدون رمزنگاری</value></data>
 </root>

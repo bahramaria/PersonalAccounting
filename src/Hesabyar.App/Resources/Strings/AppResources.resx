@@ -119,7 +119,7 @@
   <data name="PinChange" xml:space="preserve"><value>Change PIN</value></data>
   <data name="PinDisable" xml:space="preserve"><value>Disable PIN</value></data>
   <data name="PinSetupWarning" xml:space="preserve"><value>Experimental security feature</value></data>
-  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>If you forget this PIN, access cannot be recovered until backup and restore are available. There is no recovery bypass. Continue?</value></data>
+  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>There is no PIN reset or bypass. To regain access, reinstall the app and restore a backup created before you forgot the PIN. Changes made after that backup will be lost. Continue?</value></data>
   <data name="PinEnterCurrent" xml:space="preserve"><value>Enter current PIN</value></data>
   <data name="PinEnterNew" xml:space="preserve"><value>Enter a new 4–8 digit PIN</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>Confirm the PIN</value></data>
@@ -140,4 +140,22 @@
   <data name="PinAutoLock1Minute" xml:space="preserve"><value>After 1 minute</value></data>
   <data name="PinAutoLock5Minutes" xml:space="preserve"><value>After 5 minutes</value></data>
   <data name="Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="BackupHeading" xml:space="preserve"><value>Backup and restore</value></data>
+  <data name="BackupCreate" xml:space="preserve"><value>Create backup</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Restore backup</value></data>
+  <data name="BackupPasswordPrompt" xml:space="preserve"><value>Backup password (leave empty for an unencrypted file)</value></data>
+  <data name="BackupPasswordConfirm" xml:space="preserve"><value>Confirm backup password</value></data>
+  <data name="BackupPasswordMismatch" xml:space="preserve"><value>The passwords do not match.</value></data>
+  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>This backup will not be encrypted. Anyone with the file may read its financial data. Continue?</value></data>
+  <data name="BackupCreated" xml:space="preserve"><value>Backup created. You can now share or save the file.</value></data>
+  <data name="BackupRestorePreview" xml:space="preserve"><value>Backup details</value></data>
+  <data name="BackupRestoreConfirmation" xml:space="preserve"><value>Restoring replaces the current database. A safety backup of the current data will be created first. Continue?</value></data>
+  <data name="BackupRestored" xml:space="preserve"><value>Backup restored. The application will reload.</value></data>
+  <data name="BackupInvalid" xml:space="preserve"><value>The selected file is not a valid or supported Hesabyar backup.</value></data>
+  <data name="BackupWrongPassword" xml:space="preserve"><value>The password is missing or incorrect, or the backup file has been modified.</value></data>
+  <data name="BackupFailed" xml:space="preserve"><value>The backup operation failed. Check available storage and try again.</value></data>
+  <data name="BackupNoFileSelected" xml:space="preserve"><value>No backup file was selected.</value></data>
+  <data name="BackupSummaryFormat" xml:space="preserve"><value>Created: {0}&#10;App version: {1}&#10;Database schema: {2}&#10;Database size: {3} MB&#10;Encryption: {4}</value></data>
+  <data name="BackupEncrypted" xml:space="preserve"><value>Encrypted</value></data>
+  <data name="BackupNotEncrypted" xml:space="preserve"><value>Not encrypted</value></data>
 </root>
