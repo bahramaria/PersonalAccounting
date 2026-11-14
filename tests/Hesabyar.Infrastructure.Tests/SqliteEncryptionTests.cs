@@ -63,6 +63,64 @@ public sealed class SqliteEncryptionTests
     }
 
     [Fact]
+    public async Task VacuumInto_CanExportBetweenPlaintextAndSqlCipherV4()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var plainPath = Path.Combine(directory, "plain.db");
+        var encryptedPath = Path.Combine(directory, "encrypted.db");
+        var exportedPath = Path.Combine(directory, "exported.db");
+        const string password = "vacuum-into-device-key";
+        try
+        {
+            await using (var plain = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = plainPath, Pooling = false
+            }.ToString()))
+            {
+                await plain.OpenAsync();
+                await using var create = plain.CreateCommand();
+                create.CommandText = "CREATE TABLE Data (Value TEXT NOT NULL); INSERT INTO Data VALUES ('roundtrip');";
+                await create.ExecuteNonQueryAsync();
+                await using var export = plain.CreateCommand();
+                export.CommandText = "VACUUM INTO $destination;";
+                export.Parameters.AddWithValue("$destination",
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(encryptedPath, password));
+                await export.ExecuteNonQueryAsync();
+            }
+
+            var encryptedConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                {
+                    DataSource = encryptedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+                }.ToString(), password);
+            await using (var encrypted = new SqliteConnection(encryptedConnectionString))
+            {
+                await encrypted.OpenAsync();
+                await using var export = encrypted.CreateCommand();
+                export.CommandText = "VACUUM INTO $destination;";
+                export.Parameters.AddWithValue("$destination",
+                    SqliteConnectionStringFactory.CreatePlainSqliteUri(exportedPath));
+                await export.ExecuteNonQueryAsync();
+            }
+
+            await using var verify = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = exportedPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+            }.ToString());
+            await verify.OpenAsync();
+            await using var query = verify.CreateCommand();
+            query.CommandText = "SELECT Value FROM Data;";
+            Assert.Equal("roundtrip", await query.ExecuteScalarAsync());
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task EfCoreConnectionInterceptor_AppliesDeviceKeyBeforeOpeningConnection()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarTests", Guid.NewGuid().ToString("N"));

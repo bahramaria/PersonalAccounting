@@ -113,23 +113,18 @@ public sealed class DatabaseInitializer(
             $"pre-migration-{timestamp}-{Guid.CreateVersion7():N}.db");
 
         var sourceConnectionString = connectionString;
-        var destinationConnectionString = new SqliteConnectionStringBuilder
-        {
-            DataSource = backupPath,
-            Mode = SqliteOpenMode.ReadWriteCreate,
-            Pooling = false
-        }.ToString();
-        if (keyProvider is not null)
-        {
-            var password = keyProvider.GetDatabasePassword();
-            sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(sourceConnectionString, password);
-            destinationConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(destinationConnectionString, password);
-        }
         await using var source = new SqliteConnection(sourceConnectionString);
-        await using var destination = new SqliteConnection(destinationConnectionString);
-
+        if (keyProvider is not null)
+            source.ConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                source.ConnectionString, keyProvider.GetDatabasePassword());
         await source.OpenAsync(cancellationToken);
-        await destination.OpenAsync(cancellationToken);
-        source.BackupDatabase(destination);
+        var destinationUri = keyProvider is null
+            ? SqliteConnectionStringFactory.CreatePlainSqliteUri(backupPath)
+            : SqliteConnectionStringFactory.CreateSqlCipherV4Uri(
+                backupPath, keyProvider.GetDatabasePassword());
+        await using var command = source.CreateCommand();
+        command.CommandText = "VACUUM INTO $destination;";
+        command.Parameters.AddWithValue("$destination", destinationUri);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }

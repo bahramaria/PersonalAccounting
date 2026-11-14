@@ -86,27 +86,38 @@ public sealed class DeviceDatabaseKeyProvider(string databasePath) : IDatabaseKe
             {
                 DataSource = databasePath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
             }.ToString()))
-            await using (var encryptedTarget = new SqliteConnection(SqliteConnectionStringFactory.WithSqlCipherV4(
-                new SqliteConnectionStringBuilder
-                {
-                    DataSource = temporaryPath, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false
-                }.ToString(), password)))
-            await using (var encryptedBackup = new SqliteConnection(SqliteConnectionStringFactory.WithSqlCipherV4(
-                new SqliteConnectionStringBuilder
-                {
-                    DataSource = safetyBackupPath, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false
-                }.ToString(), password)))
             {
                 await source.OpenAsync(cancellationToken);
-                await encryptedTarget.OpenAsync(cancellationToken);
-                await encryptedBackup.OpenAsync(cancellationToken);
                 await using (var checkpoint = source.CreateCommand())
                 {
                     checkpoint.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
                     await checkpoint.ExecuteNonQueryAsync(cancellationToken);
                 }
-                source.BackupDatabase(encryptedTarget);
-                source.BackupDatabase(encryptedBackup);
+
+                await using (var export = source.CreateCommand())
+                {
+                    export.CommandText = "VACUUM INTO $destination;";
+                    export.Parameters.AddWithValue("$destination",
+                        SqliteConnectionStringFactory.CreateSqlCipherV4Uri(temporaryPath, password));
+                    await export.ExecuteNonQueryAsync(cancellationToken);
+                }
+
+                await using (var backup = source.CreateCommand())
+                {
+                    backup.CommandText = "VACUUM INTO $destination;";
+                    backup.Parameters.AddWithValue("$destination",
+                        SqliteConnectionStringFactory.CreateSqlCipherV4Uri(safetyBackupPath, password));
+                    await backup.ExecuteNonQueryAsync(cancellationToken);
+                }
+            }
+
+            await using (var encryptedTarget = new SqliteConnection(SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                {
+                    DataSource = temporaryPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
+                }.ToString(), password)))
+            {
+                await encryptedTarget.OpenAsync(cancellationToken);
                 await using var integrity = encryptedTarget.CreateCommand();
                 integrity.CommandText = "PRAGMA integrity_check;";
                 if (!string.Equals((string?)await integrity.ExecuteScalarAsync(cancellationToken), "ok",

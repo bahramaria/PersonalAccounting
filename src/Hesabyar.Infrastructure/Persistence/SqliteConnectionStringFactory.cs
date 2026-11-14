@@ -4,6 +4,17 @@ namespace Hesabyar.Infrastructure.Persistence;
 
 public static class SqliteConnectionStringFactory
 {
+    public static string CreateSqlCipherV4Uri(string databasePath, string? password)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
+        var uri = new Uri(Path.GetFullPath(databasePath)).AbsoluteUri;
+        var key = password is null ? string.Empty : Uri.EscapeDataString(password);
+        return uri + "?cipher=sqlcipher&legacy=4&key=" + key;
+    }
+
+    public static string CreatePlainSqliteUri(string databasePath) =>
+        new Uri(Path.GetFullPath(databasePath)).AbsoluteUri;
+
     public static string WithSqlCipherV4(string connectionString, string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);

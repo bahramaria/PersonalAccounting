@@ -261,18 +261,15 @@ public sealed class BackupService(
         if (keyProvider is not null)
             sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
                 sourceConnectionString, keyProvider.GetDatabasePassword());
-        var destinationConnectionString = new SqliteConnectionStringBuilder
-        {
-            DataSource = snapshotPath,
-            Mode = SqliteOpenMode.ReadWriteCreate,
-            Pooling = false
-        }.ToString();
-
         await using var source = new SqliteConnection(sourceConnectionString);
-        await using var destination = new SqliteConnection(destinationConnectionString);
         await source.OpenAsync(cancellationToken);
-        await destination.OpenAsync(cancellationToken);
-        source.BackupDatabase(destination);
+        var destinationUri = keyProvider is null
+            ? SqliteConnectionStringFactory.CreatePlainSqliteUri(snapshotPath)
+            : SqliteConnectionStringFactory.CreateSqlCipherV4Uri(snapshotPath, null);
+        await using var command = source.CreateCommand();
+        command.CommandText = "VACUUM INTO $destination;";
+        command.Parameters.AddWithValue("$destination", destinationUri);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private async Task CreateRestoreDatabaseAsync(
@@ -292,17 +289,14 @@ public sealed class BackupService(
             {
                 DataSource = plaintextPath, Mode = SqliteOpenMode.ReadOnly, Pooling = false
             }.ToString();
-            var destinationConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
-                new SqliteConnectionStringBuilder
-                {
-                    DataSource = replacementPath, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false
-                }.ToString(), keyProvider.GetDatabasePassword());
-
             await using var source = new SqliteConnection(sourceConnectionString);
-            await using var destination = new SqliteConnection(destinationConnectionString);
             await source.OpenAsync(cancellationToken);
-            await destination.OpenAsync(cancellationToken);
-            source.BackupDatabase(destination);
+            var destinationUri = SqliteConnectionStringFactory.CreateSqlCipherV4Uri(
+                replacementPath, keyProvider.GetDatabasePassword());
+            await using var command = source.CreateCommand();
+            command.CommandText = "VACUUM INTO $destination;";
+            command.Parameters.AddWithValue("$destination", destinationUri);
+            await command.ExecuteNonQueryAsync(cancellationToken);
         }
         finally
         {
