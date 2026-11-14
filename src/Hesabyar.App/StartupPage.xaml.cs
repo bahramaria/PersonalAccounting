@@ -2,6 +2,7 @@ using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.App.Views;
 using Hesabyar.Infrastructure.Persistence;
+using Hesabyar.Infrastructure.Security;
 using Hesabyar.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Storage;
