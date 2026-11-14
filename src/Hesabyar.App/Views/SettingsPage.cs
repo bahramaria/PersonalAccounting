@@ -109,7 +109,7 @@ public sealed class SettingsPage : ContentPage
 
         if (selected == AppStrings.PinEnable && !enabled)
         {
-            if (!await DisplayAlert(AppStrings.PinSetupWarning, AppStrings.PinRecoveryUnavailable,
+            if (!await DisplayAlertAsync(AppStrings.PinSetupWarning, AppStrings.PinRecoveryUnavailable,
                     AppStrings.Continue, AppStrings.Cancel)) return;
             var newPin = await PromptPinAsync(AppStrings.PinEnterNew);
             if (newPin is null) return;
@@ -117,16 +117,16 @@ public sealed class SettingsPage : ContentPage
             if (confirmation is null) return;
             if (!PinHasher.IsValidPin(newPin))
             {
-                await DisplayAlert(AppStrings.ValidationError, AppStrings.PinInvalidFormat, AppStrings.Ok);
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.PinInvalidFormat, AppStrings.Ok);
                 return;
             }
             if (PinHasher.NormalizePin(newPin) != PinHasher.NormalizePin(confirmation))
             {
-                await DisplayAlert(AppStrings.ValidationError, AppStrings.PinMismatch, AppStrings.Ok);
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.PinMismatch, AppStrings.Ok);
                 return;
             }
             await _appLock.SetPinAsync(newPin);
-            await DisplayAlert(AppStrings.PinSettings, AppStrings.PinEnabled, AppStrings.Ok);
+            await DisplayAlertAsync(AppStrings.PinSettings, AppStrings.PinEnabled, AppStrings.Ok);
         }
         else if (selected == AppStrings.PinChange && enabled)
         {
@@ -135,7 +135,7 @@ public sealed class SettingsPage : ContentPage
             var verification = await _appLock.VerifyPinAsync(currentPin);
             if (!verification.IsValid)
             {
-                await DisplayAlert(AppStrings.PinSettings, GetVerificationMessage(verification), AppStrings.Ok);
+                await DisplayAlertAsync(AppStrings.PinSettings, GetVerificationMessage(verification), AppStrings.Ok);
                 return;
             }
             var newPin = await PromptPinAsync(AppStrings.PinEnterNew);
@@ -144,23 +144,23 @@ public sealed class SettingsPage : ContentPage
             if (confirmation is null) return;
             if (!PinHasher.IsValidPin(newPin))
             {
-                await DisplayAlert(AppStrings.ValidationError, AppStrings.PinInvalidFormat, AppStrings.Ok);
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.PinInvalidFormat, AppStrings.Ok);
                 return;
             }
             if (PinHasher.NormalizePin(newPin) != PinHasher.NormalizePin(confirmation))
             {
-                await DisplayAlert(AppStrings.ValidationError, AppStrings.PinMismatch, AppStrings.Ok);
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.PinMismatch, AppStrings.Ok);
                 return;
             }
             await _appLock.SetPinAsync(newPin);
-            await DisplayAlert(AppStrings.PinSettings, AppStrings.PinChanged, AppStrings.Ok);
+            await DisplayAlertAsync(AppStrings.PinSettings, AppStrings.PinChanged, AppStrings.Ok);
         }
         else if (selected == AppStrings.PinDisable && enabled)
         {
             var currentPin = await PromptPinAsync(AppStrings.PinEnterCurrent);
             if (currentPin is null) return;
             var result = await _appLock.DisablePinAsync(currentPin);
-            await DisplayAlert(AppStrings.PinSettings, result ? AppStrings.PinDisabled : AppStrings.PinInvalid, AppStrings.Ok);
+            await DisplayAlertAsync(AppStrings.PinSettings, result ? AppStrings.PinDisabled : AppStrings.PinInvalid, AppStrings.Ok);
         }
         await RefreshPinLabelAsync();
     }
