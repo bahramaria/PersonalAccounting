@@ -2,13 +2,15 @@ using Hesabyar.Application.Common;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.Data.Sqlite;
+using Hesabyar.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Infrastructure.Persistence;
 
 public sealed class DatabaseInitializer(
     IDbContextFactory<AppDbContext> contextFactory,
-    IClock clock)
+    IClock clock,
+    IDatabaseKeyProvider? keyProvider = null)
 {
     private static readonly (string Key, string Name, AccountType Type, int SortOrder)[] DefaultCategories =
     [
@@ -110,13 +112,21 @@ public sealed class DatabaseInitializer(
             backupDirectory,
             $"pre-migration-{timestamp}-{Guid.CreateVersion7():N}.db");
 
-        await using var source = new SqliteConnection(connectionString);
-        await using var destination = new SqliteConnection(new SqliteConnectionStringBuilder
+        var sourceConnectionString = connectionString;
+        var destinationConnectionString = new SqliteConnectionStringBuilder
         {
             DataSource = backupPath,
             Mode = SqliteOpenMode.ReadWriteCreate,
             Pooling = false
-        }.ToString());
+        }.ToString();
+        if (keyProvider is not null)
+        {
+            var password = keyProvider.GetDatabasePassword();
+            sourceConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(sourceConnectionString, password);
+            destinationConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(destinationConnectionString, password);
+        }
+        await using var source = new SqliteConnection(sourceConnectionString);
+        await using var destination = new SqliteConnection(destinationConnectionString);
 
         await source.OpenAsync(cancellationToken);
         await destination.OpenAsync(cancellationToken);

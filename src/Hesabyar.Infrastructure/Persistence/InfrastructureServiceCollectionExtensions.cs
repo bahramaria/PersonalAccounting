@@ -1,4 +1,5 @@
 using Hesabyar.Application.Accounts;
+using Hesabyar.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,8 @@ public static class InfrastructureServiceCollectionExtensions
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-        services.AddSingleton<SqliteConnectionPragmaInterceptor>();
+        services.AddSingleton<SqliteConnectionPragmaInterceptor>(serviceProvider =>
+            new SqliteConnectionPragmaInterceptor(serviceProvider.GetService<IDatabaseKeyProvider>()));
         services.AddDbContextFactory<AppDbContext>((serviceProvider, options) =>
         {
             options.UseSqlite(connectionString, sqlite => sqlite.CommandTimeout(30));

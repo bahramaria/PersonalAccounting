@@ -4,7 +4,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
+    <PackageReference Include="SQLite3MC.PCLRaw.bundle" />
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Domain/Hesabyar.Domain.csproj" />
   </ItemGroup>
