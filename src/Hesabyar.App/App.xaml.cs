@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Hesabyar.App.Services;
 using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App;
@@ -10,6 +11,7 @@ public partial class App : Microsoft.Maui.Controls.Application
     public App(IServiceProvider services)
     {
         InitializeComponent();
+        AppLocalization.Initialize();
         _services = services;
         UserAppTheme = Preferences.Get("app.theme", "system") switch
         {

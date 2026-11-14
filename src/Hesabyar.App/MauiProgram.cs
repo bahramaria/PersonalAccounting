@@ -1,7 +1,6 @@
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Application.Common;
-using Hesabyar.App.Services;
 using Hesabyar.App.ViewModels;
 using Hesabyar.App.Views;
 using Hesabyar.Infrastructure.Persistence;
@@ -17,8 +16,6 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        AppLocalization.Initialize();
-
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
 
