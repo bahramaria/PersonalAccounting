@@ -100,8 +100,21 @@ public sealed class SqliteEncryptionTests
                 await using var export = encrypted.CreateCommand();
                 export.CommandText = "VACUUM INTO $destination;";
                 export.Parameters.AddWithValue("$destination",
-                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(exportedPath, null));
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(exportedPath, password));
                 await export.ExecuteNonQueryAsync();
+            }
+
+            var exportedEncryptedConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                {
+                    DataSource = exportedPath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
+                }.ToString(), password);
+            await using (var exportedEncrypted = new SqliteConnection(exportedEncryptedConnectionString))
+            {
+                await exportedEncrypted.OpenAsync();
+                await using var decrypt = exportedEncrypted.CreateCommand();
+                decrypt.CommandText = "PRAGMA rekey = '';";
+                await decrypt.ExecuteNonQueryAsync();
             }
 
             var exportedHeader = new byte[16];

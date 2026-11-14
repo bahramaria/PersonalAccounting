@@ -263,13 +263,56 @@ public sealed class BackupService(
                 sourceConnectionString, keyProvider.GetDatabasePassword());
         await using var source = new SqliteConnection(sourceConnectionString);
         await source.OpenAsync(cancellationToken);
-        var destinationUri = keyProvider is null
-            ? SqliteConnectionStringFactory.CreatePlainSqliteUri(snapshotPath)
-            : SqliteConnectionStringFactory.CreateSqlCipherV4Uri(snapshotPath, null);
-        await using var command = source.CreateCommand();
-        command.CommandText = "VACUUM INTO $destination;";
-        command.Parameters.AddWithValue("$destination", destinationUri);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        if (keyProvider is null)
+        {
+            await using var plainSnapshot = source.CreateCommand();
+            plainSnapshot.CommandText = "VACUUM INTO $destination;";
+            plainSnapshot.Parameters.AddWithValue("$destination",
+                SqliteConnectionStringFactory.CreatePlainSqliteUri(snapshotPath));
+            await plainSnapshot.ExecuteNonQueryAsync(cancellationToken);
+            return;
+        }
+
+        var encryptedSnapshotPath = snapshotPath + ".encrypted";
+        try
+        {
+            await using (var encryptedSnapshot = source.CreateCommand())
+            {
+                encryptedSnapshot.CommandText = "VACUUM INTO $destination;";
+                encryptedSnapshot.Parameters.AddWithValue("$destination",
+                    SqliteConnectionStringFactory.CreateSqlCipherV4Uri(
+                        encryptedSnapshotPath, keyProvider.GetDatabasePassword()));
+                await encryptedSnapshot.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            await source.CloseAsync();
+            SqliteConnection.ClearAllPools();
+            var encryptedSnapshotConnectionString = SqliteConnectionStringFactory.WithSqlCipherV4(
+                new SqliteConnectionStringBuilder
+                {
+                    DataSource = encryptedSnapshotPath, Mode = SqliteOpenMode.ReadWrite, Pooling = false
+                }.ToString(), keyProvider.GetDatabasePassword());
+            await using (var encryptedSnapshot = new SqliteConnection(encryptedSnapshotConnectionString))
+            {
+                await encryptedSnapshot.OpenAsync(cancellationToken);
+                await using var decrypt = encryptedSnapshot.CreateCommand();
+                decrypt.CommandText = "PRAGMA rekey = '';";
+                await decrypt.ExecuteNonQueryAsync(cancellationToken);
+                await using var integrity = encryptedSnapshot.CreateCommand();
+                integrity.CommandText = "PRAGMA integrity_check;";
+                if (!string.Equals((string?)await integrity.ExecuteScalarAsync(cancellationToken), "ok",
+                    StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("The plaintext backup snapshot failed integrity validation.");
+            }
+
+            SqliteConnection.ClearAllPools();
+            File.Move(encryptedSnapshotPath, snapshotPath);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(encryptedSnapshotPath)) File.Delete(encryptedSnapshotPath);
+        }
     }
 
     private async Task CreateRestoreDatabaseAsync(
