@@ -14,6 +14,8 @@ public sealed class AppDbContext(
     public DbSet<DbPosting> Postings => Set<DbPosting>();
     public DbSet<DbParty> Parties => Set<DbParty>();
     public DbSet<DbCheque> Cheques => Set<DbCheque>();
+    public DbSet<DbLoan> Loans => Set<DbLoan>();
+    public DbSet<DbLoanInstallment> LoanInstallments => Set<DbLoanInstallment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,6 +24,7 @@ public sealed class AppDbContext(
         ConfigurePostings(modelBuilder);
         ConfigureParties(modelBuilder);
         ConfigureCheques(modelBuilder);
+        ConfigureLoans(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -88,6 +91,8 @@ public sealed class AppDbContext(
         entity.Property(x => x.SmsMessageId).HasMaxLength(160);
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
+        entity.HasIndex(x => x.LoanId);
+        entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
         entity.HasQueryFilter(x => !x.IsDeleted);
     }
 
@@ -119,6 +124,42 @@ public sealed class AppDbContext(
         entity.HasIndex(x => x.SayadNumber).IsUnique().HasFilter("\"SayadNumber\" IS NOT NULL AND \"IsDeleted\" = 0");
         entity.HasIndex(x => new { x.IsArchived, x.DueDate });
         entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+
+    private static void ConfigureLoans(ModelBuilder modelBuilder)
+    {
+        var loan = modelBuilder.Entity<DbLoan>();
+        loan.ToTable("Loans", table =>
+        {
+            table.HasCheckConstraint("CK_Loans_Principal_Positive", "PrincipalMinor > 0");
+            table.HasCheckConstraint("CK_Loans_AnnualRate_NonNegative", "AnnualRateBasisPoints >= 0");
+        });
+        loan.HasKey(x => x.Id);
+        loan.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        loan.Property(x => x.Direction).HasConversion<string>().HasMaxLength(12);
+        loan.Property(x => x.ScheduleType).HasConversion<string>().HasMaxLength(12);
+        loan.Property(x => x.StartDate).HasColumnType("TEXT");
+        loan.Property(x => x.Note).HasMaxLength(500);
+        loan.HasIndex(x => x.StartDate);
+        loan.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+        loan.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.LoanAccountId).OnDelete(DeleteBehavior.Restrict);
+        loan.HasOne<DbParty>().WithMany().HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);
+        loan.HasMany(x => x.Installments).WithOne().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Cascade);
+        loan.HasQueryFilter(x => !x.IsDeleted);
+
+        var installment = modelBuilder.Entity<DbLoanInstallment>();
+        installment.ToTable("LoanInstallments", table =>
+        {
+            table.HasCheckConstraint("CK_LoanInstallments_Principal_NonNegative", "PrincipalDueMinor > 0");
+            table.HasCheckConstraint("CK_LoanInstallments_Interest_NonNegative", "InterestDueMinor >= 0");
+            table.HasCheckConstraint("CK_LoanInstallments_PaidPrincipal_NonNegative", "PaidPrincipalMinor >= 0 AND PaidPrincipalMinor <= PrincipalDueMinor");
+            table.HasCheckConstraint("CK_LoanInstallments_PaidInterest_NonNegative", "PaidInterestMinor >= 0 AND PaidInterestMinor <= InterestDueMinor");
+        });
+        installment.HasKey(x => x.Id);
+        installment.Property(x => x.DueDate).HasColumnType("TEXT");
+        installment.HasIndex(x => new { x.LoanId, x.DueDate, x.Sequence }).IsUnique();
+        installment.HasQueryFilter(x => !x.IsDeleted);
     }
 
     private static void ConfigurePostings(ModelBuilder modelBuilder)

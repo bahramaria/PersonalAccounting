@@ -200,6 +200,8 @@ public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly
         TransactionKind.Expense => AppStrings.Expense,
         TransactionKind.Income => AppStrings.Income,
         TransactionKind.Transfer => AppStrings.Transfer,
+        TransactionKind.LoanOpening => AppStrings.LoanOpeningTransaction,
+        TransactionKind.LoanPayment => AppStrings.LoanPaymentTransaction,
         _ => string.Empty
     };
     public string DetailText => string.IsNullOrWhiteSpace(Description)

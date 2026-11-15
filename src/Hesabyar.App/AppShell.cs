@@ -25,6 +25,10 @@ public sealed class AppShell : Shell
             "cheques",
             () => services.GetRequiredService<ChequesPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.LoansTab,
+            "loans",
+            () => services.GetRequiredService<LoansPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.PeopleTab,
             "people",
             () => services.GetRequiredService<PeoplePage>()));

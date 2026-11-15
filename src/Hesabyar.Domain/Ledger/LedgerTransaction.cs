@@ -3,7 +3,7 @@ using Hesabyar.Domain.ValueObjects;
 
 namespace Hesabyar.Domain.Ledger;
 
-public enum TransactionKind { Expense, Income, Transfer, Opening, Adjustment, PersonDebt, PersonRepay, LoanPayment, ChequeEvent }
+public enum TransactionKind { Expense, Income, Transfer, Opening, Adjustment, PersonDebt, PersonRepay, LoanOpening, LoanPayment, ChequeEvent }
 public enum TransactionSource { Manual, Sms, Import }
 
 public sealed class LedgerTransaction : EntityBase

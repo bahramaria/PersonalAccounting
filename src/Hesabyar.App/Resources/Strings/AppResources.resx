@@ -242,4 +242,38 @@
   <data name="ChequeTransitionInvalid" xml:space="preserve"><value>This status transition is not allowed.</value></data>
   <data name="ChequeLoadFailed" xml:space="preserve"><value>Could not load cheques.</value></data>
   <data name="ChequeDuplicate" xml:space="preserve"><value>A cheque with this bank and serial or Sayad ID already exists.</value></data>
+  <data name="LoansTab" xml:space="preserve"><value>Loans</value></data>
+  <data name="LoansHeading" xml:space="preserve"><value>Loans and installments</value></data>
+  <data name="LoansEmpty" xml:space="preserve"><value>No loans have been added.</value></data>
+  <data name="LoansLoadFailed" xml:space="preserve"><value>Could not load loans.</value></data>
+  <data name="LoanAdd" xml:space="preserve"><value>Add loan</value></data>
+  <data name="LoanGiven" xml:space="preserve"><value>Money lent</value></data>
+  <data name="LoanReceived" xml:space="preserve"><value>Money borrowed</value></data>
+  <data name="LoanDirectionPrompt" xml:space="preserve"><value>Choose loan direction</value></data>
+  <data name="LoanName" xml:space="preserve"><value>Loan name</value></data>
+  <data name="LoanStartDate" xml:space="preserve"><value>Loan start date (year/month/day)</value></data>
+  <data name="LoanSchedulePrompt" xml:space="preserve"><value>Installment schedule method</value></data>
+  <data name="LoanAnnuity" xml:space="preserve"><value>Equal installments with annual interest</value></data>
+  <data name="LoanManual" xml:space="preserve"><value>Manual installment schedule</value></data>
+  <data name="LoanInstallmentCount" xml:space="preserve"><value>Number of installments</value></data>
+  <data name="LoanAnnualRate" xml:space="preserve"><value>Annual interest rate (%)</value></data>
+  <data name="LoanPerson" xml:space="preserve"><value>Related person (optional)</value></data>
+  <data name="LoanNote" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="LoanNoAccount" xml:space="preserve"><value>Create an active cash or bank account before adding a loan.</value></data>
+  <data name="LoanInvalid" xml:space="preserve"><value>The amount, date, or installment schedule is invalid.</value></data>
+  <data name="LoanSaveFailed" xml:space="preserve"><value>Could not save the loan. Check the selected account or person.</value></data>
+  <data name="LoanPaymentFailed" xml:space="preserve"><value>Payment failed. The amount may exceed the balance or the account is unavailable.</value></data>
+  <data name="LoanPay" xml:space="preserve"><value>Record installment payment</value></data>
+  <data name="LoanSchedule" xml:space="preserve"><value>View installment schedule</value></data>
+  <data name="LoanPaymentAmount" xml:space="preserve"><value>Payment amount in IRR</value></data>
+  <data name="LoanDueDate" xml:space="preserve"><value>Due date (year/month/day)</value></data>
+  <data name="LoanInstallmentNumber" xml:space="preserve"><value>Installment</value></data>
+  <data name="LoanInstallmentPrincipal" xml:space="preserve"><value>Principal portion in IRR</value></data>
+  <data name="LoanInstallmentInterest" xml:space="preserve"><value>Interest portion in IRR</value></data>
+  <data name="LoanOverdueDays" xml:space="preserve"><value>{0} days overdue</value></data>
+  <data name="LoanNextDue" xml:space="preserve"><value>Next installment</value></data>
+  <data name="LoanClosed" xml:space="preserve"><value>Settled</value></data>
+  <data name="LoanSettled" xml:space="preserve"><value>No outstanding balance</value></data>
+  <data name="LoanOpeningTransaction" xml:space="preserve"><value>Loan opened</value></data>
+  <data name="LoanPaymentTransaction" xml:space="preserve"><value>Loan payment</value></data>
 </root>

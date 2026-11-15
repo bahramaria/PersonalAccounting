@@ -8,6 +8,7 @@ public sealed class DbLedgerTransaction : DbEntity
     public TransactionKind Kind { get; set; }
     public string? Description { get; set; }
     public Guid? PartyId { get; set; }
+    public Guid? LoanId { get; set; }
     public DateOnly? DueDate { get; set; }
     public TransactionSource Source { get; set; }
     public string? SmsMessageId { get; set; }

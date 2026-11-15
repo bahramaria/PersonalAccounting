@@ -1,6 +1,7 @@
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.People;
 using Hesabyar.Application.Cheques;
+using Hesabyar.Application.Loans;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Application.Common;
 using Hesabyar.App.Services;
@@ -58,6 +59,9 @@ public static class MauiProgram
         builder.Services.AddTransient<AccountService>();
         builder.Services.AddTransient<PersonService>();
         builder.Services.AddTransient<ChequeService>();
+        builder.Services.AddTransient<LoanService>();
+        builder.Services.AddTransient<LoansViewModel>();
+        builder.Services.AddTransient<LoansPage>();
         builder.Services.AddTransient<ChequesViewModel>();
         builder.Services.AddTransient<ChequesPage>();
         builder.Services.AddTransient<PeopleViewModel>();

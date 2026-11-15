@@ -1,6 +1,7 @@
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.People;
 using Hesabyar.Application.Cheques;
+using Hesabyar.Application.Loans;
 using Hesabyar.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IAccountingRepository, EfAccountingRepository>();
         services.AddScoped<IPeopleRepository, PeopleRepository>();
         services.AddScoped<IChequeRepository, ChequesRepository>();
+        services.AddScoped<ILoanRepository, LoanRepository>();
         services.AddSingleton<DatabaseInitializer>();
 
         return services;

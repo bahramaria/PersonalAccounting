@@ -252,5 +252,41 @@ public static class AppStrings
     public static string ChequeLoadFailed => Get(nameof(ChequeLoadFailed));
     public static string ChequeDuplicate => Get(nameof(ChequeDuplicate));
 
+    public static string LoansTab => Get(nameof(LoansTab));
+    public static string LoansHeading => Get(nameof(LoansHeading));
+    public static string LoansEmpty => Get(nameof(LoansEmpty));
+    public static string LoansLoadFailed => Get(nameof(LoansLoadFailed));
+    public static string LoanAdd => Get(nameof(LoanAdd));
+    public static string LoanGiven => Get(nameof(LoanGiven));
+    public static string LoanReceived => Get(nameof(LoanReceived));
+    public static string LoanDirectionPrompt => Get(nameof(LoanDirectionPrompt));
+    public static string LoanName => Get(nameof(LoanName));
+    public static string LoanStartDate => Get(nameof(LoanStartDate));
+    public static string LoanSchedulePrompt => Get(nameof(LoanSchedulePrompt));
+    public static string LoanAnnuity => Get(nameof(LoanAnnuity));
+    public static string LoanManual => Get(nameof(LoanManual));
+    public static string LoanInstallmentCount => Get(nameof(LoanInstallmentCount));
+    public static string LoanAnnualRate => Get(nameof(LoanAnnualRate));
+    public static string LoanPerson => Get(nameof(LoanPerson));
+    public static string LoanNote => Get(nameof(LoanNote));
+    public static string LoanNoAccount => Get(nameof(LoanNoAccount));
+    public static string LoanInvalid => Get(nameof(LoanInvalid));
+    public static string LoanSaveFailed => Get(nameof(LoanSaveFailed));
+    public static string LoanPaymentFailed => Get(nameof(LoanPaymentFailed));
+    public static string LoanPay => Get(nameof(LoanPay));
+    public static string LoanSchedule => Get(nameof(LoanSchedule));
+    public static string LoanPaymentAmount => Get(nameof(LoanPaymentAmount));
+    public static string LoanDueDate => Get(nameof(LoanDueDate));
+    public static string LoanInstallmentNumber => Get(nameof(LoanInstallmentNumber));
+    public static string LoanInstallmentPrincipal => Get(nameof(LoanInstallmentPrincipal));
+    public static string LoanInstallmentInterest => Get(nameof(LoanInstallmentInterest));
+    public static string LoanOverdueDays => Get(nameof(LoanOverdueDays));
+    public static string LoanNextDue => Get(nameof(LoanNextDue));
+    public static string LoanClosed => Get(nameof(LoanClosed));
+    public static string LoanSettled => Get(nameof(LoanSettled));
+
+    public static string LoanOpeningTransaction => Get(nameof(LoanOpeningTransaction));
+    public static string LoanPaymentTransaction => Get(nameof(LoanPaymentTransaction));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

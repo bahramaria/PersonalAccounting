@@ -242,4 +242,38 @@
   <data name="ChequeTransitionInvalid" xml:space="preserve"><value>تغییر وضعیت انتخاب‌شده مجاز نیست.</value></data>
   <data name="ChequeLoadFailed" xml:space="preserve"><value>بارگذاری چک‌ها انجام نشد.</value></data>
   <data name="ChequeDuplicate" xml:space="preserve"><value>چکی با همین بانک و شماره سریال یا شناسه صیاد قبلاً ثبت شده است.</value></data>
+  <data name="LoansTab" xml:space="preserve"><value>وام و اقساط</value></data>
+  <data name="LoansHeading" xml:space="preserve"><value>مدیریت وام و اقساط</value></data>
+  <data name="LoansEmpty" xml:space="preserve"><value>هنوز وامی ثبت نشده است.</value></data>
+  <data name="LoansLoadFailed" xml:space="preserve"><value>بارگذاری وام‌ها انجام نشد.</value></data>
+  <data name="LoanAdd" xml:space="preserve"><value>ثبت وام</value></data>
+  <data name="LoanGiven" xml:space="preserve"><value>وام داده‌ام</value></data>
+  <data name="LoanReceived" xml:space="preserve"><value>وام گرفته‌ام</value></data>
+  <data name="LoanDirectionPrompt" xml:space="preserve"><value>نوع وام را انتخاب کنید</value></data>
+  <data name="LoanName" xml:space="preserve"><value>عنوان وام</value></data>
+  <data name="LoanStartDate" xml:space="preserve"><value>تاریخ شروع وام (سال/ماه/روز)</value></data>
+  <data name="LoanSchedulePrompt" xml:space="preserve"><value>روش ساخت جدول اقساط</value></data>
+  <data name="LoanAnnuity" xml:space="preserve"><value>اقساط مساوی با نرخ سالانه</value></data>
+  <data name="LoanManual" xml:space="preserve"><value>جدول اقساط دستی</value></data>
+  <data name="LoanInstallmentCount" xml:space="preserve"><value>تعداد اقساط</value></data>
+  <data name="LoanAnnualRate" xml:space="preserve"><value>نرخ سود سالانه (درصد)</value></data>
+  <data name="LoanPerson" xml:space="preserve"><value>شخص مرتبط (اختیاری)</value></data>
+  <data name="LoanNote" xml:space="preserve"><value>یادداشت (اختیاری)</value></data>
+  <data name="LoanNoAccount" xml:space="preserve"><value>برای ثبت وام ابتدا یک حساب نقدی یا بانکی فعال ایجاد کنید.</value></data>
+  <data name="LoanInvalid" xml:space="preserve"><value>مبلغ، تاریخ یا اطلاعات جدول اقساط معتبر نیست.</value></data>
+  <data name="LoanSaveFailed" xml:space="preserve"><value>ثبت وام انجام نشد. حساب یا شخص انتخاب‌شده را بررسی کنید.</value></data>
+  <data name="LoanPaymentFailed" xml:space="preserve"><value>پرداخت ثبت نشد. مبلغ از مانده وام بیشتر است یا حساب معتبر نیست.</value></data>
+  <data name="LoanPay" xml:space="preserve"><value>ثبت پرداخت قسط</value></data>
+  <data name="LoanSchedule" xml:space="preserve"><value>نمایش جدول اقساط</value></data>
+  <data name="LoanPaymentAmount" xml:space="preserve"><value>مبلغ پرداختی به ریال</value></data>
+  <data name="LoanDueDate" xml:space="preserve"><value>تاریخ سررسید (سال/ماه/روز)</value></data>
+  <data name="LoanInstallmentNumber" xml:space="preserve"><value>قسط</value></data>
+  <data name="LoanInstallmentPrincipal" xml:space="preserve"><value>سهم اصل این قسط به ریال</value></data>
+  <data name="LoanInstallmentInterest" xml:space="preserve"><value>سهم سود این قسط به ریال</value></data>
+  <data name="LoanOverdueDays" xml:space="preserve"><value>{0} روز تأخیر</value></data>
+  <data name="LoanNextDue" xml:space="preserve"><value>قسط بعدی</value></data>
+  <data name="LoanClosed" xml:space="preserve"><value>تسویه شده</value></data>
+  <data name="LoanSettled" xml:space="preserve"><value>بدون مانده</value></data>
+  <data name="LoanOpeningTransaction" xml:space="preserve"><value>شروع وام</value></data>
+  <data name="LoanPaymentTransaction" xml:space="preserve"><value>پرداخت وام</value></data>
 </root>

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Application.People;
+using Hesabyar.Application.Loans;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
@@ -44,10 +45,14 @@ public sealed class DashboardViewModel(
             var included = accountResult.Value.Where(x => x.Account.IncludeInTotal).ToArray();
             var people = await scope.ServiceProvider.GetRequiredService<PersonService>()
                 .GetPeopleAsync(cancellationToken: cancellationToken);
+            var loans = await scope.ServiceProvider.GetRequiredService<LoanService>()
+                .GetLoansAsync(cancellationToken);
             var assets = included.Where(x => x.Account.Type == AccountType.Asset).Sum(x => (decimal)x.BalanceMinor)
-                + people.Where(x => x.BalanceMinor > 0).Sum(x => (decimal)x.BalanceMinor);
+                + people.Where(x => x.BalanceMinor > 0).Sum(x => (decimal)x.BalanceMinor)
+                + loans.Where(x => x.Direction == LoanDirection.Given).Sum(x => (decimal)x.RemainingPrincipalMinor);
             var liabilities = included.Where(x => x.Account.Type == AccountType.Liability).Sum(x => Math.Abs((decimal)x.BalanceMinor))
-                + people.Where(x => x.BalanceMinor < 0).Sum(x => Math.Abs((decimal)x.BalanceMinor));
+                + people.Where(x => x.BalanceMinor < 0).Sum(x => Math.Abs((decimal)x.BalanceMinor))
+                + loans.Where(x => x.Direction == LoanDirection.Received).Sum(x => (decimal)x.RemainingMinor);
             AssetsMessage = FormatMoney(assets);
             LiabilitiesMessage = FormatMoney(liabilities);
             NetWorthMessage = FormatMoney(assets - liabilities);

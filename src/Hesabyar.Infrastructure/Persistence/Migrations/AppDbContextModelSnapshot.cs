@@ -1,5 +1,6 @@
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Application.Cheques;
+using Hesabyar.Application.Loans;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
@@ -92,6 +93,64 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+
+        modelBuilder.Entity<DbLoan>(entity =>
+        {
+            entity.ToTable("Loans", table =>
+            {
+                table.HasCheckConstraint("CK_Loans_Principal_Positive", "PrincipalMinor > 0");
+                table.HasCheckConstraint("CK_Loans_AnnualRate_NonNegative", "AnnualRateBasisPoints >= 0");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.Direction).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.ScheduleType).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.StartDate).HasColumnType("TEXT");
+            entity.Property(x => x.AccountId).HasColumnType("TEXT");
+            entity.Property(x => x.LoanAccountId).HasColumnType("TEXT");
+            entity.Property(x => x.PersonId).HasColumnType("TEXT");
+            entity.Property(x => x.Note).HasMaxLength(500);
+            entity.Property(x => x.IsClosed);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.AccountId);
+            entity.HasIndex(x => x.LoanAccountId);
+            entity.HasIndex(x => x.PersonId);
+            entity.HasIndex(x => x.StartDate);
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.LoanAccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbParty>().WithMany().HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.Installments).WithOne().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbLoanInstallment>(entity =>
+        {
+            entity.ToTable("LoanInstallments", table =>
+            {
+                table.HasCheckConstraint("CK_LoanInstallments_Principal_NonNegative", "PrincipalDueMinor > 0");
+                table.HasCheckConstraint("CK_LoanInstallments_Interest_NonNegative", "InterestDueMinor >= 0");
+                table.HasCheckConstraint("CK_LoanInstallments_PaidPrincipal_NonNegative", "PaidPrincipalMinor >= 0 AND PaidPrincipalMinor <= PrincipalDueMinor");
+                table.HasCheckConstraint("CK_LoanInstallments_PaidInterest_NonNegative", "PaidInterestMinor >= 0 AND PaidInterestMinor <= InterestDueMinor");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.LoanId).HasColumnType("TEXT");
+            entity.Property(x => x.DueDate).HasColumnType("TEXT");
+            entity.Property(x => x.Sequence);
+            entity.Property(x => x.PrincipalDueMinor);
+            entity.Property(x => x.InterestDueMinor);
+            entity.Property(x => x.PaidPrincipalMinor);
+            entity.Property(x => x.PaidInterestMinor);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.LoanId, x.DueDate, x.Sequence }).IsUnique();
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbLedgerTransaction>(entity =>
         {
             entity.ToTable("Transactions");
@@ -102,6 +161,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.Description).HasMaxLength(500);
             entity.Property(x => x.DueDate).HasColumnType("TEXT");
             entity.Property(x => x.PartyId).HasColumnType("TEXT");
+            entity.Property(x => x.LoanId).HasColumnType("TEXT");
             entity.Property(x => x.Source).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);
             entity.Property(x => x.IsConfirmed);
@@ -110,6 +170,8 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.IsDeleted);
             entity.HasIndex(x => x.BusinessDate).IsDescending();
             entity.HasIndex(x => x.PartyId);
+            entity.HasIndex(x => x.LoanId);
+            entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
