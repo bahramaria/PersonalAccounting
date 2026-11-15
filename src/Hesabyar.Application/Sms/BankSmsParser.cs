@@ -196,5 +196,5 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
 
     private static ParsedBankSms Unsupported(string sender, string body, string hash) =>
         new(BankSmsParseStatus.Unsupported, null, BankSmsTransactionType.Unknown,
-            null, null, null, null, false, hash, sender, body);
+            null, null, null, null, null, false, hash, sender, body);
 }
