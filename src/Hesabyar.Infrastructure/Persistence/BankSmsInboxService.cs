@@ -69,7 +69,7 @@ public sealed class BankSmsInboxService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var items = await db.SmsInboxItems.AsNoTracking()
             .Where(x => x.Status == SmsInboxStatus.Pending.ToString())
-            .OrderByDescending(x => x.CreatedAtUtc)
+            .OrderByDescending(x => x.Id)
             .ToListAsync(cancellationToken);
         return items.Select(ToRecord).ToArray();
     }

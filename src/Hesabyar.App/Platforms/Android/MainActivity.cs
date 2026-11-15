@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Hesabyar.App.Views;
 
 namespace Hesabyar.App;
 
