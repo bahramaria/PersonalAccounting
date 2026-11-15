@@ -21,6 +21,8 @@
         </HorizontalStackLayout>
         <Label Grid.Row="3" Text="{Binding StatusMessage}" FontSize="13" />
         <CollectionView Grid.Row="4" ItemsSource="{Binding Transactions}" SelectionMode="Single"
+                        RemainingItemsThreshold="10"
+                        RemainingItemsThresholdReached="OnRemainingItemsThresholdReached"
                         SelectionChanged="OnTransactionSelectionChanged">
             <CollectionView.EmptyView>
                 <Label Text="{x:Static strings:AppStrings.TransactionsEmpty}"

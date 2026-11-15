@@ -393,6 +393,42 @@ public sealed class AccountingServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(minimumAmountMinor: -1));
     }
 
+    [Fact]
+    public async Task Transactions_PagedQueries_ReturnEveryRecordOnceInStableOrder()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var bank = await accounts.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank,
+            OpeningBalanceMinor: 2_000_000, OpeningDate: BusinessDate));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+
+        for (var index = 0; index < 7; index++)
+        {
+            var result = await transactions.CreateExpenseAsync(new ExpenseRequest(
+                BusinessDate.AddDays(index % 2), 10_000 + index, bank.Value, food.Value, $"Item {index}"));
+            Assert.True(result.IsSuccess);
+        }
+
+        var expected = await transactions.GetTransactionsAsync(take: 50);
+        var firstPage = await transactions.GetTransactionsAsync(take: 3, skip: 0);
+        var secondPage = await transactions.GetTransactionsAsync(take: 3, skip: 3);
+        var thirdPage = await transactions.GetTransactionsAsync(take: 3, skip: 6);
+        var actualIds = firstPage.Concat(secondPage).Concat(thirdPage).Select(x => x.Id).ToArray();
+
+        Assert.Equal(expected.Select(x => x.Id), actualIds);
+        Assert.Equal(7, actualIds.Distinct().Count());
+        Assert.Single(thirdPage);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            transactions.GetTransactionsAsync(take: 3, skip: -1));
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;

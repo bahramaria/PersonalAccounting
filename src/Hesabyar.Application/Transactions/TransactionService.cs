@@ -55,8 +55,11 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
         long? maximumAmountMinor = null,
         TransactionSortOrder sortOrder = TransactionSortOrder.NewestFirst,
         int take = 50_000,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        int skip = 0)
     {
+        if (skip < 0)
+            throw new ArgumentOutOfRangeException(nameof(skip));
         if (fromDate is not null && toDate is not null && fromDate > toDate)
             throw new ArgumentException("The start date cannot be later than the end date.");
         if (take is < 1 or > 50_000)
@@ -66,7 +69,7 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
             throw new ArgumentException("The transaction amount range is invalid.");
 
         return repository.GetTransactionsAsync(search, fromDate, toDate, accountId, categoryId,
-            minimumAmountMinor, maximumAmountMinor, sortOrder, take, cancellationToken);
+            minimumAmountMinor, maximumAmountMinor, sortOrder, skip, take, cancellationToken);
     }
 
     public async Task<Result<bool>> DeleteAsync(Guid transactionId, CancellationToken cancellationToken = default)

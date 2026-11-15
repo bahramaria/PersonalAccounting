@@ -21,6 +21,24 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
     public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
 
+    private const int PageSize = 100;
+    private string? _search;
+    private DateOnly? _fromDate;
+    private DateOnly? _toDate;
+    private Guid? _accountId;
+    private Guid? _categoryId;
+    private long? _minimumAmountMinor;
+    private long? _maximumAmountMinor;
+    private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
+    private Dictionary<Guid, string> _accountNames = [];
+    private bool _hasMore = true;
+
+    public bool HasMore
+    {
+        get => _hasMore;
+        private set => SetProperty(ref _hasMore, value);
+    }
+
     public async Task LoadAsync(
         string? search = null,
         DateOnly? fromDate = null,
@@ -33,7 +51,17 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
         CancellationToken cancellationToken = default)
     {
         if (IsBusy) return;
+        _search = search;
+        _fromDate = fromDate;
+        _toDate = toDate;
+        _accountId = accountId;
+        _categoryId = categoryId;
+        _minimumAmountMinor = minimumAmountMinor;
+        _maximumAmountMinor = maximumAmountMinor;
+        _sortOrder = sortOrder;
+
         IsBusy = true;
+        HasMore = true;
         try
         {
             using var scope = scopeFactory.CreateScope();
@@ -46,6 +74,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
             }
 
             var allChoices = accountResult.Value.Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
+            _accountNames = allChoices.ToDictionary(x => x.Id, x => x.Name);
             var active = accountResult.Value.Where(x => !x.Account.IsArchived).ToArray();
             Accounts = active.Where(x => x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet or AccountKind.CreditCard)
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
@@ -54,24 +83,50 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
             IncomeCategories = active.Where(x => x.Account.Kind == AccountKind.Category && x.Account.Type == AccountType.Income)
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
 
-            var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
-                .GetTransactionsAsync(search, fromDate, toDate, accountId, categoryId, minimumAmountMinor, maximumAmountMinor, sortOrder, cancellationToken: cancellationToken);
             Transactions.Clear();
-            foreach (var item in snapshots)
-            {
-                var accountName = allChoices.FirstOrDefault(x => x.Id == item.AccountId)?.Name ?? AppStrings.UnknownAccount;
-                var secondName = item.CounterpartyAccountId is Guid secondId
-                    ? allChoices.FirstOrDefault(x => x.Id == secondId)?.Name ?? AppStrings.UnknownAccount
-                    : string.Empty;
-                var dateText = calendar.Format(item.BusinessDate);
-                Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
-                    item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
-                    item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));
-            }
+            var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
+                .GetTransactionsAsync(_search, _fromDate, _toDate, _accountId, _categoryId,
+                    _minimumAmountMinor, _maximumAmountMinor, _sortOrder,
+                    take: PageSize, cancellationToken: cancellationToken, skip: 0);
+            AppendTransactions(snapshots);
+            HasMore = snapshots.Count == PageSize;
             StatusMessage = Transactions.Count == 0 ? AppStrings.TransactionsEmpty : string.Empty;
         }
         catch (Exception) { StatusMessage = AppStrings.TransactionLoadFailed; }
         finally { IsBusy = false; }
+    }
+
+    public async Task LoadMoreAsync(CancellationToken cancellationToken = default)
+    {
+        if (IsBusy || !HasMore) return;
+        IsBusy = true;
+        try
+        {
+            using var scope = scopeFactory.CreateScope();
+            var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
+                .GetTransactionsAsync(_search, _fromDate, _toDate, _accountId, _categoryId,
+                    _minimumAmountMinor, _maximumAmountMinor, _sortOrder,
+                    take: PageSize, cancellationToken: cancellationToken, skip: Transactions.Count);
+            AppendTransactions(snapshots);
+            HasMore = snapshots.Count == PageSize;
+        }
+        catch (Exception) { StatusMessage = AppStrings.TransactionLoadFailed; }
+        finally { IsBusy = false; }
+    }
+
+    private void AppendTransactions(IReadOnlyList<TransactionSnapshot> snapshots)
+    {
+        foreach (var item in snapshots)
+        {
+            var accountName = _accountNames.GetValueOrDefault(item.AccountId, AppStrings.UnknownAccount);
+            var secondName = item.CounterpartyAccountId is Guid secondId
+                ? _accountNames.GetValueOrDefault(secondId, AppStrings.UnknownAccount)
+                : string.Empty;
+            var dateText = calendar.Format(item.BusinessDate);
+            Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
+                item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
+                item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));
+        }
     }
 
     public async Task<bool> SaveAsync(Guid? id, TransactionKind kind, DateOnly date, long amount,
@@ -102,7 +157,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
         }
         catch (Exception) { StatusMessage = AppStrings.TransactionCreateFailed; return false; }
         finally { IsBusy = false; }
-        await LoadAsync(cancellationToken: cancellationToken);
+        await ReloadCurrentAsync(cancellationToken);
         return true;
     }
 
@@ -127,9 +182,13 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
         }
         catch (Exception) { StatusMessage = AppStrings.TransactionCreateFailed; return false; }
         finally { IsBusy = false; }
-        await LoadAsync(cancellationToken: cancellationToken);
+        await ReloadCurrentAsync(cancellationToken);
         return true;
     }
+
+    private Task ReloadCurrentAsync(CancellationToken cancellationToken) => LoadAsync(
+        _search, _fromDate, _toDate, _accountId, _categoryId,
+        _minimumAmountMinor, _maximumAmountMinor, _sortOrder, cancellationToken);
 }
 
 public sealed record TransactionChoice(Guid Id, string Name, AccountType Type);

@@ -38,6 +38,9 @@ public partial class TransactionsPage : ContentPage
     }
     private async void OnAddTransactionClicked(object? sender, EventArgs e) => await ShowEditorAsync(null);
 
+    private async void OnRemainingItemsThresholdReached(object? sender, EventArgs e) =>
+        await _viewModel.LoadMoreAsync();
+
     public Task OpenQuickAddAsync() => ShowEditorAsync(null);
     private async void OnSearchButtonPressed(object? sender, EventArgs e)
     {
