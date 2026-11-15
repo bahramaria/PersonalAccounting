@@ -38,6 +38,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
             [],
             [],
             [],
+            AmountMultiplier: 1,
             BodyPattern: @"^\d{14}\s+مبلغ\s*[:：]")
     ];
 

@@ -129,7 +129,7 @@ public sealed class BankSmsParserTests
         Assert.Equal(expectedBalance, result.BalanceMinor);
         Assert.Equal(expectedDate, result.DateText);
         Assert.Equal(TimeOnly.Parse(expectedTime), result.TransactionTime);
-        Assert.False(result.AmountUnitKnown);
+        Assert.True(result.AmountUnitKnown);
     }
 
     [Theory]
