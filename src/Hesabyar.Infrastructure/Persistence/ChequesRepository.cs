@@ -14,7 +14,7 @@ public sealed class ChequesRepository(AppDbContext db) : IChequeRepository
                     join party in db.Parties.AsNoTracking() on cheque.PersonId equals party.Id into parties
                     from party in parties.DefaultIfEmpty()
                     where includeArchived || !cheque.IsArchived
-                    orderby cheque.DueDate, cheque.CreatedAtUtc
+                    orderby cheque.DueDate, cheque.Id
                     select new ChequeSnapshot(cheque.Id, cheque.Direction, cheque.BankName, cheque.SerialNumber,
                         cheque.SayadNumber, cheque.DueDate, cheque.PersonId, party == null ? null : party.Name,
                         cheque.AmountMinor, cheque.Note, cheque.Status, cheque.IsArchived, cheque.SettlementAccountId);
