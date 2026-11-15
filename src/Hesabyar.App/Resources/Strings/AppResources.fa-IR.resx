@@ -208,4 +208,38 @@
   <data name="PersonDueDateInvalid" xml:space="preserve"><value>تاریخ سررسید معتبر نیست.</value></data>
   <data name="PersonDueReminder" xml:space="preserve"><value>سررسید نزدیک یا گذشته: {0} · {1}</value></data>
   <data name="PersonDueReminders" xml:space="preserve"><value>سررسیدهای باز</value></data>
+  <data name="ChequesTab" xml:space="preserve"><value>چک‌ها</value></data>
+  <data name="ChequesHeading" xml:space="preserve"><value>مدیریت چک‌ها</value></data>
+  <data name="ChequeAdd" xml:space="preserve"><value>ثبت چک</value></data>
+  <data name="ChequeReceived" xml:space="preserve"><value>چک دریافتی</value></data>
+  <data name="ChequeIssued" xml:space="preserve"><value>چک پرداختی</value></data>
+  <data name="ChequeBank" xml:space="preserve"><value>بانک</value></data>
+  <data name="ChequeSerial" xml:space="preserve"><value>شماره سریال</value></data>
+  <data name="ChequeSayad" xml:space="preserve"><value>شناسه صیاد (اختیاری)</value></data>
+  <data name="ChequeDueDate" xml:space="preserve"><value>سررسید (سال/ماه/روز)</value></data>
+  <data name="ChequePerson" xml:space="preserve"><value>شخص (اختیاری)</value></data>
+  <data name="ChequeAmount" xml:space="preserve"><value>مبلغ به ریال</value></data>
+  <data name="ChequeNote" xml:space="preserve"><value>یادداشت</value></data>
+  <data name="ChequePending" xml:space="preserve"><value>در انتظار</value></data>
+  <data name="ChequeCleared" xml:space="preserve"><value>وصول/پرداخت شد</value></data>
+  <data name="ChequeReturned" xml:space="preserve"><value>برگشت خورد</value></data>
+  <data name="ChequeSpent" xml:space="preserve"><value>خرج شد</value></data>
+  <data name="ChequeVoided" xml:space="preserve"><value>باطل شد</value></data>
+  <data name="ChequeDueSoon" xml:space="preserve"><value>چک‌های پیش‌رو (۷ روز)</value></data>
+  <data name="ChequeDueMonth" xml:space="preserve"><value>چک‌های پیش‌رو (۳۰ روز)</value></data>
+  <data name="ChequeCalendar" xml:space="preserve"><value>تقویم سررسید چک‌ها</value></data>
+  <data name="ChequeCalendarEmpty" xml:space="preserve"><value>در ۳۰ روز آینده چکی سررسید نمی‌شود.</value></data>
+  <data name="ChequeDueToday" xml:space="preserve"><value>سررسید امروز</value></data>
+  <data name="ChequeDueInOneDay" xml:space="preserve"><value>سررسید فردا</value></data>
+  <data name="ChequeDueInThreeDays" xml:space="preserve"><value>سه روز تا سررسید</value></data>
+  <data name="ChequeEdit" xml:space="preserve"><value>ویرایش چک</value></data>
+  <data name="ChequeDelete" xml:space="preserve"><value>حذف چک</value></data>
+  <data name="ChequeDeleteConfirm" xml:space="preserve"><value>این چک از فهرست فعال حذف می‌شود. سوابق مالی آن حفظ می‌شود. ادامه می‌دهید؟</value></data>
+  <data name="ChequeChangeStatus" xml:space="preserve"><value>تغییر وضعیت</value></data>
+  <data name="ChequeEmpty" xml:space="preserve"><value>هنوز چکی ثبت نشده است.</value></data>
+  <data name="ChequeInvalid" xml:space="preserve"><value>اطلاعات چک معتبر نیست. مبلغ باید مثبت و تاریخ سررسید معتبر باشد.</value></data>
+  <data name="ChequeAccountRequired" xml:space="preserve"><value>برای وصول یا پرداخت چک، حساب بانکی مقصد یا مبدأ را انتخاب کنید.</value></data>
+  <data name="ChequeTransitionInvalid" xml:space="preserve"><value>تغییر وضعیت انتخاب‌شده مجاز نیست.</value></data>
+  <data name="ChequeLoadFailed" xml:space="preserve"><value>بارگذاری چک‌ها انجام نشد.</value></data>
+  <data name="ChequeDuplicate" xml:space="preserve"><value>چکی با همین بانک و شماره سریال یا شناسه صیاد قبلاً ثبت شده است.</value></data>
 </root>

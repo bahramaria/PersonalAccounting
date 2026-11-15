@@ -217,5 +217,40 @@ public static class AppStrings
     public static string BackupNotEncrypted => Get(nameof(BackupNotEncrypted));
     public static string BackupDeviceBound => Get(nameof(BackupDeviceBound));
 
+    public static string ChequesTab => Get(nameof(ChequesTab));
+    public static string ChequesHeading => Get(nameof(ChequesHeading));
+    public static string ChequeAdd => Get(nameof(ChequeAdd));
+    public static string ChequeReceived => Get(nameof(ChequeReceived));
+    public static string ChequeIssued => Get(nameof(ChequeIssued));
+    public static string ChequeBank => Get(nameof(ChequeBank));
+    public static string ChequeSerial => Get(nameof(ChequeSerial));
+    public static string ChequeSayad => Get(nameof(ChequeSayad));
+    public static string ChequeDueDate => Get(nameof(ChequeDueDate));
+    public static string ChequePerson => Get(nameof(ChequePerson));
+    public static string ChequeAmount => Get(nameof(ChequeAmount));
+    public static string ChequeNote => Get(nameof(ChequeNote));
+    public static string ChequePending => Get(nameof(ChequePending));
+    public static string ChequeCleared => Get(nameof(ChequeCleared));
+    public static string ChequeReturned => Get(nameof(ChequeReturned));
+    public static string ChequeSpent => Get(nameof(ChequeSpent));
+    public static string ChequeVoided => Get(nameof(ChequeVoided));
+    public static string ChequeDueSoon => Get(nameof(ChequeDueSoon));
+    public static string ChequeDueMonth => Get(nameof(ChequeDueMonth));
+    public static string ChequeCalendar => Get(nameof(ChequeCalendar));
+    public static string ChequeCalendarEmpty => Get(nameof(ChequeCalendarEmpty));
+    public static string ChequeDueToday => Get(nameof(ChequeDueToday));
+    public static string ChequeDueInOneDay => Get(nameof(ChequeDueInOneDay));
+    public static string ChequeDueInThreeDays => Get(nameof(ChequeDueInThreeDays));
+    public static string ChequeEdit => Get(nameof(ChequeEdit));
+    public static string ChequeDelete => Get(nameof(ChequeDelete));
+    public static string ChequeDeleteConfirm => Get(nameof(ChequeDeleteConfirm));
+    public static string ChequeChangeStatus => Get(nameof(ChequeChangeStatus));
+    public static string ChequeEmpty => Get(nameof(ChequeEmpty));
+    public static string ChequeInvalid => Get(nameof(ChequeInvalid));
+    public static string ChequeAccountRequired => Get(nameof(ChequeAccountRequired));
+    public static string ChequeTransitionInvalid => Get(nameof(ChequeTransitionInvalid));
+    public static string ChequeLoadFailed => Get(nameof(ChequeLoadFailed));
+    public static string ChequeDuplicate => Get(nameof(ChequeDuplicate));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

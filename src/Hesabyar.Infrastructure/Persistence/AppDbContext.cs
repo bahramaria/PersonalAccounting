@@ -13,6 +13,7 @@ public sealed class AppDbContext(
     public DbSet<DbLedgerTransaction> Transactions => Set<DbLedgerTransaction>();
     public DbSet<DbPosting> Postings => Set<DbPosting>();
     public DbSet<DbParty> Parties => Set<DbParty>();
+    public DbSet<DbCheque> Cheques => Set<DbCheque>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +21,7 @@ public sealed class AppDbContext(
         ConfigureTransactions(modelBuilder);
         ConfigurePostings(modelBuilder);
         ConfigureParties(modelBuilder);
+        ConfigureCheques(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -98,6 +100,24 @@ public sealed class AppDbContext(
         entity.Property(x => x.Phone).HasMaxLength(40);
         entity.Property(x => x.Note).HasMaxLength(500);
         entity.HasIndex(x => x.Name);
+        entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+    private static void ConfigureCheques(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbCheque>();
+        entity.ToTable("Cheques", table => table.HasCheckConstraint("CK_Cheques_Amount_Positive", "AmountMinor > 0"));
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Direction).HasConversion<string>().HasMaxLength(12);
+        entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+        entity.Property(x => x.BankName).HasMaxLength(80).IsRequired();
+        entity.Property(x => x.SerialNumber).HasMaxLength(40).IsRequired();
+        entity.Property(x => x.SayadNumber).HasMaxLength(24);
+        entity.Property(x => x.DueDate).HasColumnType("TEXT");
+        entity.Property(x => x.Note).HasMaxLength(500);
+        entity.HasIndex(x => new { x.Direction, x.BankName, x.SerialNumber }).IsUnique().HasFilter("\"IsDeleted\" = 0");
+        entity.HasIndex(x => x.SayadNumber).IsUnique().HasFilter("\"SayadNumber\" IS NOT NULL AND \"IsDeleted\" = 0");
+        entity.HasIndex(x => new { x.IsArchived, x.DueDate });
         entity.HasQueryFilter(x => !x.IsDeleted);
     }
 

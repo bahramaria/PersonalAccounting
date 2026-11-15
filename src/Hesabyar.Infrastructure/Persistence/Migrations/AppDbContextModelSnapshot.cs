@@ -1,4 +1,5 @@
 using Hesabyar.Domain.Accounts;
+using Hesabyar.Application.Cheques;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
@@ -62,6 +63,32 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.IsDeleted);
             entity.HasIndex(x => x.Name);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbCheque>(entity =>
+        {
+            entity.ToTable("Cheques", table => table.HasCheckConstraint("CK_Cheques_Amount_Positive", "AmountMinor > 0"));
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Direction).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.BankName).IsRequired().HasMaxLength(80);
+            entity.Property(x => x.SerialNumber).IsRequired().HasMaxLength(40);
+            entity.Property(x => x.SayadNumber).HasMaxLength(24);
+            entity.Property(x => x.DueDate).HasColumnType("TEXT");
+            entity.Property(x => x.PersonId).HasColumnType("TEXT");
+            entity.Property(x => x.AmountMinor);
+            entity.Property(x => x.Note).HasMaxLength(500);
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.IsArchived);
+            entity.Property(x => x.SettlementAccountId).HasColumnType("TEXT");
+            entity.Property(x => x.SettlementTransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.Direction, x.BankName, x.SerialNumber }).IsUnique().HasFilter("\"IsDeleted\" = 0");
+            entity.HasIndex(x => x.SayadNumber).IsUnique().HasFilter("\"SayadNumber\" IS NOT NULL AND \"IsDeleted\" = 0");
+            entity.HasIndex(x => new { x.IsArchived, x.DueDate });
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
