@@ -4,7 +4,6 @@ using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
-using Microsoft.Data.Sqlite;
 
 namespace Hesabyar.Infrastructure.Persistence;
 
