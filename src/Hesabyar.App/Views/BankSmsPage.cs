@@ -5,7 +5,9 @@ using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.Views;
 
@@ -15,6 +17,7 @@ public sealed class BankSmsPage : ContentPage
     private readonly AccountService _accounts;
     private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
+    private readonly Button _autoImportButton;
     private bool _loading;
 
     public BankSmsPage(
@@ -33,6 +36,9 @@ public sealed class BankSmsPage : ContentPage
 
         var pasteButton = new Button { Text = AppStrings.SmsPaste };
         pasteButton.Clicked += OnPasteClicked;
+        _autoImportButton = new Button();
+        _autoImportButton.Clicked += OnAutoImportClicked;
+        UpdateAutoImportButton();
         Content = new ScrollView
         {
             Content = new VerticalStackLayout
@@ -44,6 +50,7 @@ public sealed class BankSmsPage : ContentPage
                     new Label { Text = AppStrings.SmsHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
                     new Label { Text = AppStrings.SmsPrivacyNote, FontSize = 13 },
                     pasteButton,
+                    _autoImportButton,
                     _items
                 }
             }
@@ -53,10 +60,48 @@ public sealed class BankSmsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        UpdateAutoImportButton();
         await ReloadAsync();
         var shared = SharedSmsContent.Take();
         if (!string.IsNullOrWhiteSpace(shared))
             await ImportTextAsync(shared);
+    }
+
+
+    private void UpdateAutoImportButton() =>
+        _autoImportButton.Text = Preferences.Default.Get("sms-auto-import-enabled", false)
+            ? AppStrings.SmsDisableAutoImport
+            : AppStrings.SmsAutoImport;
+
+    private async void OnAutoImportClicked(object? sender, EventArgs e)
+    {
+        if (Preferences.Default.Get("sms-auto-import-enabled", false))
+        {
+            Preferences.Default.Set("sms-auto-import-enabled", false);
+            UpdateAutoImportButton();
+            await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsAutoImportDisabled, AppStrings.Ok);
+            return;
+        }
+
+#if ANDROID
+        var accepted = await DisplayAlertAsync(
+            AppStrings.SmsPermissionTitle, AppStrings.SmsPermissionExplain,
+            AppStrings.SmsEnable, AppStrings.Cancel);
+        if (!accepted) return;
+
+        var permission = await Permissions.RequestAsync<ReceiveSmsPermission>();
+        if (permission != PermissionStatus.Granted)
+        {
+            await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsPermissionDenied, AppStrings.Ok);
+            return;
+        }
+
+        Preferences.Default.Set("sms-auto-import-enabled", true);
+        UpdateAutoImportButton();
+        await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsAutoImportEnabled, AppStrings.Ok);
+#else
+        await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsAndroidOnly, AppStrings.Ok);
+#endif
     }
 
     private async void OnPasteClicked(object? sender, EventArgs e)
@@ -192,6 +237,13 @@ public sealed class BankSmsPage : ContentPage
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionDateInvalid, AppStrings.Ok);
             return;
+        }
+
+        if (await _inbox.HasPossibleManualDuplicateAsync(account.Value.Id, category.Value.Id, type, amount, date))
+        {
+            var proceed = await DisplayAlertAsync(AppStrings.SmsPossibleDuplicateTitle,
+                AppStrings.SmsPossibleDuplicateMessage, AppStrings.SmsConfirmAnyway, AppStrings.Cancel);
+            if (!proceed) return;
         }
 
         var success = await _inbox.ConfirmAsync(item.Id, account.Value.Id, category.Value.Id, type, amount, date);

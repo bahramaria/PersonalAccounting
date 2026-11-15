@@ -173,7 +173,7 @@
   <data name="OnboardingInvalidAmount" xml:space="preserve"><value>موجودی اولیه باید عدد صحیح و نامنفی باشد.</value></data>
   <data name="OnboardingAccountFailed" xml:space="preserve"><value>ساخت حساب انجام نشد. اطلاعات را بررسی و دوباره تلاش کنید.</value></data>
   <data name="OnboardingPinInvalid" xml:space="preserve"><value>رمز باید ۴ تا ۸ رقم باشد و دو بار یکسان وارد شود. حساب ساخته شد؛ می‌توانید قفل را بعداً از تنظیمات فعال کنید.</value></data>
-  <data name="OnboardingSmsNote" xml:space="preserve"><value>ورود خودکار از پیامک بانکی در مرحله بعد اضافه می‌شود؛ برای شروع به آن نیازی ندارید.</value></data>
+  <data name="OnboardingSmsNote" xml:space="preserve"><value>می‌توانید پیامک را بچسبانید یا از برنامه پیامک‌ها به اشتراک بگذارید؛ دریافت خودکار پیامک‌های جدید نیز اختیاری است.</value></data>
   <data name="OnboardingDefaultAccountName" xml:space="preserve"><value>کیف پول نقدی</value></data>
 
   <data name="SettingsAmountsHidden" xml:space="preserve"><value>نمایش مبالغ: مخفی</value></data>
@@ -279,7 +279,7 @@
   <data name="SmsTab" xml:space="preserve"><value>پیامک</value></data>
   <data name="SmsHeading" xml:space="preserve"><value>صندوق پیامک بانکی</value></data>
   <data name="SmsPaste" xml:space="preserve"><value>چسباندن یا اشتراک‌گذاری پیامک بانکی</value></data>
-  <data name="SmsPrivacyNote" xml:space="preserve"><value>پیامک فقط با انتخاب شما وارد صف می‌شود. مجوز خواندن پیامک درخواست نمی‌شود. متن پیام تا زمان نادیده‌گرفتن یا تأیید، به‌صورت محلی نگهداری می‌شود.</value></data>
+  <data name="SmsPrivacyNote" xml:space="preserve"><value>ورود با چسباندن و اشتراک‌گذاری بدون مجوز پیامک کار می‌کند. دریافت خودکار پیامک‌های جدید اختیاری است و فقط پس از اجازه جداگانه شما فعال می‌شود. هیچ پیامکی بدون تأیید شما به دفتر کل ثبت نمی‌شود.</value></data>
   <data name="SmsBodyPrompt" xml:space="preserve"><value>متن کامل پیامک را وارد کنید</value></data>
   <data name="SmsSenderPrompt" xml:space="preserve"><value>نام یا شماره فرستنده (اختیاری)</value></data>
   <data name="SmsAdded" xml:space="preserve"><value>پیام به صف بررسی اضافه شد.</value></data>
@@ -298,4 +298,16 @@
   <data name="SmsParsed" xml:space="preserve"><value>تفسیر اولیه موفق</value></data>
   <data name="SmsNeedsReview" xml:space="preserve"><value>نیازمند بررسی</value></data>
   <data name="SmsUnsupported" xml:space="preserve"><value>غیرقابل تفسیر</value></data>
+  <data name="SmsAutoImport" xml:space="preserve"><value>فعال‌سازی ورود خودکار پیامک</value></data>
+  <data name="SmsDisableAutoImport" xml:space="preserve"><value>غیرفعال‌سازی ورود خودکار پیامک</value></data>
+  <data name="SmsPermissionTitle" xml:space="preserve"><value>دسترسی پیامک</value></data>
+  <data name="SmsPermissionExplain" xml:space="preserve"><value>با اجازه شما، پیامک‌های دریافتی جدید در پس‌زمینه به صف بررسی اضافه می‌شوند. هیچ پیامکی بدون تأیید شما به دفتر کل ثبت نمی‌شود. این دسترسی فقط برای دریافت پیامک‌های جدید استفاده می‌شود.</value></data>
+  <data name="SmsEnable" xml:space="preserve"><value>فعال‌سازی</value></data>
+  <data name="SmsPermissionDenied" xml:space="preserve"><value>مجوز دریافت پیامک داده نشد. می‌توانید همچنان از چسباندن یا اشتراک‌گذاری پیامک استفاده کنید.</value></data>
+  <data name="SmsAutoImportEnabled" xml:space="preserve"><value>ورود خودکار پیامک فعال شد. پیامک‌ها همچنان در صف تأیید باقی می‌مانند.</value></data>
+  <data name="SmsAutoImportDisabled" xml:space="preserve"><value>ورود خودکار پیامک غیرفعال شد. مجوز اندروید را می‌توانید از تنظیمات سیستم نیز لغو کنید.</value></data>
+  <data name="SmsAndroidOnly" xml:space="preserve"><value>دریافت خودکار پیامک فقط در Android پشتیبانی می‌شود.</value></data>
+  <data name="SmsPossibleDuplicateTitle" xml:space="preserve"><value>تراکنش مشابه پیدا شد</value></data>
+  <data name="SmsPossibleDuplicateMessage" xml:space="preserve"><value>برای همین حساب، دسته، مبلغ و تاریخ یک تراکنش دستی ثبت شده است. آیا با وجود احتمال تکرار، پیامک را هم ثبت می‌کنید؟</value></data>
+  <data name="SmsConfirmAnyway" xml:space="preserve"><value>ثبت با وجود هشدار</value></data>
 </root>

@@ -75,6 +75,42 @@ public sealed class BankSmsInboxTests
         Assert.Equal(SmsImportOutcome.Duplicate, await service.ImportAsync("sender", "برداشت مبلغ: ۱۰۰۰"));
     }
 
+
+    [Fact]
+    public async Task DetectsManualTransactionWithSameDateAccountsAndAmount()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        Guid bankId;
+        Guid categoryId;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.MigrateAsync();
+            var bank = new DbAccount { Name = "Bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR" };
+            var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            var manual = new DbLedgerTransaction
+            {
+                BusinessDate = new DateOnly(2026, 11, 15),
+                Kind = TransactionKind.Expense,
+                Source = TransactionSource.Manual,
+                IsConfirmed = true
+            };
+            manual.Postings.Add(new DbPosting { Account = food, AmountMinor = 75_000, CurrencyCode = "IRR" });
+            manual.Postings.Add(new DbPosting { Account = bank, AmountMinor = -75_000, CurrencyCode = "IRR" });
+            db.Transactions.Add(manual);
+            await db.SaveChangesAsync();
+            bankId = bank.Id;
+            categoryId = food.Id;
+        }
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.True(await service.HasPossibleManualDuplicateAsync(
+            bankId, categoryId, BankSmsTransactionType.Expense, 75_000, new DateOnly(2026, 11, 15)));
+        Assert.False(await service.HasPossibleManualDuplicateAsync(
+            bankId, categoryId, BankSmsTransactionType.Expense, 80_000, new DateOnly(2026, 11, 15)));
+    }
+
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext() => new(options);

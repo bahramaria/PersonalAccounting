@@ -173,7 +173,7 @@
   <data name="OnboardingInvalidAmount" xml:space="preserve"><value>Opening balance must be a non-negative whole number.</value></data>
   <data name="OnboardingAccountFailed" xml:space="preserve"><value>Could not create the account. Check the details and try again.</value></data>
   <data name="OnboardingPinInvalid" xml:space="preserve"><value>The PIN must contain 4 to 8 matching digits. Your account was created; you can enable the lock later in Settings.</value></data>
-  <data name="OnboardingSmsNote" xml:space="preserve"><value>Bank SMS import will be added in a later stage. You do not need it to get started.</value></data>
+  <data name="OnboardingSmsNote" xml:space="preserve"><value>You can paste or share a bank message. Optional automatic reception of new SMS messages is also available.</value></data>
   <data name="OnboardingDefaultAccountName" xml:space="preserve"><value>Cash wallet</value></data>
 
   <data name="SettingsAmountsHidden" xml:space="preserve"><value>Amounts: hidden</value></data>
@@ -279,7 +279,7 @@
   <data name="SmsTab" xml:space="preserve"><value>SMS</value></data>
   <data name="SmsHeading" xml:space="preserve"><value>Bank SMS inbox</value></data>
   <data name="SmsPaste" xml:space="preserve"><value>Paste or share a bank SMS</value></data>
-  <data name="SmsPrivacyNote" xml:space="preserve"><value>Messages are imported only when you choose. No SMS permission is requested. Imported text is kept locally until ignored or confirmed.</value></data>
+  <data name="SmsPrivacyNote" xml:space="preserve"><value>Paste and share import work without SMS permission. Automatic reception of new messages is optional and is enabled only after your separate consent. No message is posted to the ledger without your confirmation.</value></data>
   <data name="SmsBodyPrompt" xml:space="preserve"><value>Paste the complete SMS text</value></data>
   <data name="SmsSenderPrompt" xml:space="preserve"><value>Sender name or number (optional)</value></data>
   <data name="SmsAdded" xml:space="preserve"><value>Message added to the review queue.</value></data>
@@ -298,4 +298,16 @@
   <data name="SmsParsed" xml:space="preserve"><value>Parsed</value></data>
   <data name="SmsNeedsReview" xml:space="preserve"><value>Needs review</value></data>
   <data name="SmsUnsupported" xml:space="preserve"><value>Unsupported</value></data>
+  <data name="SmsAutoImport" xml:space="preserve"><value>Enable automatic SMS import</value></data>
+  <data name="SmsDisableAutoImport" xml:space="preserve"><value>Disable automatic SMS import</value></data>
+  <data name="SmsPermissionTitle" xml:space="preserve"><value>SMS permission</value></data>
+  <data name="SmsPermissionExplain" xml:space="preserve"><value>With your permission, new incoming messages are added to the review queue in the background. No message is posted to the ledger without your confirmation. This permission is used only to receive new messages.</value></data>
+  <data name="SmsEnable" xml:space="preserve"><value>Enable</value></data>
+  <data name="SmsPermissionDenied" xml:space="preserve"><value>SMS permission was not granted. You can still paste or share messages.</value></data>
+  <data name="SmsAutoImportEnabled" xml:space="preserve"><value>Automatic SMS import is enabled. Messages will still wait in the review queue.</value></data>
+  <data name="SmsAutoImportDisabled" xml:space="preserve"><value>Automatic SMS import is disabled. You can also revoke the Android permission in system settings.</value></data>
+  <data name="SmsAndroidOnly" xml:space="preserve"><value>Automatic SMS reception is supported on Android only.</value></data>
+  <data name="SmsPossibleDuplicateTitle" xml:space="preserve"><value>Possible duplicate transaction</value></data>
+  <data name="SmsPossibleDuplicateMessage" xml:space="preserve"><value>A manual transaction with the same account, category, amount and date already exists. Import this SMS anyway?</value></data>
+  <data name="SmsConfirmAnyway" xml:space="preserve"><value>Import anyway</value></data>
 </root>

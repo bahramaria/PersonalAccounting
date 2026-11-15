@@ -312,5 +312,18 @@ public static class AppStrings
     public static string SmsNeedsReview => Get(nameof(SmsNeedsReview));
     public static string SmsUnsupported => Get(nameof(SmsUnsupported));
 
+    public static string SmsAutoImport => Get(nameof(SmsAutoImport));
+    public static string SmsDisableAutoImport => Get(nameof(SmsDisableAutoImport));
+    public static string SmsPermissionTitle => Get(nameof(SmsPermissionTitle));
+    public static string SmsPermissionExplain => Get(nameof(SmsPermissionExplain));
+    public static string SmsEnable => Get(nameof(SmsEnable));
+    public static string SmsPermissionDenied => Get(nameof(SmsPermissionDenied));
+    public static string SmsAutoImportEnabled => Get(nameof(SmsAutoImportEnabled));
+    public static string SmsAutoImportDisabled => Get(nameof(SmsAutoImportDisabled));
+    public static string SmsAndroidOnly => Get(nameof(SmsAndroidOnly));
+    public static string SmsPossibleDuplicateTitle => Get(nameof(SmsPossibleDuplicateTitle));
+    public static string SmsPossibleDuplicateMessage => Get(nameof(SmsPossibleDuplicateMessage));
+    public static string SmsConfirmAnyway => Get(nameof(SmsConfirmAnyway));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
