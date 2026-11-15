@@ -106,6 +106,8 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.Name).IsRequired().HasMaxLength(120);
             entity.Property(x => x.Direction).HasConversion<string>().HasMaxLength(12);
             entity.Property(x => x.ScheduleType).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.PrincipalMinor);
+            entity.Property(x => x.AnnualRateBasisPoints);
             entity.Property(x => x.StartDate).HasColumnType("TEXT");
             entity.Property(x => x.AccountId).HasColumnType("TEXT");
             entity.Property(x => x.LoanAccountId).HasColumnType("TEXT");
