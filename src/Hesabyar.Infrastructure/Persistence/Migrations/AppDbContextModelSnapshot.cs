@@ -79,7 +79,6 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.DueDate).HasColumnType("TEXT");
             entity.Property(x => x.PersonId).HasColumnType("TEXT");
             entity.Property(x => x.AmountMinor);
-            entity.Property(x => x.AmountUnitKnown);
             entity.Property(x => x.Note).HasMaxLength(500);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
             entity.Property(x => x.IsArchived);
@@ -166,6 +165,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.ParseStatus).IsRequired().HasMaxLength(20);
             entity.Property(x => x.TransactionType).IsRequired().HasMaxLength(20);
             entity.Property(x => x.AmountMinor);
+            entity.Property(x => x.AmountUnitKnown);
             entity.Property(x => x.BalanceMinor);
             entity.Property(x => x.CardLastFour).HasMaxLength(4);
             entity.Property(x => x.DateText).HasMaxLength(20);
