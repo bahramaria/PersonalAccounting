@@ -3,12 +3,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
 using Hesabyar.App.Resources.Strings;
-using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.ViewModels;
 
@@ -68,7 +66,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                 var dateText = calendar.Format(item.BusinessDate);
                 Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                     item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
-                    MoneyDisplayService.Format(item.AmountMinor, includeCurrency: false), dateText));
+                    item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));
             }
             StatusMessage = Transactions.Count == 0 ? AppStrings.TransactionsEmpty : string.Empty;
         }
@@ -101,10 +99,6 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                     _ => Hesabyar.Application.Common.Result<Guid>.Failure("transaction.input.invalid", "Transaction details are incomplete.")
                 };
             if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.TransactionCreateFailed; return false; }
-            if (kind == TransactionKind.Expense && secondaryId is Guid expenseCategoryId)
-                Preferences.Set("transactions.last-expense-category", expenseCategoryId.ToString("D"));
-            else if (kind == TransactionKind.Income && secondaryId is Guid incomeCategoryId)
-                Preferences.Set("transactions.last-income-category", incomeCategoryId.ToString("D"));
         }
         catch (Exception) { StatusMessage = AppStrings.TransactionCreateFailed; return false; }
         finally { IsBusy = false; }

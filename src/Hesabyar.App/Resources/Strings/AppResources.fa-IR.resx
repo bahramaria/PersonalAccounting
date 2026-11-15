@@ -179,4 +179,27 @@
   <data name="SettingsAmountsHidden" xml:space="preserve"><value>نمایش مبالغ: مخفی</value></data>
   <data name="SettingsAmountsVisible" xml:space="preserve"><value>نمایش مبالغ: فعال</value></data>
   <data name="AmountHidden" xml:space="preserve"><value>••••••</value></data>
+  <data name="PeopleTab" xml:space="preserve"><value>اشخاص</value></data>
+  <data name="PeopleHeading" xml:space="preserve"><value>اشخاص و مانده حساب</value></data>
+  <data name="PeopleEmpty" xml:space="preserve"><value>هنوز شخصی ثبت نشده است.</value></data>
+  <data name="PeopleLoadFailed" xml:space="preserve"><value>بارگذاری اشخاص انجام نشد.</value></data>
+  <data name="PersonAdd" xml:space="preserve"><value>افزودن شخص</value></data>
+  <data name="PersonName" xml:space="preserve"><value>نام شخص</value></data>
+  <data name="PersonPhone" xml:space="preserve"><value>شماره تماس (اختیاری)</value></data>
+  <data name="PersonEdit" xml:space="preserve"><value>ویرایش شخص</value></data>
+  <data name="PersonArchive" xml:space="preserve"><value>بایگانی شخص</value></data>
+  <data name="PersonArchiveConfirm" xml:space="preserve"><value>این شخص بایگانی شود؟ سوابق مالی حفظ خواهند شد.</value></data>
+  <data name="PersonLend" xml:space="preserve"><value>به او قرض دادم</value></data>
+  <data name="PersonBorrow" xml:space="preserve"><value>از او قرض گرفتم</value></data>
+  <data name="PersonRepay" xml:space="preserve"><value>ثبت بازپرداخت</value></data>
+  <data name="PersonTheyOweMe" xml:space="preserve"><value>او به من بدهکار است</value></data>
+  <data name="PersonIOweThem" xml:space="preserve"><value>من به او بدهکارم</value></data>
+  <data name="PersonSettled" xml:space="preserve"><value>تسویه</value></data>
+  <data name="PersonNoAccount" xml:space="preserve"><value>برای ثبت بدهی، ابتدا یک حساب نقدی، بانکی یا کیف پول بسازید.</value></data>
+  <data name="PersonHistory" xml:space="preserve"><value>تاریخچه گردش</value></data>
+  <data name="PersonShare" xml:space="preserve"><value>اشتراک‌گذاری صورت‌حساب</value></data>
+  <data name="PersonHistoryEmpty" xml:space="preserve"><value>سابقه بدهی یا بازپرداختی وجود ندارد.</value></data>
+  <data name="PersonStatementTitle" xml:space="preserve"><value>صورت‌حساب شخص</value></data>
+  <data name="PersonExcessRepaymentPrompt" xml:space="preserve"><value>مبلغ از مانده بدهی بیشتر است. مانده فعلی تسویه و مبلغ اضافه به‌عنوان بدهی جدید در جهت مخالف ثبت شود؟</value></data>
+  <data name="PersonExcessRepaymentNote" xml:space="preserve"><value>مبلغ اضافه بازپرداخت به‌عنوان بدهی جدید در جهت مخالف ثبت شد.</value></data>
 </root>

@@ -17,7 +17,6 @@ public sealed class SettingsPage : ContentPage
     private readonly Button _languageButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _themeButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _calendarButton = new() { HorizontalOptions = LayoutOptions.Fill };
-    private readonly Button _amountVisibilityButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _pinButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _autoLockButton = new() { HorizontalOptions = LayoutOptions.Fill };
     private readonly Button _backupButton = new() { HorizontalOptions = LayoutOptions.Fill };
@@ -37,7 +36,6 @@ public sealed class SettingsPage : ContentPage
         _languageButton.Clicked += OnLanguageClicked;
         _themeButton.Clicked += OnThemeClicked;
         _calendarButton.Clicked += OnCalendarClicked;
-        _amountVisibilityButton.Clicked += OnAmountVisibilityClicked;
         _pinButton.Clicked += OnPinClicked;
         _autoLockButton.Clicked += OnAutoLockClicked;
         _backupButton.Clicked += OnBackupClicked;
@@ -50,7 +48,7 @@ public sealed class SettingsPage : ContentPage
                 Children =
                 {
                     new Label { Text = AppStrings.SettingsHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
-                    _languageButton, _themeButton, _calendarButton, _amountVisibilityButton, _pinButton, _autoLockButton,
+                    _languageButton, _themeButton, _calendarButton, _pinButton, _autoLockButton,
                     new Label { Text = AppStrings.BackupHeading, FontSize = 20, FontAttributes = FontAttributes.Bold },
                     _backupButton, _restoreButton
                 }
@@ -109,12 +107,6 @@ public sealed class SettingsPage : ContentPage
         else return;
         _calendar.CurrentCalendar = Preferences.Get("app.calendar", "persian") == "gregorian"
             ? CalendarKind.Gregorian : CalendarKind.Persian;
-        RefreshLabels();
-    }
-
-    private void OnAmountVisibilityClicked(object? sender, EventArgs e)
-    {
-        Preferences.Set("display.hide-amounts", !Preferences.Get("display.hide-amounts", false));
         RefreshLabels();
     }
 
@@ -346,9 +338,6 @@ public sealed class SettingsPage : ContentPage
         var calendar = _calendar.CurrentCalendar == CalendarKind.Gregorian
             ? AppStrings.SettingsCalendarGregorian : AppStrings.SettingsCalendarPersian;
         _calendarButton.Text = $"{AppStrings.SettingsCalendar}: {calendar}";
-        _amountVisibilityButton.Text = Preferences.Get("display.hide-amounts", false)
-            ? AppStrings.SettingsAmountsHidden
-            : AppStrings.SettingsAmountsVisible;
         _backupButton.Text = AppStrings.BackupCreate;
         _restoreButton.Text = AppStrings.BackupRestore;
         _autoLockButton.Text = $"{AppStrings.PinAutoLock}: {Preferences.Get("security.auto-lock-seconds", 0) switch

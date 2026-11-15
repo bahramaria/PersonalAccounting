@@ -1,4 +1,5 @@
 using Hesabyar.Application.Accounts;
+using Hesabyar.Application.People;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Application.Common;
 using Hesabyar.App.Services;
@@ -55,6 +56,9 @@ public static class MauiProgram
         builder.Services.AddTransient<PinLockPage>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<AccountService>();
+        builder.Services.AddTransient<PersonService>();
+        builder.Services.AddTransient<PeopleViewModel>();
+        builder.Services.AddTransient<PeoplePage>();
         builder.Services.AddTransient<TransactionService>();
         builder.Services.AddTransient<AccountsViewModel>();
         builder.Services.AddTransient<DashboardPage>();

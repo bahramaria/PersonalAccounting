@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
 using Hesabyar.App.Resources.Strings;
-using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Localization;
@@ -80,7 +79,8 @@ public sealed class DashboardViewModel(
         }
     }
 
-    private static string FormatMoney(decimal amount) => MoneyDisplayService.Format(amount);
+    private static string FormatMoney(decimal amount) =>
+        $"{BidiTextFormatter.IsolateLeftToRight(amount.ToString("N0", System.Globalization.CultureInfo.CurrentCulture))} {AppStrings.CurrencyRial}";
 }
 
 public sealed record DashboardTransactionItem(string Kind, string Description, string AmountText, string DateText);

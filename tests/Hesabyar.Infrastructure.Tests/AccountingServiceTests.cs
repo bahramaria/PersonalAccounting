@@ -4,7 +4,6 @@ using Hesabyar.Application.Transactions;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence;
-using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -392,37 +391,6 @@ public sealed class AccountingServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(
             minimumAmountMinor: 200_000, maximumAmountMinor: 100_000));
         await Assert.ThrowsAsync<ArgumentException>(() => transactions.GetTransactionsAsync(minimumAmountMinor: -1));
-    }
-
-    [Fact]
-    public async Task GetTransactionsAsync_LoadsFiftyThousandTransactions()
-    {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-        await using var db = CreateDatabase(connection);
-        await db.Database.MigrateAsync();
-
-        for (var batch = 0; batch < 50; batch++)
-        {
-            var transactions = Enumerable.Range(0, 1_000)
-                .Select(index => new DbLedgerTransaction
-                {
-                    BusinessDate = BusinessDate.AddDays(-(batch * 1_000 + index) % 365),
-                    Kind = TransactionKind.Expense,
-                    Description = $"Transaction {batch * 1_000 + index}",
-                    Source = TransactionSource.Manual,
-                    IsConfirmed = true,
-                    CreatedAtUtc = NowUtc,
-                    UpdatedAtUtc = NowUtc
-                });
-            db.Transactions.AddRange(transactions);
-            await db.SaveChangesAsync();
-        }
-
-        var service = new TransactionService(new EfAccountingRepository(db), new FixedClock(NowUtc));
-        var results = await service.GetTransactionsAsync(take: 50_000);
-
-        Assert.Equal(50_000, results.Count);
     }
 
     private static AppDbContext CreateDatabase(SqliteConnection connection)

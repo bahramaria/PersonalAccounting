@@ -179,4 +179,27 @@
   <data name="SettingsAmountsHidden" xml:space="preserve"><value>Amounts: hidden</value></data>
   <data name="SettingsAmountsVisible" xml:space="preserve"><value>Amounts: visible</value></data>
   <data name="AmountHidden" xml:space="preserve"><value>••••••</value></data>
+  <data name="PeopleTab" xml:space="preserve"><value>People</value></data>
+  <data name="PeopleHeading" xml:space="preserve"><value>People and balances</value></data>
+  <data name="PeopleEmpty" xml:space="preserve"><value>No people have been added yet.</value></data>
+  <data name="PeopleLoadFailed" xml:space="preserve"><value>Could not load people.</value></data>
+  <data name="PersonAdd" xml:space="preserve"><value>Add person</value></data>
+  <data name="PersonName" xml:space="preserve"><value>Person name</value></data>
+  <data name="PersonPhone" xml:space="preserve"><value>Phone number (optional)</value></data>
+  <data name="PersonEdit" xml:space="preserve"><value>Edit person</value></data>
+  <data name="PersonArchive" xml:space="preserve"><value>Archive person</value></data>
+  <data name="PersonArchiveConfirm" xml:space="preserve"><value>Archive this person? Financial history will be preserved.</value></data>
+  <data name="PersonLend" xml:space="preserve"><value>I lent money</value></data>
+  <data name="PersonBorrow" xml:space="preserve"><value>I borrowed money</value></data>
+  <data name="PersonRepay" xml:space="preserve"><value>Record repayment</value></data>
+  <data name="PersonTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
+  <data name="PersonIOweThem" xml:space="preserve"><value>I owe them</value></data>
+  <data name="PersonSettled" xml:space="preserve"><value>Settled</value></data>
+  <data name="PersonNoAccount" xml:space="preserve"><value>Create a cash, bank or wallet account before recording a debt.</value></data>
+  <data name="PersonHistory" xml:space="preserve"><value>Transaction history</value></data>
+  <data name="PersonShare" xml:space="preserve"><value>Share statement</value></data>
+  <data name="PersonHistoryEmpty" xml:space="preserve"><value>No debt or repayment history.</value></data>
+  <data name="PersonStatementTitle" xml:space="preserve"><value>Person account statement</value></data>
+  <data name="PersonExcessRepaymentPrompt" xml:space="preserve"><value>The amount exceeds the outstanding balance. Settle the current balance and record the excess as a new debt in the opposite direction?</value></data>
+  <data name="PersonExcessRepaymentNote" xml:space="preserve"><value>Excess repayment recorded as a new debt in the opposite direction.</value></data>
 </root>

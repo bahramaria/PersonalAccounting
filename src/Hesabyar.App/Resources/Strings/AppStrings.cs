@@ -48,6 +48,30 @@ public static class AppStrings
     public static string OnboardingPinInvalid => Get(nameof(OnboardingPinInvalid));
     public static string OnboardingSmsNote => Get(nameof(OnboardingSmsNote));
 
+    public static string PeopleTab => Get(nameof(PeopleTab));
+    public static string PeopleHeading => Get(nameof(PeopleHeading));
+    public static string PeopleEmpty => Get(nameof(PeopleEmpty));
+    public static string PeopleLoadFailed => Get(nameof(PeopleLoadFailed));
+    public static string PersonAdd => Get(nameof(PersonAdd));
+    public static string PersonName => Get(nameof(PersonName));
+    public static string PersonPhone => Get(nameof(PersonPhone));
+    public static string PersonEdit => Get(nameof(PersonEdit));
+    public static string PersonArchive => Get(nameof(PersonArchive));
+    public static string PersonArchiveConfirm => Get(nameof(PersonArchiveConfirm));
+    public static string PersonLend => Get(nameof(PersonLend));
+    public static string PersonBorrow => Get(nameof(PersonBorrow));
+    public static string PersonRepay => Get(nameof(PersonRepay));
+    public static string PersonTheyOweMe => Get(nameof(PersonTheyOweMe));
+    public static string PersonIOweThem => Get(nameof(PersonIOweThem));
+    public static string PersonSettled => Get(nameof(PersonSettled));
+    public static string PersonNoAccount => Get(nameof(PersonNoAccount));
+    public static string PersonHistory => Get(nameof(PersonHistory));
+    public static string PersonShare => Get(nameof(PersonShare));
+    public static string PersonHistoryEmpty => Get(nameof(PersonHistoryEmpty));
+    public static string PersonStatementTitle => Get(nameof(PersonStatementTitle));
+    public static string PersonExcessRepaymentPrompt => Get(nameof(PersonExcessRepaymentPrompt));
+    public static string PersonExcessRepaymentNote => Get(nameof(PersonExcessRepaymentNote));
+
     public static string AccountsHeading => Get(nameof(AccountsHeading));
     public static string AddAccount => Get(nameof(AddAccount));
     public static string AccountNamePrompt => Get(nameof(AccountNamePrompt));

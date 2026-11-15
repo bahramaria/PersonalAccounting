@@ -12,12 +12,14 @@ public sealed class AppDbContext(
     public DbSet<DbAccount> Accounts => Set<DbAccount>();
     public DbSet<DbLedgerTransaction> Transactions => Set<DbLedgerTransaction>();
     public DbSet<DbPosting> Postings => Set<DbPosting>();
+    public DbSet<DbParty> Parties => Set<DbParty>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureAccounts(modelBuilder);
         ConfigureTransactions(modelBuilder);
         ConfigurePostings(modelBuilder);
+        ConfigureParties(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -83,6 +85,18 @@ public sealed class AppDbContext(
         entity.Property(x => x.SmsMessageId).HasMaxLength(160);
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
+        entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+    private static void ConfigureParties(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbParty>();
+        entity.ToTable("Parties");
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        entity.Property(x => x.Phone).HasMaxLength(40);
+        entity.Property(x => x.Note).HasMaxLength(500);
+        entity.HasIndex(x => x.Name);
         entity.HasQueryFilter(x => !x.IsDeleted);
     }
 

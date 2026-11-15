@@ -49,6 +49,22 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+        modelBuilder.Entity<DbParty>(entity =>
+        {
+            entity.ToTable("Parties");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.Phone).HasMaxLength(40);
+            entity.Property(x => x.Note).HasMaxLength(500);
+            entity.Property(x => x.IsArchived);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.Name);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbLedgerTransaction>(entity =>
         {
             entity.ToTable("Transactions");
