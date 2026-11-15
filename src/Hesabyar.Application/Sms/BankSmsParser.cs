@@ -52,8 +52,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         if (string.IsNullOrWhiteSpace(normalizedBody))
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
 
-        if (ContainsAny(normalizedBody, "رمز پویا", "رمز:", "رمز :") ||
-            normalizedBody.Contains("code:", StringComparison.OrdinalIgnoreCase))
+        if (ContainsAny(normalizedBody, "رمز پویا", "رمز:", "رمز :"))
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
 
         var matchedRule = _rules.FirstOrDefault(rule =>

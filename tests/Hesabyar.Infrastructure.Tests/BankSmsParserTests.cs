@@ -135,13 +135,25 @@ public sealed class BankSmsParserTests
     [Theory]
     [InlineData("پرداخت قبض تلفن ثابت مبلغ 4,139,000 رمز: 11111111")]
     [InlineData("پرداخت قبض تلفن ثابت مبلغ 4,139,000 رمز: 22222222")]
-    [InlineData("خرید قبضینو مبلغ 2,130,288 Code:00000000")]
     public void VerificationCodeMessagesAreUnsupported(string body)
     {
         var result = new BankSmsParser().Parse("bank-sender", body);
 
         Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
         Assert.Null(result.AmountMinor);
+    }
+
+
+    [Fact]
+    public void PurchaseWithReferenceCodeRemainsInManualReview()
+    {
+        var result = new BankSmsParser().Parse(
+            "bank-sender", "خرید قبضینو مبلغ 2,130,288 Code:00000000");
+
+        Assert.Equal(BankSmsParseStatus.NeedsReview, result.Status);
+        Assert.Equal(BankSmsTransactionType.Expense, result.TransactionType);
+        Assert.Equal(2_130_288, result.AmountMinor);
+        Assert.False(result.AmountUnitKnown);
     }
 
     [Fact]
