@@ -3,8 +3,12 @@ using Hesabyar.Application.Common;
 using Hesabyar.Application.Loans;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
+using Hesabyar.Infrastructure.Persistence.Migrations;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Hesabyar.Infrastructure.Tests;
 
@@ -12,6 +16,22 @@ public sealed class LoanServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 15, 8, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Start = new(2026, 1, 31);
+
+
+    [Fact]
+    public void ModelSnapshot_MatchesCurrentEfModel()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite("Data Source=:memory:")
+            .Options;
+        using var db = new AppDbContext(options);
+        var snapshot = new AppDbContextModelSnapshot();
+        var differences = db.GetService<IMigrationsModelDiffer>().GetDifferences(
+            snapshot.Model.GetRelationalModel(), db.Model.GetRelationalModel());
+
+        Assert.True(differences.Count == 0,
+            string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + x)));
+    }
 
     [Theory]
     [InlineData(1_000_000L, 0, 1)]
