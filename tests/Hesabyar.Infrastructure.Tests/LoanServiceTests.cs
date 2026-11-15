@@ -26,8 +26,10 @@ public sealed class LoanServiceTests
             .Options;
         using var db = new AppDbContext(options);
         var snapshot = new AppDbContextModelSnapshot();
+        var initializedSnapshot = db.GetService<IModelRuntimeInitializer>()
+            .Initialize(snapshot.Model, designTime: true);
         var differences = db.GetService<IMigrationsModelDiffer>().GetDifferences(
-            snapshot.Model.GetRelationalModel(), db.Model.GetRelationalModel());
+            initializedSnapshot.GetRelationalModel(), db.Model.GetRelationalModel());
 
         Assert.True(differences.Count == 0,
             string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + x)));
