@@ -40,7 +40,7 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory, IDateCale
                     string.Format(AppStrings.PersonDueReminder, calendar.Format(nextDue.DueDate),
                         MoneyDisplayService.Format(nextDue.RemainingAmountMinor));
                 People.Add(new PersonListItem(person.Id, person.Name, person.Phone ?? string.Empty,
-                    MoneyDisplayService.Format(Math.Abs((decimal)person.BalanceMinor)), person.BalanceMinor, dueText));
+                    MoneyDisplayService.Format(person.BalanceMinor == long.MinValue ? long.MaxValue : Math.Abs(person.BalanceMinor)), person.BalanceMinor, dueText));
             }
             Accounts.Clear();
             if (accounts.IsSuccess && accounts.Value is not null)
