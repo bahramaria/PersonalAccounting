@@ -22,7 +22,7 @@ public sealed class BankSmsParserTests
         Assert.Equal(1_250_000, result.AmountMinor);
         Assert.Equal(5_000_000, result.BalanceMinor);
         Assert.Equal("1234", result.CardLastFour);
-        Assert.Equal(new DateOnly(1405, 8, 25), result.BusinessDate);
+        Assert.Equal("1405/08/25", result.DateText);
         Assert.Equal(new TimeOnly(9, 35), result.TransactionTime);
     }
 

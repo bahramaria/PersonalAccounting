@@ -132,7 +132,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
             : null;
     }
 
-    private static DateOnly? ExtractDate(string body)
+    private static string? ExtractDate(string body)
     {
         var match = DateRegex.Match(body);
         if (!match.Success ||
@@ -142,7 +142,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
             month is < 1 or > 12 || day is < 1 or > 31)
             return null;
 
-        return new DateOnly(year, month, day);
+        return $"{year:D4}/{month:D2}/{day:D2}";
     }
 
     private static TimeOnly? ExtractTime(string body)

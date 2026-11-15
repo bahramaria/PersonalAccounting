@@ -27,7 +27,7 @@ public sealed record ParsedBankSms(
     long? AmountMinor,
     long? BalanceMinor,
     string? CardLastFour,
-    DateOnly? BusinessDate,
+    string? DateText,
     TimeOnly? TransactionTime,
     string DedupeHash,
     string NormalizedSender,
