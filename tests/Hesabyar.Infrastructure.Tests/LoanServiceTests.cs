@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Hesabyar.Infrastructure.Tests;
 
@@ -33,7 +34,7 @@ public sealed class LoanServiceTests
             initializedSnapshot.GetRelationalModel(), currentDesignTimeModel.GetRelationalModel());
 
         Assert.True(differences.Count == 0,
-            string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + x)));
+            string.Join(Environment.NewLine, differences.Select(x => x is AddColumnOperation add ? $"AddColumn {add.Table}.{add.Name} ({add.ColumnType})" : x.GetType().Name + ": " + x)));
     }
 
     [Theory]
