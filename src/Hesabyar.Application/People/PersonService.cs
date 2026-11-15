@@ -35,24 +35,64 @@ public sealed class PersonService(IPeopleRepository repository, IClock clock)
         return archived ? Result<bool>.Success(true) : Result<bool>.Failure("person.archive.blocked", "A person with an outstanding balance cannot be archived.");
     }
 
-    public async Task<Result<bool>> AddDebtAsync(Guid personId, Guid accountId, long amountMinor, bool theyOweMe, DateOnly date, string? note, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> AddDebtAsync(Guid personId, Guid accountId, long amountMinor, bool theyOweMe, DateOnly date, string? note, DateOnly? dueDate = null, CancellationToken cancellationToken = default)
     {
         if (amountMinor <= 0)
             return Result<bool>.Failure("person.amount.invalid", "Amount must be greater than zero.");
         if (note?.Length > 500)
             return Result<bool>.Failure("person.note.too_long", "Note cannot exceed 500 characters.");
-        var saved = await repository.AddDebtAsync(personId, accountId, amountMinor, theyOweMe, date, Normalize(note), clock.UtcNow, cancellationToken);
+        if (dueDate is not null && dueDate < date)
+            return Result<bool>.Failure("person.due_date.invalid", "Due date cannot be earlier than the debt date.");
+        var saved = await repository.AddDebtAsync(personId, accountId, amountMinor, theyOweMe, date, dueDate, Normalize(note), clock.UtcNow, cancellationToken);
         return saved ? Result<bool>.Success(true) : Result<bool>.Failure("person.entry.invalid", "Person or account was not found, or the account cannot be used.");
     }
 
-    public async Task<Result<bool>> RepayAsync(Guid personId, Guid accountId, long amountMinor, DateOnly date, string? note, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> RepayAsync(Guid personId, Guid accountId, long amountMinor, DateOnly date, string? note, bool allowOverpayment = false, CancellationToken cancellationToken = default)
     {
         if (amountMinor <= 0)
             return Result<bool>.Failure("person.amount.invalid", "Amount must be greater than zero.");
         if (note?.Length > 500)
             return Result<bool>.Failure("person.note.too_long", "Note cannot exceed 500 characters.");
-        var saved = await repository.RepayAsync(personId, accountId, amountMinor, date, Normalize(note), clock.UtcNow, cancellationToken);
+        var saved = await repository.RepayAsync(personId, accountId, amountMinor, date, Normalize(note), allowOverpayment, clock.UtcNow, cancellationToken);
         return saved ? Result<bool>.Success(true) : Result<bool>.Failure("person.repayment.invalid", "Repayment exceeds the outstanding balance, or person/account was not found.");
+    }
+
+    public async Task<IReadOnlyList<PersonDueSnapshot>> GetOutstandingDuesAsync(Guid personId, CancellationToken cancellationToken = default)
+    {
+        var entries = (await repository.GetEntriesAsync(personId, cancellationToken))
+            .OrderBy(x => x.Date).ThenBy(x => x.CreatedAtUtc).ToArray();
+        var obligations = new List<DueObligation>();
+
+        foreach (var entry in entries)
+        {
+            if (entry.Kind == "Debt")
+            {
+                obligations.Add(new DueObligation(entry.DueDate, entry.AmountMinor, entry.BalanceEffectMinor > 0));
+                continue;
+            }
+
+            var repaymentReducesTheirDebt = entry.BalanceEffectMinor < 0;
+            var remaining = (decimal)entry.AmountMinor;
+            foreach (var obligation in obligations.Where(x => x.TheyOweMe == repaymentReducesTheirDebt && x.Remaining > 0))
+            {
+                var applied = Math.Min(obligation.Remaining, remaining);
+                obligation.Remaining -= applied;
+                remaining -= applied;
+                if (remaining == 0) break;
+            }
+        }
+
+        return obligations.Where(x => x.DueDate is not null && x.Remaining > 0)
+            .OrderBy(x => x.DueDate)
+            .Select(x => new PersonDueSnapshot(x.DueDate!.Value, decimal.ToInt64(x.Remaining), x.TheyOweMe))
+            .ToArray();
+    }
+
+    private sealed class DueObligation(DateOnly? dueDate, long amountMinor, bool theyOweMe)
+    {
+        public DateOnly? DueDate { get; } = dueDate;
+        public decimal Remaining { get; set; } = amountMinor;
+        public bool TheyOweMe { get; } = theyOweMe;
     }
 
     private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

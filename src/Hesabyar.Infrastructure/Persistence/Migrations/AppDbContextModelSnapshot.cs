@@ -73,6 +73,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.BusinessDate).HasColumnType("TEXT");
             entity.Property(x => x.Kind).HasConversion<string>().HasMaxLength(20);
             entity.Property(x => x.Description).HasMaxLength(500);
+            entity.Property(x => x.DueDate).HasColumnType("TEXT");
             entity.Property(x => x.PartyId).HasColumnType("TEXT");
             entity.Property(x => x.Source).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);

@@ -29,14 +29,15 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
         var entries = await db.Transactions.AsNoTracking().Include(x => x.Postings).ThenInclude(x => x.Account)
             .Where(x => x.PartyId == personId && (x.Kind == TransactionKind.PersonDebt || x.Kind == TransactionKind.PersonRepay))
             .OrderByDescending(x => x.BusinessDate)
-            .Take(500).ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
         entries = entries.OrderByDescending(x => x.BusinessDate).ThenByDescending(x => x.CreatedAtUtc).ToList();
         return entries.Select(x =>
         {
             var partyPosting = x.Postings.FirstOrDefault(p => p.PartyId == personId);
             var cashPosting = x.Postings.FirstOrDefault(p => p.PartyId == null && p.Account.SystemKey == null);
             return new PersonEntrySnapshot(x.Id, x.BusinessDate, x.Kind == TransactionKind.PersonDebt ? "Debt" : "Repayment",
-                Math.Abs(partyPosting?.AmountMinor ?? 0), cashPosting?.Account.Name ?? string.Empty, x.Description);
+                decimal.ToInt64(Math.Abs((decimal)(partyPosting?.AmountMinor ?? 0))), cashPosting?.Account.Name ?? string.Empty,
+                x.Description, x.DueDate, partyPosting?.AmountMinor ?? 0, x.CreatedAtUtc);
         }).ToArray();
     }
 
@@ -68,16 +69,22 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
         return true;
     }
 
-    public Task<bool> AddDebtAsync(Guid personId, Guid accountId, long amountMinor, bool theyOweMe, DateOnly date, string? note, DateTimeOffset nowUtc, CancellationToken cancellationToken) =>
-        SaveEntryAsync(personId, accountId, amountMinor, theyOweMe ? amountMinor : -amountMinor, TransactionKind.PersonDebt, date, note, nowUtc, cancellationToken);
+    public Task<bool> AddDebtAsync(Guid personId, Guid accountId, long amountMinor, bool theyOweMe, DateOnly date, DateOnly? dueDate, string? note, DateTimeOffset nowUtc, CancellationToken cancellationToken) =>
+        SaveEntryAsync(personId, accountId, amountMinor, theyOweMe ? amountMinor : -amountMinor, TransactionKind.PersonDebt, date, dueDate, note, nowUtc, cancellationToken);
 
-    public async Task<bool> RepayAsync(Guid personId, Guid accountId, long amountMinor, DateOnly date, string? note, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    public async Task<bool> RepayAsync(Guid personId, Guid accountId, long amountMinor, DateOnly date, string? note, bool allowOverpayment, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var balance = await GetBalanceAsync(personId, cancellationToken);
-        if (balance == 0 || amountMinor > Math.Abs(balance)) return false;
-        var clearingAmount = balance > 0 ? -amountMinor : amountMinor;
-        return await SaveEntryAsync(personId, accountId, amountMinor, clearingAmount, TransactionKind.PersonRepay,
-            date, note, nowUtc, cancellationToken);
+        if (balance == 0) return false;
+        var outstanding = Math.Abs((decimal)balance);
+        if (amountMinor > outstanding && !allowOverpayment) return false;
+
+        var excessAmount = amountMinor > outstanding ? decimal.ToInt64(amountMinor - outstanding) : 0L;
+        var repaymentAmount = amountMinor - excessAmount;
+        var clearingAmount = balance > 0 ? -repaymentAmount : repaymentAmount;
+        var excessClearingAmount = balance > 0 ? -excessAmount : excessAmount;
+        return await SaveEntryAsync(personId, accountId, repaymentAmount, clearingAmount, TransactionKind.PersonRepay,
+            date, null, note, nowUtc, cancellationToken, excessAmount, excessClearingAmount);
     }
 
     private async Task<long> GetBalanceAsync(Guid personId, CancellationToken cancellationToken) =>
@@ -85,7 +92,8 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
             .Select(x => (long?)x.AmountMinor).SumAsync(cancellationToken) ?? 0L;
 
     private async Task<bool> SaveEntryAsync(Guid personId, Guid accountId, long amountMinor, long clearingAmount,
-        TransactionKind kind, DateOnly date, string? note, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+        TransactionKind kind, DateOnly date, DateOnly? dueDate, string? note, DateTimeOffset nowUtc, CancellationToken cancellationToken,
+        long excessAmountMinor = 0, long excessClearingAmount = 0)
     {
         var party = await db.Parties.SingleOrDefaultAsync(x => x.Id == personId && !x.IsArchived, cancellationToken);
         var account = await db.Accounts.SingleOrDefaultAsync(x => x.Id == accountId && !x.IsArchived &&
@@ -105,7 +113,7 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
 
         var transaction = new DbLedgerTransaction
         {
-            BusinessDate = date, Kind = kind, Description = note, PartyId = personId,
+            BusinessDate = date, DueDate = dueDate, Kind = kind, Description = note, PartyId = personId,
             Source = TransactionSource.Manual, IsConfirmed = true, CreatedAtUtc = nowUtc, UpdatedAtUtc = nowUtc,
             Postings =
             [
@@ -114,6 +122,25 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
             ]
         };
         db.Transactions.Add(transaction);
+        if (excessAmountMinor > 0)
+        {
+            db.Transactions.Add(new DbLedgerTransaction
+            {
+                BusinessDate = date,
+                Kind = TransactionKind.PersonDebt,
+                Description = note,
+                PartyId = personId,
+                Source = TransactionSource.Manual,
+                IsConfirmed = true,
+                CreatedAtUtc = nowUtc.AddTicks(1),
+                UpdatedAtUtc = nowUtc.AddTicks(1),
+                Postings =
+                [
+                    new DbPosting { AccountId = clearing.Id, AmountMinor = excessClearingAmount, CurrencyCode = "IRR", PartyId = personId },
+                    new DbPosting { AccountId = accountId, AmountMinor = -excessClearingAmount, CurrencyCode = "IRR" }
+                ]
+            });
+        }
         await db.SaveChangesAsync(cancellationToken);
         await dbTransaction.CommitAsync(cancellationToken);
         return true;

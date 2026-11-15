@@ -202,4 +202,10 @@
   <data name="PersonStatementTitle" xml:space="preserve"><value>Person account statement</value></data>
   <data name="PersonExcessRepaymentPrompt" xml:space="preserve"><value>The amount exceeds the outstanding balance. Settle the current balance and record the excess as a new debt in the opposite direction?</value></data>
   <data name="PersonExcessRepaymentNote" xml:space="preserve"><value>Excess repayment recorded as a new debt in the opposite direction.</value></data>
+
+  <data name="PersonDueDatePrompt" xml:space="preserve"><value>Due date (optional, e.g. 2026/12/16)</value></data>
+  <data name="PersonDueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="PersonDueDateInvalid" xml:space="preserve"><value>The due date is invalid.</value></data>
+  <data name="PersonDueReminder" xml:space="preserve"><value>Upcoming or overdue: {0} · {1}</value></data>
+  <data name="PersonDueReminders" xml:space="preserve"><value>Outstanding due dates</value></data>
 </root>

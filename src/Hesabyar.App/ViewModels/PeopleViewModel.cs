@@ -5,12 +5,13 @@ using Hesabyar.Application.People;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
+using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace Hesabyar.App.ViewModels;
 
-public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory) : ObservableObject
+public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory, IDateCalendarService calendar) : ObservableObject
 {
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -32,12 +33,19 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory) : Observa
             var accounts = await accountService.GetAccountsAsync(cancellationToken: cancellationToken);
             People.Clear();
             foreach (var person in rows)
+            {
+                var dues = await people.GetOutstandingDuesAsync(person.Id, cancellationToken);
+                var nextDue = dues.FirstOrDefault(x => x.DueDate <= DateOnly.FromDateTime(DateTime.Today.AddDays(7)));
+                var dueText = nextDue is null ? string.Empty :
+                    string.Format(AppStrings.PersonDueReminder, calendar.Format(nextDue.DueDate),
+                        MoneyDisplayService.Format(nextDue.RemainingAmountMinor));
                 People.Add(new PersonListItem(person.Id, person.Name, person.Phone ?? string.Empty,
-                    MoneyDisplayService.Format(person.BalanceMinor), person.BalanceMinor));
+                    MoneyDisplayService.Format(Math.Abs((decimal)person.BalanceMinor)), person.BalanceMinor, dueText));
+            }
             Accounts.Clear();
             if (accounts.IsSuccess && accounts.Value is not null)
                 foreach (var account in accounts.Value.Where(x => !x.Account.IsArchived &&
-                    x.Account.Type == AccountType.Asset &&
+                    x.Account.Type == AccountType.Asset && x.Account.CurrencyCode == "IRR" &&
                     x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet))
                     Accounts.Add(new PersonAccountChoice(account.Account.Id, account.Account.Name));
             StatusMessage = People.Count == 0 ? AppStrings.PeopleEmpty : string.Empty;
@@ -76,21 +84,21 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory) : Observa
         return true;
     }
 
-    public async Task<bool> AddDebtAsync(Guid personId, Guid accountId, long amount, bool theyOweMe, string? note, CancellationToken cancellationToken = default)
+    public async Task<bool> AddDebtAsync(Guid personId, Guid accountId, long amount, bool theyOweMe, string? note, DateOnly? dueDate = null, CancellationToken cancellationToken = default)
     {
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<PersonService>();
-        var result = await service.AddDebtAsync(personId, accountId, amount, theyOweMe, DateOnly.FromDateTime(DateTime.Today), note, cancellationToken);
+        var result = await service.AddDebtAsync(personId, accountId, amount, theyOweMe, DateOnly.FromDateTime(DateTime.Today), note, dueDate, cancellationToken);
         if (!result.IsSuccess) { StatusMessage = result.Error.Message; return false; }
         await LoadAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> RepayAsync(Guid personId, Guid accountId, long amount, string? note, CancellationToken cancellationToken = default)
+    public async Task<bool> RepayAsync(Guid personId, Guid accountId, long amount, string? note, bool allowOverpayment = false, CancellationToken cancellationToken = default)
     {
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<PersonService>();
-        var result = await service.RepayAsync(personId, accountId, amount, DateOnly.FromDateTime(DateTime.Today), note, cancellationToken);
+        var result = await service.RepayAsync(personId, accountId, amount, DateOnly.FromDateTime(DateTime.Today), note, allowOverpayment, cancellationToken);
         if (!result.IsSuccess) { StatusMessage = result.Error.Message; return false; }
         await LoadAsync(cancellationToken);
         return true;
@@ -103,7 +111,8 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory) : Observa
         var entries = await service.GetEntriesAsync(person.Id, cancellationToken);
         if (entries.Count == 0) return AppStrings.PersonHistoryEmpty;
         return string.Join(Environment.NewLine, entries.Select(x =>
-            $"{x.Date:yyyy/MM/dd}  {x.Kind}  {MoneyDisplayService.Format(x.AmountMinor)}  {x.AccountName}"));
+            $"{calendar.Format(x.Date)}  {x.Kind}  {MoneyDisplayService.Format(x.AmountMinor)}  {x.AccountName}" +
+            (x.DueDate is DateOnly due ? $"  {AppStrings.PersonDueDate}: {calendar.Format(due)}" : string.Empty)));
     }
 
     public async Task ShareSummaryAsync(PersonListItem person, CancellationToken cancellationToken = default)
@@ -111,13 +120,14 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory) : Observa
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<PersonService>();
         var entries = await service.GetEntriesAsync(person.Id, cancellationToken);
-        var lines = entries.Select(x => $"{x.Date:yyyy/MM/dd} | {x.Kind} | {MoneyDisplayService.Format(x.AmountMinor)} | {x.AccountName} | {x.Note}");
+        var lines = entries.Select(x => $"{calendar.Format(x.Date)} | {x.Kind} | {MoneyDisplayService.Format(x.AmountMinor)} | {x.AccountName} | {x.Note}" +
+            (x.DueDate is DateOnly due ? $" | {AppStrings.PersonDueDate}: {calendar.Format(due)}" : string.Empty));
         var statement = $"{person.Name}\n{person.BalanceDescription}: {person.BalanceText}\n\n{string.Join(Environment.NewLine, lines)}";
         await Share.Default.RequestAsync(new ShareTextRequest { Title = AppStrings.PersonStatementTitle, Text = statement });
     }
 }
 
-public sealed record PersonListItem(Guid Id, string Name, string Phone, string BalanceText, long BalanceMinor)
+public sealed record PersonListItem(Guid Id, string Name, string Phone, string BalanceText, long BalanceMinor, string DueReminderText)
 {
     public string BalanceDescription => BalanceMinor > 0 ? AppStrings.PersonTheyOweMe :
         BalanceMinor < 0 ? AppStrings.PersonIOweThem : AppStrings.PersonSettled;

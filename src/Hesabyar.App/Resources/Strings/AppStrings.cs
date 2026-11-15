@@ -71,6 +71,11 @@ public static class AppStrings
     public static string PersonStatementTitle => Get(nameof(PersonStatementTitle));
     public static string PersonExcessRepaymentPrompt => Get(nameof(PersonExcessRepaymentPrompt));
     public static string PersonExcessRepaymentNote => Get(nameof(PersonExcessRepaymentNote));
+    public static string PersonDueDatePrompt => Get(nameof(PersonDueDatePrompt));
+    public static string PersonDueDate => Get(nameof(PersonDueDate));
+    public static string PersonDueDateInvalid => Get(nameof(PersonDueDateInvalid));
+    public static string PersonDueReminder => Get(nameof(PersonDueReminder));
+    public static string PersonDueReminders => Get(nameof(PersonDueReminders));
 
     public static string AccountsHeading => Get(nameof(AccountsHeading));
     public static string AddAccount => Get(nameof(AddAccount));

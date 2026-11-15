@@ -202,4 +202,10 @@
   <data name="PersonStatementTitle" xml:space="preserve"><value>صورت‌حساب شخص</value></data>
   <data name="PersonExcessRepaymentPrompt" xml:space="preserve"><value>مبلغ از مانده بدهی بیشتر است. مانده فعلی تسویه و مبلغ اضافه به‌عنوان بدهی جدید در جهت مخالف ثبت شود؟</value></data>
   <data name="PersonExcessRepaymentNote" xml:space="preserve"><value>مبلغ اضافه بازپرداخت به‌عنوان بدهی جدید در جهت مخالف ثبت شد.</value></data>
+
+  <data name="PersonDueDatePrompt" xml:space="preserve"><value>تاریخ سررسید (اختیاری، مانند ۱۴۰۵/۰۹/۲۵)</value></data>
+  <data name="PersonDueDate" xml:space="preserve"><value>سررسید</value></data>
+  <data name="PersonDueDateInvalid" xml:space="preserve"><value>تاریخ سررسید معتبر نیست.</value></data>
+  <data name="PersonDueReminder" xml:space="preserve"><value>سررسید نزدیک یا گذشته: {0} · {1}</value></data>
+  <data name="PersonDueReminders" xml:space="preserve"><value>سررسیدهای باز</value></data>
 </root>

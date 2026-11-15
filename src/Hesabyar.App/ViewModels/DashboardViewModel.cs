@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
+using Hesabyar.Application.People;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
@@ -41,8 +42,12 @@ public sealed class DashboardViewModel(
                 throw new InvalidOperationException("Account balances could not be loaded.");
 
             var included = accountResult.Value.Where(x => x.Account.IncludeInTotal).ToArray();
-            var assets = included.Where(x => x.Account.Type == AccountType.Asset).Sum(x => (decimal)x.BalanceMinor);
-            var liabilities = included.Where(x => x.Account.Type == AccountType.Liability).Sum(x => Math.Abs((decimal)x.BalanceMinor));
+            var people = await scope.ServiceProvider.GetRequiredService<PersonService>()
+                .GetPeopleAsync(cancellationToken: cancellationToken);
+            var assets = included.Where(x => x.Account.Type == AccountType.Asset).Sum(x => (decimal)x.BalanceMinor)
+                + people.Where(x => x.BalanceMinor > 0).Sum(x => (decimal)x.BalanceMinor);
+            var liabilities = included.Where(x => x.Account.Type == AccountType.Liability).Sum(x => Math.Abs((decimal)x.BalanceMinor))
+                + people.Where(x => x.BalanceMinor < 0).Sum(x => Math.Abs((decimal)x.BalanceMinor));
             AssetsMessage = FormatMoney(assets);
             LiabilitiesMessage = FormatMoney(liabilities);
             NetWorthMessage = FormatMoney(assets - liabilities);
