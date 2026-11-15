@@ -8,11 +8,11 @@ namespace Hesabyar.Application.Sms;
 public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
 {
     private static readonly Regex AmountRegex = new(
-        @"(?:مبلغ|برداشت|واریز|خرید|پرداخت|انتقال)\s*(?:از\s+حساب\s*)?[:：]?\s*([0-9][0-9,٬،.\s]*)",
+        @"(?:مبلغ|برداشت|واریز|خرید|پرداخت|انتقال)\s*(?:از\s+حساب\s*)?[:：]?\s*([0-9][0-9,٬،. \t]*)([+-]?)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly Regex BalanceRegex = new(
-        @"(?:مانده|موجودی)\s*[:：]?\s*([0-9][0-9,٬،.\s]*)",
+        @"(?:مانده|موجودی)\s*[:：]?\s*([0-9][0-9,٬،.]*)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly Regex CardRegex = new(
@@ -23,11 +23,25 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         @"(?<![0-9])((?:13|14)[0-9]{2})[/\-]([0-9]{1,2})[/\-]([0-9]{1,2})(?![0-9])",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+    private static readonly Regex PartialDateRegex = new(
+        @"(?<![0-9])([0-9]{1,2})/([0-9]{1,2})(?![0-9])",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static readonly Regex TimeRegex = new(
         @"(?<![0-9])([0-9]{1,2}):([0-9]{2})(?![0-9])",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private readonly IReadOnlyList<BankSmsRule> _rules = rules?.ToArray() ?? [];
+    private static readonly IReadOnlyList<BankSmsRule> DefaultRules =
+    [
+        new BankSmsRule(
+            "parsian",
+            [],
+            [],
+            [],
+            BodyPattern: @"^\d{14}\s+مبلغ\s*[:：]")
+    ];
+
+    private readonly IReadOnlyList<BankSmsRule> _rules = rules?.ToArray() ?? DefaultRules;
 
     public ParsedBankSms Parse(string? sender, string? body)
     {
@@ -38,11 +52,22 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         if (string.IsNullOrWhiteSpace(normalizedBody))
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
 
+        if (ContainsAny(normalizedBody, "رمز پویا", "رمز:", "رمز :") ||
+            normalizedBody.Contains("code:", StringComparison.OrdinalIgnoreCase))
+            return Unsupported(normalizedSender, normalizedBody, dedupeHash);
+
         var matchedRule = _rules.FirstOrDefault(rule =>
             rule.SenderAliases.Any(alias =>
-                normalizedSender.Contains(Normalize(alias), StringComparison.OrdinalIgnoreCase)));
+                normalizedSender.Contains(Normalize(alias), StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(rule.BodyPattern) &&
+             Regex.IsMatch(normalizedBody, rule.BodyPattern, RegexOptions.CultureInvariant)));
 
-        var transactionType = DetectTransactionType(normalizedBody, matchedRule);
+        var amountMatch = AmountRegex.Match(normalizedBody);
+        var transactionType = amountMatch.Success && amountMatch.Groups[2].Value == "-"
+            ? BankSmsTransactionType.Expense
+            : amountMatch.Success && amountMatch.Groups[2].Value == "+"
+                ? BankSmsTransactionType.Income
+                : DetectTransactionType(normalizedBody, matchedRule);
         var amountMultiplier = ResolveAmountMultiplier(normalizedBody, matchedRule);
         var amount = ScaleAmount(ExtractAmount(AmountRegex, normalizedBody), amountMultiplier);
         var balance = ScaleAmount(ExtractAmount(BalanceRegex, normalizedBody), amountMultiplier);
@@ -166,14 +191,21 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
     private static string? ExtractDate(string body)
     {
         var match = DateRegex.Match(body);
-        if (!match.Success ||
-            !int.TryParse(match.Groups[1].Value, out var year) ||
-            !int.TryParse(match.Groups[2].Value, out var month) ||
-            !int.TryParse(match.Groups[3].Value, out var day) ||
-            month is < 1 or > 12 || day is < 1 or > 31)
+        if (match.Success &&
+            int.TryParse(match.Groups[1].Value, out var year) &&
+            int.TryParse(match.Groups[2].Value, out var month) &&
+            int.TryParse(match.Groups[3].Value, out var day) &&
+            month is >= 1 and <= 12 && day is >= 1 and <= 31)
+            return $"{year:D4}/{month:D2}/{day:D2}";
+
+        var partialMatch = PartialDateRegex.Match(body);
+        if (!partialMatch.Success ||
+            !int.TryParse(partialMatch.Groups[1].Value, out var partialMonth) ||
+            !int.TryParse(partialMatch.Groups[2].Value, out var partialDay) ||
+            partialMonth is < 1 or > 12 || partialDay is < 1 or > 31)
             return null;
 
-        return $"{year:D4}/{month:D2}/{day:D2}";
+        return $"{partialMonth:D2}/{partialDay:D2}";
     }
 
     private static TimeOnly? ExtractTime(string body)

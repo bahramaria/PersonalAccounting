@@ -320,4 +320,5 @@
   <data name="SmsCreateAdjustment" xml:space="preserve"><value>Create adjustment</value></data>
   <data name="SmsAdjustmentCreated" xml:space="preserve"><value>The adjustment transaction was created and the account balance now matches the SMS.</value></data>
   <data name="SmsAdjustmentFailed" xml:space="preserve"><value>The adjustment could not be created. Review the account balance and related transactions.</value></data>
+  <data name="SmsIgnored" xml:space="preserve"><value>Non-financial or verification-code SMS was ignored.</value></data>
 </root>

@@ -162,6 +162,27 @@ public sealed class BankSmsInboxTests
         Assert.False(systemAccount.IncludeInTotal);
     }
 
+
+    [Fact]
+    public async Task VerificationCodeSmsIsIgnoredWithoutPersistingIt()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using (var db = new AppDbContext(options))
+            await db.Database.MigrateAsync();
+
+        var service = new BankSmsInboxService(
+            new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+
+        Assert.Equal(SmsImportOutcome.Ignored,
+            await service.ImportAsync("sender", "پرداخت قبض تلفن ثابت مبلغ 4,139,000 رمز: 00000000"));
+        Assert.Empty(await service.GetPendingAsync());
+
+        await using var verify = new AppDbContext(options);
+        Assert.Empty(await verify.SmsInboxItems.ToListAsync());
+    }
+
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext() => new(options);

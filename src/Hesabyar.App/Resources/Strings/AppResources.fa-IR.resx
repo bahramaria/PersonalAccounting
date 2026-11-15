@@ -320,4 +320,5 @@
   <data name="SmsCreateAdjustment" xml:space="preserve"><value>ثبت تعدیل</value></data>
   <data name="SmsAdjustmentCreated" xml:space="preserve"><value>تراکنش تعدیل ثبت شد و مانده حساب با پیامک تطبیق داده شد.</value></data>
   <data name="SmsAdjustmentFailed" xml:space="preserve"><value>ثبت تعدیل انجام نشد. مانده حساب و تراکنش‌های مرتبط را بررسی کنید.</value></data>
+  <data name="SmsIgnored" xml:space="preserve"><value>پیامک غیرمالی یا حاوی رمز تأیید نادیده گرفته شد.</value></data>
 </root>

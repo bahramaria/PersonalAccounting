@@ -102,7 +102,45 @@ public sealed class BankSmsParserTests
 
         var result = parser.Parse("Mellat", "رمز پویا: ۱۲۳۴۵۶");
 
-        Assert.Equal(BankSmsParseStatus.NeedsReview, result.Status);
+        Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
+        Assert.Null(result.AmountMinor);
+    }
+
+
+
+    [Theory]
+    [InlineData("مبلغ:400,000- مانده:6,640,235 08/23 18:18", BankSmsTransactionType.Expense, 400_000L, 6_640_235L, "08/23", "18:18")]
+    [InlineData("مبلغ:3,400,000- مانده:7,040,235 08/23 18:01", BankSmsTransactionType.Expense, 3_400_000L, 7_040_235L, "08/23", "18:01")]
+    [InlineData("مبلغ:2,130,288- مانده:10,440,235 08/22 10:40", BankSmsTransactionType.Expense, 2_130_288L, 10_440_235L, "08/22", "10:40")]
+    [InlineData("مبلغ:10,000,000+ مانده:12,570,523 08/21 19:00", BankSmsTransactionType.Income, 10_000_000L, 12_570_523L, "08/21", "19:00")]
+    [InlineData("مبلغ:1,800,000- مانده:2,570,523 08/15 11:07", BankSmsTransactionType.Expense, 1_800_000L, 2_570_523L, "08/15", "11:07")]
+    [InlineData("مبلغ:380,000- مانده:4,370,523 08/15 11:05", BankSmsTransactionType.Expense, 380_000L, 4_370_523L, "08/15", "11:05")]
+    [InlineData("مبلغ:13,850,000- مانده:4,750,523 08/14 16:13", BankSmsTransactionType.Expense, 13_850_000L, 4_750_523L, "08/14", "16:13")]
+    public void ParsesParsianSignedTransactionSamples(
+        string body, BankSmsTransactionType expectedType, long expectedAmount,
+        long expectedBalance, string expectedDate, string expectedTime)
+    {
+        var result = new BankSmsParser().Parse("bank-sender", $"12345678901234 {body}");
+
+        Assert.Equal(BankSmsParseStatus.Parsed, result.Status);
+        Assert.Equal("parsian", result.BankKey);
+        Assert.Equal(expectedType, result.TransactionType);
+        Assert.Equal(expectedAmount, result.AmountMinor);
+        Assert.Equal(expectedBalance, result.BalanceMinor);
+        Assert.Equal(expectedDate, result.DateText);
+        Assert.Equal(TimeOnly.Parse(expectedTime), result.TransactionTime);
+        Assert.False(result.AmountUnitKnown);
+    }
+
+    [Theory]
+    [InlineData("پرداخت قبض تلفن ثابت مبلغ 4,139,000 رمز: 11111111")]
+    [InlineData("پرداخت قبض تلفن ثابت مبلغ 4,139,000 رمز: 22222222")]
+    [InlineData("خرید قبضینو مبلغ 2,130,288 Code:00000000")]
+    public void VerificationCodeMessagesAreUnsupported(string body)
+    {
+        var result = new BankSmsParser().Parse("bank-sender", body);
+
+        Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
         Assert.Null(result.AmountMinor);
     }
 

@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 namespace Hesabyar.Infrastructure.Persistence;
 
 public enum SmsInboxStatus { Pending, Imported, Ignored, Duplicate }
-public enum SmsImportOutcome { Added, Duplicate }
+public enum SmsImportOutcome { Added, Duplicate, Ignored }
 
 public sealed record SmsBalanceReconciliation(long SmsBalanceMinor, long LedgerBalanceMinor, long DifferenceMinor);
 
@@ -33,6 +33,8 @@ public sealed class BankSmsInboxService(
         var safeSender = BankSmsParser.Normalize(sender ?? string.Empty);
         var safeBody = BankSmsParser.Normalize(body);
         var parsed = parser.Parse(safeSender, safeBody);
+        if (parsed.Status == BankSmsParseStatus.Unsupported)
+            return SmsImportOutcome.Ignored;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         if (await db.SmsInboxItems.AnyAsync(x => x.DedupeHash == parsed.DedupeHash, cancellationToken) ||

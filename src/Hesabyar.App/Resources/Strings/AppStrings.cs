@@ -338,5 +338,7 @@ public static class AppStrings
     public static string SmsAdjustmentCreated => Get(nameof(SmsAdjustmentCreated));
     public static string SmsAdjustmentFailed => Get(nameof(SmsAdjustmentFailed));
 
+    public static string SmsIgnored => Get(nameof(SmsIgnored));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

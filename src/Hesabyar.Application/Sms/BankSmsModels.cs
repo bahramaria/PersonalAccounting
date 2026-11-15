@@ -19,7 +19,8 @@ public sealed record BankSmsRule(
     IReadOnlyCollection<string> SenderAliases,
     IReadOnlyCollection<string> ExpenseKeywords,
     IReadOnlyCollection<string> IncomeKeywords,
-    long? AmountMultiplier = null);
+    long? AmountMultiplier = null,
+    string? BodyPattern = null);
 
 public sealed record ParsedBankSms(
     BankSmsParseStatus Status,

@@ -125,7 +125,7 @@ public sealed class BankSmsPage : ContentPage
         {
             var outcome = await _inbox.ImportAsync(sender, body);
             await DisplayAlertAsync(AppStrings.SmsHeading,
-                outcome == SmsImportOutcome.Added ? AppStrings.SmsAdded : AppStrings.SmsDuplicate,
+                outcome == SmsImportOutcome.Added ? AppStrings.SmsAdded : outcome == SmsImportOutcome.Duplicate ? AppStrings.SmsDuplicate : AppStrings.SmsIgnored,
                 AppStrings.Ok);
             await ReloadAsync();
         }
