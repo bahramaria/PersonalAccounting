@@ -79,6 +79,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.DueDate).HasColumnType("TEXT");
             entity.Property(x => x.PersonId).HasColumnType("TEXT");
             entity.Property(x => x.AmountMinor);
+            entity.Property(x => x.AmountUnitKnown);
             entity.Property(x => x.Note).HasMaxLength(500);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(12);
             entity.Property(x => x.IsArchived);
@@ -171,6 +172,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.TransactionTime).HasMaxLength(5);
             entity.Property(x => x.Status).IsRequired().HasMaxLength(20);
             entity.Property(x => x.TransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.BalanceAdjustmentTransactionId).HasColumnType("TEXT");
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.IsDeleted);

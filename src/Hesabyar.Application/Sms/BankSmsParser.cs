@@ -43,8 +43,9 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
                 normalizedSender.Contains(Normalize(alias), StringComparison.OrdinalIgnoreCase)));
 
         var transactionType = DetectTransactionType(normalizedBody, matchedRule);
-        var amount = ExtractAmount(AmountRegex, normalizedBody);
-        var balance = ExtractAmount(BalanceRegex, normalizedBody);
+        var amountMultiplier = ResolveAmountMultiplier(normalizedBody, matchedRule);
+        var amount = ScaleAmount(ExtractAmount(AmountRegex, normalizedBody), amountMultiplier);
+        var balance = ScaleAmount(ExtractAmount(BalanceRegex, normalizedBody), amountMultiplier);
         var cardMatch = CardRegex.Match(normalizedBody);
         var date = ExtractDate(normalizedBody);
         var time = ExtractTime(normalizedBody);
@@ -63,6 +64,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
                 cardMatch.Success ? cardMatch.Groups[1].Value : null,
                 date,
                 time,
+                amountMultiplier is not null,
                 dedupeHash,
                 normalizedSender,
                 normalizedBody);
@@ -76,6 +78,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
             cardMatch.Success ? cardMatch.Groups[1].Value : null,
             date,
             time,
+            amountMultiplier is not null,
             dedupeHash,
             normalizedSender,
             normalizedBody);
@@ -119,6 +122,34 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
 
     private static bool ContainsAny(string value, params string[] candidates) =>
         candidates.Any(candidate => value.Contains(candidate, StringComparison.Ordinal));
+
+
+    private static long? ResolveAmountMultiplier(string body, BankSmsRule? rule)
+    {
+        var hasToman = body.Contains("تومان", StringComparison.Ordinal);
+        var hasRial = body.Contains("ریال", StringComparison.Ordinal);
+        if (hasToman && hasRial)
+            return null;
+        if (hasToman)
+            return 10;
+        if (hasRial)
+            return 1;
+        return rule?.AmountMultiplier is > 0 ? rule.AmountMultiplier : null;
+    }
+
+    private static long? ScaleAmount(long? amount, long? multiplier)
+    {
+        if (amount is null || multiplier is null)
+            return amount;
+        try
+        {
+            return checked(amount.Value * multiplier.Value);
+        }
+        catch (OverflowException)
+        {
+            return null;
+        }
+    }
 
     private static long? ExtractAmount(Regex regex, string body)
     {
@@ -165,5 +196,5 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
 
     private static ParsedBankSms Unsupported(string sender, string body, string hash) =>
         new(BankSmsParseStatus.Unsupported, null, BankSmsTransactionType.Unknown,
-            null, null, null, null, null, hash, sender, body);
+            null, null, null, null, false, hash, sender, body);
 }

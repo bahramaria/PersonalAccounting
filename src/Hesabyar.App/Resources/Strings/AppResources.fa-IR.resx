@@ -314,4 +314,10 @@
   <data name="SmsCardLastFour" xml:space="preserve"><value>چهار رقم کارت</value></data>
   <data name="SmsTransactionDate" xml:space="preserve"><value>تاریخ پیامک</value></data>
   <data name="SmsTransactionTime" xml:space="preserve"><value>ساعت پیامک</value></data>
+  <data name="SmsUnitUnknown" xml:space="preserve"><value>واحد مبلغ مشخص نیست؛ مبلغ را به ریال وارد کنید.</value></data>
+  <data name="SmsBalanceMismatchTitle" xml:space="preserve"><value>مغایرت موجودی</value></data>
+  <data name="SmsBalanceMismatchMessage" xml:space="preserve"><value>موجودی پیامک: {0} ریال&#10;مانده دفتر کل: {1} ریال&#10;اختلاف: {2} ریال&#10;آیا تراکنش تعدیل ثبت شود؟</value></data>
+  <data name="SmsCreateAdjustment" xml:space="preserve"><value>ثبت تعدیل</value></data>
+  <data name="SmsAdjustmentCreated" xml:space="preserve"><value>تراکنش تعدیل ثبت شد و مانده حساب با پیامک تطبیق داده شد.</value></data>
+  <data name="SmsAdjustmentFailed" xml:space="preserve"><value>ثبت تعدیل انجام نشد. مانده حساب و تراکنش‌های مرتبط را بررسی کنید.</value></data>
 </root>

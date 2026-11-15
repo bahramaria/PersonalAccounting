@@ -35,6 +35,7 @@ public sealed class BankSmsInboxTests
         var item = Assert.Single(await service.GetPendingAsync());
         Assert.Equal(BankSmsTransactionType.Expense, item.TransactionType);
         Assert.Equal(125_000, item.AmountMinor);
+        Assert.True(item.AmountUnitKnown);
 
         Guid bankId;
         Guid categoryId;
@@ -109,6 +110,56 @@ public sealed class BankSmsInboxTests
             bankId, categoryId, BankSmsTransactionType.Expense, 75_000, new DateOnly(2026, 11, 15)));
         Assert.False(await service.HasPossibleManualDuplicateAsync(
             bankId, categoryId, BankSmsTransactionType.Expense, 80_000, new DateOnly(2026, 11, 15)));
+    }
+
+
+    [Fact]
+    public async Task KnownSmsBalanceCanCreateBalancedAdjustmentTransaction()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        Guid bankId;
+        Guid categoryId;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.MigrateAsync();
+            var bank = new DbAccount { Name = "Bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR" };
+            var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            db.Accounts.AddRange(bank, food);
+            await db.SaveChangesAsync();
+            bankId = bank.Id;
+            categoryId = food.Id;
+        }
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.Equal(SmsImportOutcome.Added,
+            await service.ImportAsync("sender", "برداشت مبلغ: ۵۰۰۰ ریال مانده: ۱۰۰۰۰۰ ریال"));
+        var item = Assert.Single(await service.GetPendingAsync());
+        Assert.True(item.AmountUnitKnown);
+        Assert.True(await service.ConfirmAsync(item.Id, bankId, categoryId,
+            BankSmsTransactionType.Expense, 5_000, new DateOnly(2026, 11, 15)));
+
+        var mismatch = await service.GetBalanceReconciliationAsync(item.Id);
+        Assert.NotNull(mismatch);
+        Assert.Equal(105_000, mismatch.DifferenceMinor);
+        Assert.True(await service.CreateBalanceAdjustmentAsync(item.Id));
+
+        var reconciled = await service.GetBalanceReconciliationAsync(item.Id);
+        Assert.NotNull(reconciled);
+        Assert.Equal(100_000, reconciled.LedgerBalanceMinor);
+        Assert.Equal(0, reconciled.DifferenceMinor);
+
+        await using var verify = new AppDbContext(options);
+        var adjustment = await verify.Transactions
+            .Where(x => x.Kind == TransactionKind.Adjustment)
+            .Include(x => x.Postings)
+            .SingleAsync();
+        Assert.Equal(TransactionSource.Sms, adjustment.Source);
+        Assert.Equal(0, adjustment.Postings.Sum(x => x.AmountMinor));
+        Assert.Equal(105_000, adjustment.Postings.Single(x => x.AccountId == bankId).AmountMinor);
+        var systemAccount = await verify.Accounts.SingleAsync(x => x.SystemKey == "sms-balance-adjustment");
+        Assert.False(systemAccount.IncludeInTotal);
     }
 
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>

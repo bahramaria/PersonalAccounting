@@ -330,5 +330,13 @@ public static class AppStrings
     public static string SmsTransactionDate => Get(nameof(SmsTransactionDate));
     public static string SmsTransactionTime => Get(nameof(SmsTransactionTime));
 
+    public static string SmsUnitUnknown => Get(nameof(SmsUnitUnknown));
+
+    public static string SmsBalanceMismatchTitle => Get(nameof(SmsBalanceMismatchTitle));
+    public static string SmsBalanceMismatchMessage => Get(nameof(SmsBalanceMismatchMessage));
+    public static string SmsCreateAdjustment => Get(nameof(SmsCreateAdjustment));
+    public static string SmsAdjustmentCreated => Get(nameof(SmsAdjustmentCreated));
+    public static string SmsAdjustmentFailed => Get(nameof(SmsAdjustmentFailed));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

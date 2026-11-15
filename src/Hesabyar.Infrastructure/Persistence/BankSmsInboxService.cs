@@ -10,10 +10,12 @@ namespace Hesabyar.Infrastructure.Persistence;
 public enum SmsInboxStatus { Pending, Imported, Ignored, Duplicate }
 public enum SmsImportOutcome { Added, Duplicate }
 
+public sealed record SmsBalanceReconciliation(long SmsBalanceMinor, long LedgerBalanceMinor, long DifferenceMinor);
+
 public sealed record BankSmsInboxRecord(
     Guid Id, string Sender, string Body, string? BankKey,
     BankSmsParseStatus ParseStatus, BankSmsTransactionType TransactionType,
-    long? AmountMinor, long? BalanceMinor, string? CardLastFour,
+    long? AmountMinor, bool AmountUnitKnown, long? BalanceMinor, string? CardLastFour,
     string? DateText, string? TransactionTime, SmsInboxStatus Status,
     Guid? TransactionId, DateTimeOffset CreatedAtUtc);
 
@@ -46,6 +48,7 @@ public sealed class BankSmsInboxService(
             ParseStatus = parsed.Status.ToString(),
             TransactionType = parsed.TransactionType.ToString(),
             AmountMinor = parsed.AmountMinor,
+            AmountUnitKnown = parsed.AmountUnitKnown,
             BalanceMinor = parsed.BalanceMinor,
             CardLastFour = parsed.CardLastFour,
             DateText = parsed.DateText,
@@ -164,6 +167,123 @@ public sealed class BankSmsInboxService(
             cancellationToken);
     }
 
+
+    public async Task<SmsBalanceReconciliation?> GetBalanceReconciliationAsync(
+        Guid inboxItemId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.SmsInboxItems.AsNoTracking().SingleOrDefaultAsync(
+            x => x.Id == inboxItemId && x.Status == SmsInboxStatus.Imported.ToString(), cancellationToken);
+        if (item is null || !item.AmountUnitKnown || item.BalanceMinor is not long smsBalance ||
+            item.TransactionId is not Guid transactionId)
+            return null;
+
+        var bankAccount = await (
+            from posting in db.Postings
+            join account in db.Accounts on posting.AccountId equals account.Id
+            where posting.TransactionId == transactionId &&
+                  account.Type == AccountType.Asset &&
+                  account.Kind != AccountKind.Category
+            select new { account.Id, account.CurrencyCode })
+            .FirstOrDefaultAsync(cancellationToken);
+        if (bankAccount is null || bankAccount.CurrencyCode != "IRR")
+            return null;
+
+        var ledgerBalance = await db.Postings
+            .Where(x => x.AccountId == bankAccount.Id)
+            .SumAsync(x => (long?)x.AmountMinor, cancellationToken) ?? 0L;
+        return new SmsBalanceReconciliation(smsBalance, ledgerBalance, smsBalance - ledgerBalance);
+    }
+
+    public async Task<bool> CreateBalanceAdjustmentAsync(
+        Guid inboxItemId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        var item = await db.SmsInboxItems.SingleOrDefaultAsync(
+            x => x.Id == inboxItemId && x.Status == SmsInboxStatus.Imported.ToString(), cancellationToken);
+        if (item is null || item.BalanceAdjustmentTransactionId is not null ||
+            !item.AmountUnitKnown || item.BalanceMinor is not long smsBalance ||
+            item.TransactionId is not Guid transactionId)
+            return false;
+
+        var original = await db.Transactions.SingleOrDefaultAsync(x => x.Id == transactionId, cancellationToken);
+        if (original is null)
+            return false;
+
+        var bankAccount = await (
+            from posting in db.Postings
+            join account in db.Accounts on posting.AccountId equals account.Id
+            where posting.TransactionId == transactionId &&
+                  account.Type == AccountType.Asset &&
+                  account.Kind != AccountKind.Category
+            select account)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (bankAccount is null || bankAccount.CurrencyCode != "IRR")
+            return false;
+
+        var ledgerBalance = await db.Postings
+            .Where(x => x.AccountId == bankAccount.Id)
+            .SumAsync(x => (long?)x.AmountMinor, cancellationToken) ?? 0L;
+        var difference = smsBalance - ledgerBalance;
+        if (difference == 0)
+            return false;
+
+        var adjustmentAccount = await db.Accounts.SingleOrDefaultAsync(
+            x => x.SystemKey == "sms-balance-adjustment" && x.CurrencyCode == "IRR", cancellationToken);
+        var now = timeProvider.GetUtcNow();
+        if (adjustmentAccount is null)
+        {
+            adjustmentAccount = new DbAccount
+            {
+                Name = "تعدیل موجودی پیامک",
+                Type = AccountType.Equity,
+                Kind = AccountKind.System,
+                CurrencyCode = "IRR",
+                SystemKey = "sms-balance-adjustment",
+                IncludeInTotal = false,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            };
+            db.Accounts.Add(adjustmentAccount);
+        }
+
+        var adjustment = new DbLedgerTransaction
+        {
+            BusinessDate = original.BusinessDate,
+            Kind = TransactionKind.Adjustment,
+            Description = "SMS balance reconciliation",
+            Source = TransactionSource.Sms,
+            IsConfirmed = true,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        };
+        adjustment.Postings.Add(new DbPosting
+        {
+            Account = bankAccount,
+            AmountMinor = difference,
+            CurrencyCode = bankAccount.CurrencyCode,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        });
+        adjustment.Postings.Add(new DbPosting
+        {
+            Account = adjustmentAccount,
+            AmountMinor = -difference,
+            CurrencyCode = "IRR",
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        });
+
+        db.Transactions.Add(adjustment);
+        item.BalanceAdjustmentTransactionId = adjustment.Id;
+        item.UpdatedAtUtc = now;
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<bool> IgnoreAsync(Guid inboxItemId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -179,7 +299,7 @@ public sealed class BankSmsInboxService(
         new(item.Id, item.Sender, item.Body, item.BankKey,
             Enum.TryParse<BankSmsParseStatus>(item.ParseStatus, out var parse) ? parse : BankSmsParseStatus.NeedsReview,
             Enum.TryParse<BankSmsTransactionType>(item.TransactionType, out var type) ? type : BankSmsTransactionType.Unknown,
-            item.AmountMinor, item.BalanceMinor, item.CardLastFour, item.DateText, item.TransactionTime,
+            item.AmountMinor, item.AmountUnitKnown, item.BalanceMinor, item.CardLastFour, item.DateText, item.TransactionTime,
             Enum.TryParse<SmsInboxStatus>(item.Status, out var status) ? status : SmsInboxStatus.Pending,
             item.TransactionId, item.CreatedAtUtc);
 }

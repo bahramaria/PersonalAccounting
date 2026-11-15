@@ -18,7 +18,8 @@ public sealed record BankSmsRule(
     string BankKey,
     IReadOnlyCollection<string> SenderAliases,
     IReadOnlyCollection<string> ExpenseKeywords,
-    IReadOnlyCollection<string> IncomeKeywords);
+    IReadOnlyCollection<string> IncomeKeywords,
+    long? AmountMultiplier = null);
 
 public sealed record ParsedBankSms(
     BankSmsParseStatus Status,
@@ -29,6 +30,7 @@ public sealed record ParsedBankSms(
     string? CardLastFour,
     string? DateText,
     TimeOnly? TransactionTime,
+    bool AmountUnitKnown,
     string DedupeHash,
     string NormalizedSender,
     string NormalizedBody);

@@ -314,4 +314,10 @@
   <data name="SmsCardLastFour" xml:space="preserve"><value>Card suffix</value></data>
   <data name="SmsTransactionDate" xml:space="preserve"><value>SMS date</value></data>
   <data name="SmsTransactionTime" xml:space="preserve"><value>SMS time</value></data>
+  <data name="SmsUnitUnknown" xml:space="preserve"><value>Amount unit is unknown. Enter the amount in rials.</value></data>
+  <data name="SmsBalanceMismatchTitle" xml:space="preserve"><value>Balance mismatch</value></data>
+  <data name="SmsBalanceMismatchMessage" xml:space="preserve"><value>SMS balance: {0} IRR&#10;Ledger balance: {1} IRR&#10;Difference: {2} IRR&#10;Create an adjustment transaction?</value></data>
+  <data name="SmsCreateAdjustment" xml:space="preserve"><value>Create adjustment</value></data>
+  <data name="SmsAdjustmentCreated" xml:space="preserve"><value>The adjustment transaction was created and the account balance now matches the SMS.</value></data>
+  <data name="SmsAdjustmentFailed" xml:space="preserve"><value>The adjustment could not be created. Review the account balance and related transactions.</value></data>
 </root>

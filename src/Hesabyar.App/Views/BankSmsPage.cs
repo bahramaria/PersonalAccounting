@@ -164,7 +164,7 @@ public sealed class BankSmsPage : ContentPage
                 card.Children.Add(new Label { Text = item.Body, FontSize = 13, LineBreakMode = LineBreakMode.WordWrap });
                 card.Children.Add(new Label
                 {
-                    Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
+                    Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {(item.AmountUnitKnown ? string.Empty : AppStrings.SmsUnitUnknown)} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
                     FontSize = 12
                 });
                 if (item.BalanceMinor.HasValue || !string.IsNullOrWhiteSpace(item.CardLastFour) ||
@@ -173,6 +173,8 @@ public sealed class BankSmsPage : ContentPage
                     var details = new List<string>();
                     if (item.BalanceMinor is long balanceValue)
                         details.Add($"{AppStrings.SmsBalance}: {balanceValue:N0}");
+                    if (!item.AmountUnitKnown)
+                        details.Add(AppStrings.SmsUnitUnknown);
                     if (!string.IsNullOrWhiteSpace(item.CardLastFour))
                         details.Add($"{AppStrings.SmsCardLastFour}: {item.CardLastFour}");
                     if (!string.IsNullOrWhiteSpace(item.DateText))
@@ -220,7 +222,7 @@ public sealed class BankSmsPage : ContentPage
 
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
             AppStrings.Save, AppStrings.Cancel,
-            initialValue: item.AmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            initialValue: item.AmountUnitKnown ? item.AmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture) : null);
         var normalizedAmount = BankSmsParser.Normalize(amountText ?? string.Empty).Replace(",", string.Empty).Replace("٬", string.Empty).Replace("،", string.Empty).Replace(" ", string.Empty);
         if (!long.TryParse(normalizedAmount, System.Globalization.NumberStyles.Integer,
                 System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
@@ -267,6 +269,27 @@ public sealed class BankSmsPage : ContentPage
             return;
         }
         await DisplayAlertAsync(AppStrings.SmsHeading, AppStrings.SmsImported, AppStrings.Ok);
+
+        var balanceCheck = await _inbox.GetBalanceReconciliationAsync(item.Id);
+        if (balanceCheck is { DifferenceMinor: not 0 })
+        {
+            var message = string.Format(
+                AppStrings.SmsBalanceMismatchMessage,
+                balanceCheck.SmsBalanceMinor.ToString("N0"),
+                balanceCheck.LedgerBalanceMinor.ToString("N0"),
+                balanceCheck.DifferenceMinor.ToString("N0"));
+            var createAdjustment = await DisplayAlertAsync(
+                AppStrings.SmsBalanceMismatchTitle, message,
+                AppStrings.SmsCreateAdjustment, AppStrings.Cancel);
+            if (createAdjustment)
+            {
+                var adjusted = await _inbox.CreateBalanceAdjustmentAsync(item.Id);
+                await DisplayAlertAsync(
+                    AppStrings.SmsBalanceMismatchTitle,
+                    adjusted ? AppStrings.SmsAdjustmentCreated : AppStrings.SmsAdjustmentFailed,
+                    AppStrings.Ok);
+            }
+        }
         await ReloadAsync();
     }
 

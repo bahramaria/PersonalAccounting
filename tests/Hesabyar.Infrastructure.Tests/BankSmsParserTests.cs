@@ -10,6 +10,39 @@ public sealed class BankSmsParserTests
         ["برداشت", "خرید"],
         ["واریز", "دریافت"]);
 
+
+    [Fact]
+    public void ConvertsTomanAmountsAndBalancesToRials()
+    {
+        var parser = new BankSmsParser();
+        var result = parser.Parse("Unknown", "برداشت مبلغ: ۲۵۰ تومان مانده: ۵۰۰ تومان");
+
+        Assert.Equal(2_500, result.AmountMinor);
+        Assert.Equal(5_000, result.BalanceMinor);
+        Assert.True(result.AmountUnitKnown);
+    }
+
+    [Fact]
+    public void LeavesAmountUnitUnknownWhenMessageDoesNotDeclareIt()
+    {
+        var parser = new BankSmsParser();
+        var result = parser.Parse("Unknown", "برداشت مبلغ: ۲۵۰");
+
+        Assert.Equal(250, result.AmountMinor);
+        Assert.False(result.AmountUnitKnown);
+    }
+
+    [Fact]
+    public void UsesBankRuleMultiplierWhenMessageDoesNotDeclareCurrencyUnit()
+    {
+        var rule = new BankSmsRule("test", ["TestBank"], ["برداشت"], ["واریز"], AmountMultiplier: 10);
+        var parser = new BankSmsParser([rule]);
+        var result = parser.Parse("TestBank", "برداشت مبلغ: ۲۵۰");
+
+        Assert.Equal(2_500, result.AmountMinor);
+        Assert.True(result.AmountUnitKnown);
+    }
+
     [Fact]
     public void ParsesPersianDigitsAndExpenseDetails()
     {
