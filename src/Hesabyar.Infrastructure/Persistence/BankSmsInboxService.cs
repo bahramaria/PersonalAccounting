@@ -144,6 +144,26 @@ public sealed class BankSmsInboxService(
         return true;
     }
 
+
+    public async Task<bool> HasPossibleManualDuplicateAsync(
+        Guid accountId, Guid categoryId, BankSmsTransactionType transactionType,
+        long amountMinor, DateOnly businessDate, CancellationToken cancellationToken = default)
+    {
+        if (amountMinor <= 0 || transactionType is not (BankSmsTransactionType.Expense or BankSmsTransactionType.Income))
+            return false;
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var kind = transactionType == BankSmsTransactionType.Income ? TransactionKind.Income : TransactionKind.Expense;
+        var accountAmount = transactionType == BankSmsTransactionType.Income ? amountMinor : -amountMinor;
+        return await db.Transactions.AnyAsync(x =>
+            x.Source == TransactionSource.Manual &&
+            x.Kind == kind &&
+            x.BusinessDate == businessDate &&
+            x.Postings.Any(p => p.AccountId == accountId && p.AmountMinor == accountAmount) &&
+            x.Postings.Any(p => p.AccountId == categoryId && p.AmountMinor == -accountAmount),
+            cancellationToken);
+    }
+
     public async Task<bool> IgnoreAsync(Guid inboxItemId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);

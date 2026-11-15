@@ -310,4 +310,8 @@
   <data name="SmsPossibleDuplicateTitle" xml:space="preserve"><value>تراکنش مشابه پیدا شد</value></data>
   <data name="SmsPossibleDuplicateMessage" xml:space="preserve"><value>برای همین حساب، دسته، مبلغ و تاریخ یک تراکنش دستی ثبت شده است. آیا با وجود احتمال تکرار، پیامک را هم ثبت می‌کنید؟</value></data>
   <data name="SmsConfirmAnyway" xml:space="preserve"><value>ثبت با وجود هشدار</value></data>
+  <data name="SmsBalance" xml:space="preserve"><value>مانده پیامک</value></data>
+  <data name="SmsCardLastFour" xml:space="preserve"><value>چهار رقم کارت</value></data>
+  <data name="SmsTransactionDate" xml:space="preserve"><value>تاریخ پیامک</value></data>
+  <data name="SmsTransactionTime" xml:space="preserve"><value>ساعت پیامک</value></data>
 </root>

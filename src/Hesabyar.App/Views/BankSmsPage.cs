@@ -167,6 +167,20 @@ public sealed class BankSmsPage : ContentPage
                     Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
                     FontSize = 12
                 });
+                if (item.BalanceMinor.HasValue || !string.IsNullOrWhiteSpace(item.CardLastFour) ||
+                    !string.IsNullOrWhiteSpace(item.DateText) || !string.IsNullOrWhiteSpace(item.TransactionTime))
+                {
+                    var details = new List<string>();
+                    if (item.BalanceMinor is long balanceValue)
+                        details.Add($"{AppStrings.SmsBalance}: {balanceValue:N0}");
+                    if (!string.IsNullOrWhiteSpace(item.CardLastFour))
+                        details.Add($"{AppStrings.SmsCardLastFour}: {item.CardLastFour}");
+                    if (!string.IsNullOrWhiteSpace(item.DateText))
+                        details.Add($"{AppStrings.SmsTransactionDate}: {item.DateText}");
+                    if (!string.IsNullOrWhiteSpace(item.TransactionTime))
+                        details.Add($"{AppStrings.SmsTransactionTime}: {item.TransactionTime}");
+                    card.Children.Add(new Label { Text = string.Join(" · ", details), FontSize = 12 });
+                }
                 var actions = new HorizontalStackLayout { Spacing = 8 };
                 var confirm = new Button { Text = AppStrings.SmsReviewAndConfirm };
                 confirm.Clicked += async (_, _) => await ConfirmAsync(item);

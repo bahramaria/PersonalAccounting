@@ -325,5 +325,10 @@ public static class AppStrings
     public static string SmsPossibleDuplicateMessage => Get(nameof(SmsPossibleDuplicateMessage));
     public static string SmsConfirmAnyway => Get(nameof(SmsConfirmAnyway));
 
+    public static string SmsBalance => Get(nameof(SmsBalance));
+    public static string SmsCardLastFour => Get(nameof(SmsCardLastFour));
+    public static string SmsTransactionDate => Get(nameof(SmsTransactionDate));
+    public static string SmsTransactionTime => Get(nameof(SmsTransactionTime));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

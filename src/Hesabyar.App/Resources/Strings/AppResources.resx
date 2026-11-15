@@ -310,4 +310,8 @@
   <data name="SmsPossibleDuplicateTitle" xml:space="preserve"><value>Possible duplicate transaction</value></data>
   <data name="SmsPossibleDuplicateMessage" xml:space="preserve"><value>A manual transaction with the same account, category, amount and date already exists. Import this SMS anyway?</value></data>
   <data name="SmsConfirmAnyway" xml:space="preserve"><value>Import anyway</value></data>
+  <data name="SmsBalance" xml:space="preserve"><value>SMS balance</value></data>
+  <data name="SmsCardLastFour" xml:space="preserve"><value>Card suffix</value></data>
+  <data name="SmsTransactionDate" xml:space="preserve"><value>SMS date</value></data>
+  <data name="SmsTransactionTime" xml:space="preserve"><value>SMS time</value></data>
 </root>

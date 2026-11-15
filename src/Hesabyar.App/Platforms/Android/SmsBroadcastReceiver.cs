@@ -1,4 +1,5 @@
 using Android;
+using Android.App;
 using Android.Content;
 using Android.Provider;
 using Android.Telephony;
@@ -10,7 +11,7 @@ using Microsoft.Maui.Storage;
 namespace Hesabyar.App;
 
 [BroadcastReceiver(Enabled = true, Exported = true, Permission = Manifest.Permission.BroadcastSms)]
-[IntentFilter(new[] { "android.provider.Telephony.SMS_RECEIVED" })]
+[IntentFilterAttribute(new[] { "android.provider.Telephony.SMS_RECEIVED" })]
 public sealed class SmsBroadcastReceiver : BroadcastReceiver
 {
     public override void OnReceive(Context? context, Intent? intent)
