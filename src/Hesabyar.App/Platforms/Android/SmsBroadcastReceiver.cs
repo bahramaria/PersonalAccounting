@@ -34,7 +34,9 @@ public sealed class SmsBroadcastReceiver : BroadcastReceiver
         {
             try
             {
-                using var scope = IPlatformApplication.Current.Services.CreateScope();
+                var platform = IPlatformApplication.Current;
+                if (platform is null) return;
+                using var scope = platform.Services.CreateScope();
                 var inbox = scope.ServiceProvider.GetRequiredService<BankSmsInboxService>();
                 await inbox.ImportAsync(sender, body);
             }
@@ -44,7 +46,7 @@ public sealed class SmsBroadcastReceiver : BroadcastReceiver
             }
             finally
             {
-                pendingResult.Finish();
+                pendingResult?.Finish();
             }
         });
     }
