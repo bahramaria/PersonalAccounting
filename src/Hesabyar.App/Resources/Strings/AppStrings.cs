@@ -307,5 +307,10 @@ public static class AppStrings
     public static string SmsConfirmFailed => Get(nameof(SmsConfirmFailed));
     public static string SmsImported => Get(nameof(SmsImported));
 
+    public static string SmsTypeUnknown => Get(nameof(SmsTypeUnknown));
+    public static string SmsParsed => Get(nameof(SmsParsed));
+    public static string SmsNeedsReview => Get(nameof(SmsNeedsReview));
+    public static string SmsUnsupported => Get(nameof(SmsUnsupported));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

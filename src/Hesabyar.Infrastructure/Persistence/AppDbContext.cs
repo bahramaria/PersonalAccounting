@@ -102,7 +102,7 @@ public sealed class AppDbContext(
     private static void ConfigureSmsInbox(ModelBuilder modelBuilder)
     {
         var entity = modelBuilder.Entity<DbSmsInboxItem>();
-        entity.ToTable(\"SmsInboxItems\");
+        entity.ToTable("SmsInboxItems");
         entity.HasKey(x => x.Id);
         entity.Property(x => x.Sender).HasMaxLength(120).IsRequired();
         entity.Property(x => x.Body).HasMaxLength(4000).IsRequired();

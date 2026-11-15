@@ -3,6 +3,7 @@ using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 
 namespace Hesabyar.Infrastructure.Persistence;
 
@@ -57,7 +58,7 @@ public sealed class BankSmsInboxService(
             await db.SaveChangesAsync(cancellationToken);
             return SmsImportOutcome.Added;
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteErrorCode: 19 })
         {
             return SmsImportOutcome.Duplicate;
         }

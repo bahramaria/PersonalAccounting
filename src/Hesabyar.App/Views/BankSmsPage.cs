@@ -5,6 +5,7 @@ using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace Hesabyar.App.Views;
 
@@ -118,7 +119,7 @@ public sealed class BankSmsPage : ContentPage
                 card.Children.Add(new Label { Text = item.Body, FontSize = 13, LineBreakMode = LineBreakMode.WordWrap });
                 card.Children.Add(new Label
                 {
-                    Text = $"{item.TransactionType} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {item.ParseStatus}",
+                    Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
                     FontSize = 12
                 });
                 var actions = new HorizontalStackLayout { Spacing = 8 };
@@ -161,7 +162,7 @@ public sealed class BankSmsPage : ContentPage
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
             AppStrings.Save, AppStrings.Cancel,
             initialValue: item.AmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        var normalizedAmount = BankSmsParser.Normalize(amountText ?? string.Empty).Replace(",", string.Empty);
+        var normalizedAmount = BankSmsParser.Normalize(amountText ?? string.Empty).Replace(",", string.Empty).Replace("٬", string.Empty).Replace("،", string.Empty).Replace(" ", string.Empty);
         if (!long.TryParse(normalizedAmount, System.Globalization.NumberStyles.Integer,
                 System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
             return;

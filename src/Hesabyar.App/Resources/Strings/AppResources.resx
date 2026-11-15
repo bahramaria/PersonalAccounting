@@ -294,4 +294,8 @@
   <data name="SmsTransactionTypePrompt" xml:space="preserve"><value>Choose transaction type</value></data>
   <data name="SmsConfirmFailed" xml:space="preserve"><value>The message could not be confirmed. Check the account, category and amount.</value></data>
   <data name="SmsImported" xml:space="preserve"><value>The transaction was added to the ledger.</value></data>
+  <data name="SmsTypeUnknown" xml:space="preserve"><value>Unknown type</value></data>
+  <data name="SmsParsed" xml:space="preserve"><value>Parsed</value></data>
+  <data name="SmsNeedsReview" xml:space="preserve"><value>Needs review</value></data>
+  <data name="SmsUnsupported" xml:space="preserve"><value>Unsupported</value></data>
 </root>

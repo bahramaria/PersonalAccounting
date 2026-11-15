@@ -294,4 +294,8 @@
   <data name="SmsTransactionTypePrompt" xml:space="preserve"><value>نوع تراکنش را انتخاب کنید</value></data>
   <data name="SmsConfirmFailed" xml:space="preserve"><value>تأیید پیامک انجام نشد. حساب، دسته و مبلغ را بررسی کنید.</value></data>
   <data name="SmsImported" xml:space="preserve"><value>تراکنش به دفتر کل اضافه شد.</value></data>
+  <data name="SmsTypeUnknown" xml:space="preserve"><value>نوع نامشخص</value></data>
+  <data name="SmsParsed" xml:space="preserve"><value>تفسیر اولیه موفق</value></data>
+  <data name="SmsNeedsReview" xml:space="preserve"><value>نیازمند بررسی</value></data>
+  <data name="SmsUnsupported" xml:space="preserve"><value>غیرقابل تفسیر</value></data>
 </root>
