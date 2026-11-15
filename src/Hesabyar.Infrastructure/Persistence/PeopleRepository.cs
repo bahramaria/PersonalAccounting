@@ -28,8 +28,9 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
     {
         var entries = await db.Transactions.AsNoTracking().Include(x => x.Postings).ThenInclude(x => x.Account)
             .Where(x => x.PartyId == personId && (x.Kind == TransactionKind.PersonDebt || x.Kind == TransactionKind.PersonRepay))
-            .OrderByDescending(x => x.BusinessDate).ThenByDescending(x => x.CreatedAtUtc)
+            .OrderByDescending(x => x.BusinessDate)
             .Take(500).ToListAsync(cancellationToken);
+        entries = entries.OrderByDescending(x => x.BusinessDate).ThenByDescending(x => x.CreatedAtUtc).ToList();
         return entries.Select(x =>
         {
             var partyPosting = x.Postings.FirstOrDefault(p => p.PartyId == personId);
