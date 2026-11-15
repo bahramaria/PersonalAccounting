@@ -288,5 +288,24 @@ public static class AppStrings
     public static string LoanOpeningTransaction => Get(nameof(LoanOpeningTransaction));
     public static string LoanPaymentTransaction => Get(nameof(LoanPaymentTransaction));
 
+    public static string SmsTab => Get(nameof(SmsTab));
+    public static string SmsHeading => Get(nameof(SmsHeading));
+    public static string SmsPaste => Get(nameof(SmsPaste));
+    public static string SmsPrivacyNote => Get(nameof(SmsPrivacyNote));
+    public static string SmsBodyPrompt => Get(nameof(SmsBodyPrompt));
+    public static string SmsSenderPrompt => Get(nameof(SmsSenderPrompt));
+    public static string SmsAdded => Get(nameof(SmsAdded));
+    public static string SmsDuplicate => Get(nameof(SmsDuplicate));
+    public static string SmsBodyInvalid => Get(nameof(SmsBodyInvalid));
+    public static string SmsLoadFailed => Get(nameof(SmsLoadFailed));
+    public static string SmsEmpty => Get(nameof(SmsEmpty));
+    public static string SmsUnknownSender => Get(nameof(SmsUnknownSender));
+    public static string SmsAmountUnknown => Get(nameof(SmsAmountUnknown));
+    public static string SmsReviewAndConfirm => Get(nameof(SmsReviewAndConfirm));
+    public static string SmsIgnore => Get(nameof(SmsIgnore));
+    public static string SmsTransactionTypePrompt => Get(nameof(SmsTransactionTypePrompt));
+    public static string SmsConfirmFailed => Get(nameof(SmsConfirmFailed));
+    public static string SmsImported => Get(nameof(SmsImported));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

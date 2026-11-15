@@ -1,4 +1,5 @@
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 
 namespace Hesabyar.App;
@@ -12,6 +13,25 @@ namespace Hesabyar.App;
                            ConfigChanges.ScreenLayout |
                            ConfigChanges.SmallestScreenSize |
                            ConfigChanges.Density)]
+[IntentFilter(new[] { Intent.ActionSend }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "text/plain")]
 public sealed class MainActivity : MauiAppCompatActivity
 {
+    protected override void OnCreate(Android.OS.Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+        CaptureSharedText(Intent);
+    }
+
+    protected override void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+        if (intent is not null)
+            CaptureSharedText(intent);
+    }
+
+    private static void CaptureSharedText(Intent? intent)
+    {
+        if (intent?.Action == Intent.ActionSend)
+            SharedSmsContent.Set(intent.GetStringExtra(Intent.ExtraText));
+    }
 }

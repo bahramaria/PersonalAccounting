@@ -62,6 +62,7 @@ public static class MauiProgram
         builder.Services.AddTransient<LoanService>();
         builder.Services.AddTransient<LoansViewModel>();
         builder.Services.AddTransient<LoansPage>();
+        builder.Services.AddTransient<BankSmsPage>();
         builder.Services.AddTransient<ChequesViewModel>();
         builder.Services.AddTransient<ChequesPage>();
         builder.Services.AddTransient<PeopleViewModel>();

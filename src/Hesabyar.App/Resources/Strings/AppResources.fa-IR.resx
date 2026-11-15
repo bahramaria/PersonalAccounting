@@ -276,4 +276,22 @@
   <data name="LoanSettled" xml:space="preserve"><value>بدون مانده</value></data>
   <data name="LoanOpeningTransaction" xml:space="preserve"><value>شروع وام</value></data>
   <data name="LoanPaymentTransaction" xml:space="preserve"><value>پرداخت وام</value></data>
+  <data name="SmsTab" xml:space="preserve"><value>پیامک</value></data>
+  <data name="SmsHeading" xml:space="preserve"><value>صندوق پیامک بانکی</value></data>
+  <data name="SmsPaste" xml:space="preserve"><value>چسباندن یا اشتراک‌گذاری پیامک بانکی</value></data>
+  <data name="SmsPrivacyNote" xml:space="preserve"><value>پیامک فقط با انتخاب شما وارد صف می‌شود. مجوز خواندن پیامک درخواست نمی‌شود. متن پیام تا زمان نادیده‌گرفتن یا تأیید، به‌صورت محلی نگهداری می‌شود.</value></data>
+  <data name="SmsBodyPrompt" xml:space="preserve"><value>متن کامل پیامک را وارد کنید</value></data>
+  <data name="SmsSenderPrompt" xml:space="preserve"><value>نام یا شماره فرستنده (اختیاری)</value></data>
+  <data name="SmsAdded" xml:space="preserve"><value>پیام به صف بررسی اضافه شد.</value></data>
+  <data name="SmsDuplicate" xml:space="preserve"><value>این پیام قبلاً وارد یا در صف بررسی شده است.</value></data>
+  <data name="SmsBodyInvalid" xml:space="preserve"><value>متن پیامک معتبر نیست (حداکثر ۴۰۰۰ نویسه).</value></data>
+  <data name="SmsLoadFailed" xml:space="preserve"><value>بارگذاری صندوق پیامک انجام نشد.</value></data>
+  <data name="SmsEmpty" xml:space="preserve"><value>پیامی برای بررسی وجود ندارد.</value></data>
+  <data name="SmsUnknownSender" xml:space="preserve"><value>فرستنده ناشناس</value></data>
+  <data name="SmsAmountUnknown" xml:space="preserve"><value>مبلغ شناسایی نشد</value></data>
+  <data name="SmsReviewAndConfirm" xml:space="preserve"><value>بررسی و تأیید</value></data>
+  <data name="SmsIgnore" xml:space="preserve"><value>نادیده‌گرفتن</value></data>
+  <data name="SmsTransactionTypePrompt" xml:space="preserve"><value>نوع تراکنش را انتخاب کنید</value></data>
+  <data name="SmsConfirmFailed" xml:space="preserve"><value>تأیید پیامک انجام نشد. حساب، دسته و مبلغ را بررسی کنید.</value></data>
+  <data name="SmsImported" xml:space="preserve"><value>تراکنش به دفتر کل اضافه شد.</value></data>
 </root>

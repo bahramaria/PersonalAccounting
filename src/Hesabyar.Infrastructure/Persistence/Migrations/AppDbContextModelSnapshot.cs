@@ -153,6 +153,32 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+        modelBuilder.Entity<DbSmsInboxItem>(entity =>
+        {
+            entity.ToTable("SmsInboxItems");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Sender).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.Body).IsRequired().HasMaxLength(4000);
+            entity.Property(x => x.DedupeHash).IsRequired().HasMaxLength(64);
+            entity.Property(x => x.BankKey).HasMaxLength(40);
+            entity.Property(x => x.ParseStatus).IsRequired().HasMaxLength(20);
+            entity.Property(x => x.TransactionType).IsRequired().HasMaxLength(20);
+            entity.Property(x => x.AmountMinor);
+            entity.Property(x => x.BalanceMinor);
+            entity.Property(x => x.CardLastFour).HasMaxLength(4);
+            entity.Property(x => x.DateText).HasMaxLength(20);
+            entity.Property(x => x.TransactionTime).HasMaxLength(5);
+            entity.Property(x => x.Status).IsRequired().HasMaxLength(20);
+            entity.Property(x => x.TransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.DedupeHash).IsUnique();
+            entity.HasIndex(x => new { x.Status, x.CreatedAtUtc });
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbLedgerTransaction>(entity =>
         {
             entity.ToTable("Transactions");
@@ -166,6 +192,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.LoanId).HasColumnType("TEXT");
             entity.Property(x => x.Source).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);
+            entity.HasIndex(x => x.SmsMessageId).IsUnique().HasFilter("\"SmsMessageId\" IS NOT NULL");
             entity.Property(x => x.IsConfirmed);
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");

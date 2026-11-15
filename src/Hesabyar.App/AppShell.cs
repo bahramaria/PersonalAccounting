@@ -21,6 +21,10 @@ public sealed class AppShell : Shell
             "transactions",
             () => services.GetRequiredService<TransactionsPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.SmsTab,
+            "sms",
+            () => services.GetRequiredService<BankSmsPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.ChequesTab,
             "cheques",
             () => services.GetRequiredService<ChequesPage>()));

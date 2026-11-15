@@ -276,4 +276,22 @@
   <data name="LoanSettled" xml:space="preserve"><value>No outstanding balance</value></data>
   <data name="LoanOpeningTransaction" xml:space="preserve"><value>Loan opened</value></data>
   <data name="LoanPaymentTransaction" xml:space="preserve"><value>Loan payment</value></data>
+  <data name="SmsTab" xml:space="preserve"><value>SMS</value></data>
+  <data name="SmsHeading" xml:space="preserve"><value>Bank SMS inbox</value></data>
+  <data name="SmsPaste" xml:space="preserve"><value>Paste or share a bank SMS</value></data>
+  <data name="SmsPrivacyNote" xml:space="preserve"><value>Messages are imported only when you choose. No SMS permission is requested. Imported text is kept locally until ignored or confirmed.</value></data>
+  <data name="SmsBodyPrompt" xml:space="preserve"><value>Paste the complete SMS text</value></data>
+  <data name="SmsSenderPrompt" xml:space="preserve"><value>Sender name or number (optional)</value></data>
+  <data name="SmsAdded" xml:space="preserve"><value>Message added to the review queue.</value></data>
+  <data name="SmsDuplicate" xml:space="preserve"><value>This message has already been imported or queued.</value></data>
+  <data name="SmsBodyInvalid" xml:space="preserve"><value>Enter a valid SMS message (up to 4,000 characters).</value></data>
+  <data name="SmsLoadFailed" xml:space="preserve"><value>Could not load the SMS inbox.</value></data>
+  <data name="SmsEmpty" xml:space="preserve"><value>There are no messages waiting for review.</value></data>
+  <data name="SmsUnknownSender" xml:space="preserve"><value>Unknown sender</value></data>
+  <data name="SmsAmountUnknown" xml:space="preserve"><value>Amount not detected</value></data>
+  <data name="SmsReviewAndConfirm" xml:space="preserve"><value>Review and confirm</value></data>
+  <data name="SmsIgnore" xml:space="preserve"><value>Ignore</value></data>
+  <data name="SmsTransactionTypePrompt" xml:space="preserve"><value>Choose transaction type</value></data>
+  <data name="SmsConfirmFailed" xml:space="preserve"><value>The message could not be confirmed. Check the account, category and amount.</value></data>
+  <data name="SmsImported" xml:space="preserve"><value>The transaction was added to the ledger.</value></data>
 </root>

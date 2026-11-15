@@ -2,6 +2,7 @@ using Hesabyar.Application.Accounts;
 using Hesabyar.Application.People;
 using Hesabyar.Application.Cheques;
 using Hesabyar.Application.Loans;
+using Hesabyar.Application.Sms;
 using Hesabyar.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,8 @@ public static class InfrastructureServiceCollectionExtensions
             options.AddInterceptors(serviceProvider.GetRequiredService<SqliteConnectionPragmaInterceptor>());
         });
 
+        services.AddSingleton<BankSmsParser>();
+        services.AddScoped<BankSmsInboxService>();
         services.AddScoped<IAccountingRepository, EfAccountingRepository>();
         services.AddScoped<IPeopleRepository, PeopleRepository>();
         services.AddScoped<IChequeRepository, ChequesRepository>();

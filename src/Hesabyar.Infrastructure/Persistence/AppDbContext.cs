@@ -16,6 +16,7 @@ public sealed class AppDbContext(
     public DbSet<DbCheque> Cheques => Set<DbCheque>();
     public DbSet<DbLoan> Loans => Set<DbLoan>();
     public DbSet<DbLoanInstallment> LoanInstallments => Set<DbLoanInstallment>();
+    public DbSet<DbSmsInboxItem> SmsInboxItems => Set<DbSmsInboxItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +26,7 @@ public sealed class AppDbContext(
         ConfigureParties(modelBuilder);
         ConfigureCheques(modelBuilder);
         ConfigureLoans(modelBuilder);
+        ConfigureSmsInbox(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -89,10 +91,31 @@ public sealed class AppDbContext(
         entity.Property(x => x.Description).HasMaxLength(500);
         entity.Property(x => x.DueDate).HasColumnType("TEXT");
         entity.Property(x => x.SmsMessageId).HasMaxLength(160);
+        entity.HasIndex(x => x.SmsMessageId).IsUnique().HasFilter("\"SmsMessageId\" IS NOT NULL");
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
         entity.HasIndex(x => x.LoanId);
         entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
+        entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+    private static void ConfigureSmsInbox(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbSmsInboxItem>();
+        entity.ToTable(\"SmsInboxItems\");
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Sender).HasMaxLength(120).IsRequired();
+        entity.Property(x => x.Body).HasMaxLength(4000).IsRequired();
+        entity.Property(x => x.DedupeHash).HasMaxLength(64).IsRequired();
+        entity.Property(x => x.BankKey).HasMaxLength(40);
+        entity.Property(x => x.ParseStatus).HasMaxLength(20).IsRequired();
+        entity.Property(x => x.TransactionType).HasMaxLength(20).IsRequired();
+        entity.Property(x => x.CardLastFour).HasMaxLength(4);
+        entity.Property(x => x.DateText).HasMaxLength(20);
+        entity.Property(x => x.TransactionTime).HasMaxLength(5);
+        entity.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        entity.HasIndex(x => x.DedupeHash).IsUnique();
+        entity.HasIndex(x => new { x.Status, x.CreatedAtUtc });
         entity.HasQueryFilter(x => !x.IsDeleted);
     }
 
