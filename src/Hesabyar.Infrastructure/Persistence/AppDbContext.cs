@@ -91,7 +91,6 @@ public sealed class AppDbContext(
         entity.Property(x => x.Description).HasMaxLength(500);
         entity.Property(x => x.DueDate).HasColumnType("TEXT");
         entity.Property(x => x.SmsMessageId).HasMaxLength(160);
-        entity.HasIndex(x => x.SmsMessageId).IsUnique().HasFilter("\"SmsMessageId\" IS NOT NULL");
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
         entity.HasIndex(x => x.LoanId);

@@ -192,7 +192,6 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.LoanId).HasColumnType("TEXT");
             entity.Property(x => x.Source).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);
-            entity.HasIndex(x => x.SmsMessageId).IsUnique().HasFilter("\"SmsMessageId\" IS NOT NULL");
             entity.Property(x => x.IsConfirmed);
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");

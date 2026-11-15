@@ -46,17 +46,10 @@ public sealed class BankSmsInbox : Migration
             name: "IX_SmsInboxItems_Status_CreatedAtUtc",
             table: "SmsInboxItems",
             columns: new[] { "Status", "CreatedAtUtc" });
-        migrationBuilder.CreateIndex(
-            name: "IX_Transactions_SmsMessageId",
-            table: "Transactions",
-            column: "SmsMessageId",
-            unique: true,
-            filter: "\"SmsMessageId\" IS NOT NULL");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropIndex(name: "IX_Transactions_SmsMessageId", table: "Transactions");
         migrationBuilder.DropTable(name: "SmsInboxItems");
     }
 
