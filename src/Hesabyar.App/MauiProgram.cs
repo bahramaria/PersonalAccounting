@@ -52,7 +52,6 @@ public static class MauiProgram
             provider.GetRequiredService<IDatabaseKeyProvider>()));
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<StartupPage>();
-        builder.Services.AddTransient<OnboardingPage>();
         builder.Services.AddTransient<PinLockPage>();
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<AccountService>();
