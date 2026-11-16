@@ -164,7 +164,7 @@ public sealed class BankSmsPage : ContentPage
                 card.Children.Add(new Label { Text = item.Body, FontSize = 13, LineBreakMode = LineBreakMode.WordWrap });
                 card.Children.Add(new Label
                 {
-                    Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} · {(item.AmountUnitKnown ? string.Empty : AppStrings.SmsUnitUnknown)} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
+                    Text = $"{(item.TransactionType == BankSmsTransactionType.Income ? AppStrings.Income : item.TransactionType == BankSmsTransactionType.Expense ? AppStrings.Expense : AppStrings.SmsTypeUnknown)} · {item.AmountMinor?.ToString("N0") ?? AppStrings.SmsAmountUnknown} {(item.AmountUnitKnown ? AppStrings.CurrencyRial : AppStrings.SmsUnitUnknown)} · {(item.ParseStatus == BankSmsParseStatus.Parsed ? AppStrings.SmsParsed : item.ParseStatus == BankSmsParseStatus.Unsupported ? AppStrings.SmsUnsupported : AppStrings.SmsNeedsReview)}",
                     FontSize = 12
                 });
                 if (item.BalanceMinor.HasValue || !string.IsNullOrWhiteSpace(item.CardLastFour) ||
@@ -172,7 +172,7 @@ public sealed class BankSmsPage : ContentPage
                 {
                     var details = new List<string>();
                     if (item.BalanceMinor is long balanceValue)
-                        details.Add($"{AppStrings.SmsBalance}: {balanceValue:N0}");
+                        details.Add($"{AppStrings.SmsBalance}: {balanceValue:N0} {(item.AmountUnitKnown ? AppStrings.CurrencyRial : AppStrings.SmsUnitUnknown)}");
                     if (!item.AmountUnitKnown)
                         details.Add(AppStrings.SmsUnitUnknown);
                     if (!string.IsNullOrWhiteSpace(item.CardLastFour))
