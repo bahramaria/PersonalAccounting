@@ -397,4 +397,24 @@
 
   <data name="ReminderNotificationBody" xml:space="preserve"><value>A reminder is due.</value></data>
   <data name="ReminderNotificationChannel" xml:space="preserve"><value>Hesabyar reminders</value></data>
+  <data name="ReportsHeading" xml:space="preserve"><value>Financial reports</value></data>
+  <data name="ReportsRange" xml:space="preserve"><value>Date range</value></data>
+  <data name="ReportsFromDate" xml:space="preserve"><value>From date</value></data>
+  <data name="ReportsToDate" xml:space="preserve"><value>To date</value></data>
+  <data name="ReportsDateInvalid" xml:space="preserve"><value>Enter a valid date range. The start date must not be after the end date.</value></data>
+  <data name="ReportsIncome" xml:space="preserve"><value>Income</value></data>
+  <data name="ReportsExpenses" xml:space="preserve"><value>Expenses</value></data>
+  <data name="ReportsNetCashFlow" xml:space="preserve"><value>Net cash flow</value></data>
+  <data name="ReportsAssets" xml:space="preserve"><value>Assets</value></data>
+  <data name="ReportsLiabilities" xml:space="preserve"><value>Liabilities</value></data>
+  <data name="ReportsNetWorth" xml:space="preserve"><value>Net worth</value></data>
+  <data name="ReportsByCategory" xml:space="preserve"><value>Expenses by category</value></data>
+  <data name="ReportsMonthlyTrend" xml:space="preserve"><value>Monthly income and expenses</value></data>
+  <data name="ReportsAccounts" xml:space="preserve"><value>Account balances</value></data>
+  <data name="ReportsPeople" xml:space="preserve"><value>People balances</value></data>
+  <data name="ReportsExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="ReportsExportExcel" xml:space="preserve"><value>Export Excel</value></data>
+  <data name="ReportsEmpty" xml:space="preserve"><value>There is no data for this section in the selected period.</value></data>
+  <data name="ReportsLoadFailed" xml:space="preserve"><value>Financial reports could not be loaded.</value></data>
+  <data name="ReportsExportFailed" xml:space="preserve"><value>The report could not be exported.</value></data>
 </root>
