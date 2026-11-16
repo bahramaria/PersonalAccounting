@@ -157,6 +157,15 @@ public sealed class BankSmsParserTests
     }
 
     [Fact]
+    public void UnrelatedPersonalMessageIsUnsupported()
+    {
+        var result = new BankSmsParser().Parse("sender", "سلام، جلسه فردا ساعت ۱۰ برگزار می‌شود.");
+
+        Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
+        Assert.Null(result.AmountMinor);
+    }
+
+    [Fact]
     public void EmptyMessageIsUnsupported()
     {
         var parser = new BankSmsParser([MellatRule]);

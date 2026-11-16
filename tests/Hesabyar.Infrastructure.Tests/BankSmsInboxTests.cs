@@ -184,6 +184,23 @@ public sealed class BankSmsInboxTests
     }
 
     [Fact]
+    public async Task ImportDoesNotPersistUnrelatedPersonalMessages()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using (var db = new AppDbContext(options))
+            await db.Database.MigrateAsync();
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.Equal(SmsImportOutcome.Ignored,
+            await service.ImportAsync("sender", "سلام، جلسه فردا ساعت ۱۰ برگزار می‌شود."));
+
+        await using var verify = new AppDbContext(options);
+        Assert.Empty(await verify.SmsInboxItems.ToListAsync());
+    }
+
+    [Fact]
     public async Task BatchConfirmationImportsAllSelectedMessagesAtomically()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
