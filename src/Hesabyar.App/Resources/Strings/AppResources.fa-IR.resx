@@ -421,4 +421,8 @@
   <data name="ReportsIOweThem" xml:space="preserve"><value>بدهی من</value></data>
   <data name="ReportsPeriodChange" xml:space="preserve"><value>تغییر در بازه</value></data>
   <data name="ReportsActivityCount" xml:space="preserve"><value>تعداد گردش</value></data>
+  <data name="BiometricUnlockButton" xml:space="preserve"><value>ورود با اثر انگشت یا بیومتریک</value></data>
+  <data name="BiometricUnlockTitle" xml:space="preserve"><value>تأیید هویت بیومتریک</value></data>
+  <data name="BiometricUnlockReason" xml:space="preserve"><value>برای بازکردن حسابیار هویت خود را تأیید کنید.</value></data>
+  <data name="BiometricUnlockFailed" xml:space="preserve"><value>تأیید بیومتریک انجام نشد. از رمز ورود استفاده کنید.</value></data>
 </root>
