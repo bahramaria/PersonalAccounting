@@ -37,6 +37,10 @@ public sealed class AppShell : Shell
             "reminders",
             () => services.GetRequiredService<RemindersPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.RecurringTab,
+            "recurring",
+            () => services.GetRequiredService<RecurringTransactionsPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.PeopleTab,
             "people",
             () => services.GetRequiredService<PeoplePage>()));
