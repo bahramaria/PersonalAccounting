@@ -77,7 +77,7 @@ public sealed class ReportsService(
         var accountBalances = accountIds.Length == 0
             ? new Dictionary<Guid, long>()
             : await db.Postings.AsNoTracking()
-                .Where(x => accountIds.Contains(x.AccountId) && !x.Transaction.IsDeleted)
+                .Where(x => accountIds.Contains(x.AccountId) && !x.Transaction.IsDeleted && x.Transaction.IsConfirmed)
                 .GroupBy(x => x.AccountId)
                 .Select(x => new { AccountId = x.Key, Balance = x.Sum(p => p.AmountMinor) })
                 .ToDictionaryAsync(x => x.AccountId, x => x.Balance, cancellationToken);
@@ -100,7 +100,7 @@ public sealed class ReportsService(
             ? new Dictionary<Guid, long>()
             : await db.Postings.AsNoTracking()
                 .Where(x => x.PartyId != null && partyIds.Contains(x.PartyId.Value) &&
-                    x.Account.SystemKey == "people-clearing" && !x.Transaction.IsDeleted)
+                    x.Account.SystemKey == "people-clearing" && !x.Transaction.IsDeleted && x.Transaction.IsConfirmed)
                 .GroupBy(x => x.PartyId!.Value)
                 .Select(x => new { PartyId = x.Key, Balance = x.Sum(p => p.AmountMinor) })
                 .ToDictionaryAsync(x => x.PartyId, x => x.Balance, cancellationToken);
