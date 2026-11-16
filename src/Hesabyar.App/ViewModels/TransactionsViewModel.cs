@@ -78,7 +78,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
             _accountNames = allChoices.ToDictionary(x => x.Id, x => x.Name);
             var active = accountResult.Value.Where(x => !x.Account.IsArchived).ToArray();
             Accounts = active.Where(x => x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet or AccountKind.CreditCard)
-                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
+                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type, x.Account.CurrencyCode)).ToArray();
             ExpenseCategories = active.Where(x => x.Account.Kind == AccountKind.Category && x.Account.Type == AccountType.Expense)
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
             IncomeCategories = active.Where(x => x.Account.Kind == AccountKind.Category && x.Account.Type == AccountType.Income)

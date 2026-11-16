@@ -226,7 +226,7 @@ public sealed class AccountsViewModel : ObservableObject
                 item.Account.Id,
                 item.Account.Name,
                 GetKindName(item.Account.Kind),
-                FormatBalance(item.BalanceMinor)));
+                FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode));
         }
 
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
