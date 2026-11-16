@@ -56,7 +56,7 @@ public sealed class RecurringOccurrenceSchedulerTests
             .Select(x => x.OccurrenceDate)
             .ToListAsync();
         Assert.Equal(
-            [new DateOnly(2026, 1, 31), new DateOnly(2026, 2, 28), new DateOnly(2026, 3, 31)],
+            new[] { new DateOnly(2026, 1, 31), new DateOnly(2026, 2, 28), new DateOnly(2026, 3, 31) },
             occurrences);
 
         var updatedSchedule = await setupDb.RecurringTransactions.SingleAsync();
