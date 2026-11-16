@@ -69,6 +69,61 @@ public sealed class RecurringTransactionServiceTests
     }
 
     [Fact]
+    public async Task AccountAndCategoryChoices_ExcludeArchivedAndWrongTypeAccounts()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var setup = new AppDbContext(options);
+        await setup.Database.MigrateAsync();
+
+        setup.Accounts.AddRange(
+            new DbAccount
+            {
+                Name = "Cash",
+                Type = AccountType.Asset,
+                Kind = AccountKind.Cash,
+                CurrencyCode = "IRR"
+            },
+            new DbAccount
+            {
+                Name = "Archived cash",
+                Type = AccountType.Asset,
+                Kind = AccountKind.Cash,
+                CurrencyCode = "IRR",
+                IsArchived = true
+            },
+            new DbAccount
+            {
+                Name = "Rent",
+                Type = AccountType.Expense,
+                Kind = AccountKind.Category,
+                CurrencyCode = "IRR"
+            },
+            new DbAccount
+            {
+                Name = "Salary",
+                Type = AccountType.Income,
+                Kind = AccountKind.Category,
+                CurrencyCode = "IRR"
+            });
+        await setup.SaveChangesAsync();
+
+        var clock = new FixedClock();
+        var factory = new TestDbContextFactory(options);
+        var service = new RecurringTransactionService(factory, clock, new RecurringOccurrenceScheduler(factory, clock));
+
+        var accounts = await service.GetAccountChoicesAsync();
+        var categories = await service.GetCategoryChoicesAsync("Expense");
+
+        var account = Assert.Single(accounts);
+        Assert.Equal("Cash", account.Name);
+        Assert.Equal("Asset", account.Type);
+        var category = Assert.Single(categories);
+        Assert.Equal("Rent", category.Name);
+    }
+
+    [Fact]
     public async Task SetPaused_DoesNotResumeAnExpiredSchedule()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
