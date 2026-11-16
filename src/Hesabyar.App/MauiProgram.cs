@@ -33,6 +33,11 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDateCalendarService, DateCalendarService>();
         builder.Services.AddSingleton<INumberNormalizer, NumberNormalizer>();
         builder.Services.AddSingleton<AppLockService>();
+#if ANDROID
+        builder.Services.AddSingleton<IBiometricAuthenticator, AndroidBiometricAuthenticator>();
+#elif WINDOWS
+        builder.Services.AddSingleton<IBiometricAuthenticator, WindowsBiometricAuthenticator>();
+#endif
         builder.Services.AddSingleton<ReminderNotificationSyncService>();
 #if ANDROID
         builder.Services.AddSingleton<IReminderNotificationScheduler, AndroidReminderNotificationScheduler>();
