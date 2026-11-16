@@ -33,6 +33,10 @@ public sealed class AppShell : Shell
             "loans",
             () => services.GetRequiredService<LoansPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.RemindersTab,
+            "reminders",
+            () => services.GetRequiredService<RemindersPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.PeopleTab,
             "people",
             () => services.GetRequiredService<PeoplePage>()));
