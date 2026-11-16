@@ -420,4 +420,5 @@
   <data name="ReportsTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
   <data name="ReportsIOweThem" xml:space="preserve"><value>I owe them</value></data>
   <data name="ReportsPeriodChange" xml:space="preserve"><value>Period change</value></data>
+  <data name="ReportsActivityCount" xml:space="preserve"><value>Activities</value></data>
 </root>
