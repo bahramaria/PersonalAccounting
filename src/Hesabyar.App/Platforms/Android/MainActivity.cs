@@ -21,6 +21,9 @@ public sealed class MainActivity : MauiAppCompatActivity
     {
         base.OnCreate(savedInstanceState);
         CaptureSharedText(Intent);
+        if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Tiramisu &&
+            CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted)
+            RequestPermissions(new[] { Android.Manifest.Permission.PostNotifications }, 9101);
     }
 
     protected override void OnNewIntent(Intent? intent)
