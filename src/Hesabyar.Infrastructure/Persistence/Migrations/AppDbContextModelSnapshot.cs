@@ -250,9 +250,11 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.IsDeleted);
-            entity.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique();
+            entity.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique()
+                .HasDatabaseName("IX_RecurringTransactionOccurrences_RecurringTransactionId_OccurrenceDate");
             entity.HasIndex(x => x.TransactionId).IsUnique().HasFilter("\"TransactionId\" IS NOT NULL");
-            entity.HasOne<DbRecurringTransaction>().WithMany().HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbRecurringTransaction>().WithMany().HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_RecurringTransactionOccurrences_RecurringTransactions_RecurringTransactionId");
             entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
