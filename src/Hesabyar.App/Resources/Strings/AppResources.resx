@@ -421,4 +421,8 @@
   <data name="ReportsIOweThem" xml:space="preserve"><value>I owe them</value></data>
   <data name="ReportsPeriodChange" xml:space="preserve"><value>Period change</value></data>
   <data name="ReportsActivityCount" xml:space="preserve"><value>Activities</value></data>
+  <data name="BiometricUnlockButton" xml:space="preserve"><value>Use biometrics</value></data>
+  <data name="BiometricUnlockTitle" xml:space="preserve"><value>Biometric verification</value></data>
+  <data name="BiometricUnlockReason" xml:space="preserve"><value>Verify your identity to unlock Hesabyar.</value></data>
+  <data name="BiometricUnlockFailed" xml:space="preserve"><value>Biometric verification was not completed. Use your PIN.</value></data>
 </root>
