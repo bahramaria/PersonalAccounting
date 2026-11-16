@@ -183,6 +183,34 @@ public sealed class BankSmsParserTests
         Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
     }
 
+    [Theory]
+    [InlineData("برداشت مبلغ: ۱۲٫۵ ریال")]
+    [InlineData("برداشت مبلغ: 12.5 ریال")]
+    [InlineData("برداشت مبلغ: 1,25 ریال")]
+    [InlineData("برداشت مبلغ: 1,234.567 ریال")]
+    [InlineData("برداشت مبلغ: 1 23 ریال")]
+    public void MalformedGroupedOrFractionalAmountsRequireManualAmountEntry(string body)
+    {
+        var result = new BankSmsParser().Parse("Unknown", body);
+
+        Assert.Equal(BankSmsParseStatus.NeedsReview, result.Status);
+        Assert.Null(result.AmountMinor);
+        Assert.Equal(BankSmsTransactionType.Expense, result.TransactionType);
+    }
+
+    [Theory]
+    [InlineData("برداشت مبلغ: 1,234,567 ریال", 1_234_567L)]
+    [InlineData("برداشت مبلغ: ۱٬۲۳۴٬۵۶۷ ریال", 1_234_567L)]
+    [InlineData("برداشت مبلغ: 1 234 567 ریال", 1_234_567L)]
+    public void ParsesStrictThousandsGroupedIntegerAmounts(string body, long expectedAmount)
+    {
+        var result = new BankSmsParser().Parse("Unknown", body);
+
+        Assert.Equal(BankSmsParseStatus.NeedsReview, result.Status);
+        Assert.Equal(expectedAmount, result.AmountMinor);
+        Assert.True(result.AmountUnitKnown);
+    }
+
     [Fact]
     public void DedupeHashIsStableForSameSenderAndBody()
     {

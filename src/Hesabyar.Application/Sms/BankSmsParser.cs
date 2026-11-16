@@ -186,8 +186,28 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         if (!match.Success)
             return null;
 
-        var digits = Regex.Replace(match.Groups[1].Value, @"[^0-9]", string.Empty);
-        return long.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var amount)
+        var value = Regex.Replace(match.Groups[1].Value.Trim(), @"\\s+", " ");
+        var separators = value.Where(character =>
+                character is ',' or '٬' or '،' or '.' or '٫' || character == ' ')
+            .Distinct()
+            .ToArray();
+
+        if (separators.Length > 1)
+            return null;
+
+        if (separators.Length == 1)
+        {
+            var groups = value.Split(separators[0]);
+            if (groups.Length < 2 ||
+                groups[0].Length is < 1 or > 3 ||
+                groups.Any(group => group.Length != 3) ||
+                groups.Any(group => group.Any(character => !char.IsAsciiDigit(character))))
+                return null;
+
+            value = string.Concat(groups);
+        }
+
+        return long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var amount)
             ? amount
             : null;
     }
