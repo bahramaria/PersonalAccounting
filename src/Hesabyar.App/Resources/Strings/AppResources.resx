@@ -395,4 +395,6 @@
   <data name="RecurringNoAccount" xml:space="preserve"><value>No eligible account is available for this transaction type.</value></data>
   <data name="RecurringNoCategory" xml:space="preserve"><value>No matching category is available for the selected currency.</value></data>
 
+  <data name="ReminderNotificationBody" xml:space="preserve"><value>A reminder is due.</value></data>
+  <data name="ReminderNotificationChannel" xml:space="preserve"><value>Hesabyar reminders</value></data>
 </root>
