@@ -18,6 +18,8 @@ public sealed class BankSmsPage : ContentPage
     private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
     private readonly Button _autoImportButton;
+    private readonly Button _batchConfirmButton;
+    private readonly HashSet<Guid> _selectedInboxIds = [];
     private bool _loading;
 
     public BankSmsPage(
@@ -37,6 +39,8 @@ public sealed class BankSmsPage : ContentPage
         var pasteButton = new Button { Text = AppStrings.SmsPaste };
         pasteButton.Clicked += OnPasteClicked;
         _autoImportButton = new Button();
+        _batchConfirmButton = new Button { Text = AppStrings.SmsConfirmSelected, IsEnabled = false };
+        _batchConfirmButton.Clicked += OnBatchConfirmClicked;
         _autoImportButton.Clicked += OnAutoImportClicked;
         UpdateAutoImportButton();
         Content = new ScrollView
@@ -51,6 +55,7 @@ public sealed class BankSmsPage : ContentPage
                     new Label { Text = AppStrings.SmsPrivacyNote, FontSize = 13 },
                     pasteButton,
                     _autoImportButton,
+                    _batchConfirmButton,
                     _items
                 }
             }
@@ -146,6 +151,8 @@ public sealed class BankSmsPage : ContentPage
         try
         {
             _items.Children.Clear();
+            _selectedInboxIds.Clear();
+            UpdateBatchButton();
             var pending = await _inbox.GetPendingAsync();
             if (pending.Count == 0)
             {
@@ -156,6 +163,18 @@ public sealed class BankSmsPage : ContentPage
             foreach (var item in pending)
             {
                 var card = new VerticalStackLayout { Spacing = 6 };
+                var selection = new CheckBox { VerticalOptions = LayoutOptions.Center };
+                selection.CheckedChanged += (_, args) =>
+                {
+                    if (args.Value) _selectedInboxIds.Add(item.Id);
+                    else _selectedInboxIds.Remove(item.Id);
+                    UpdateBatchButton();
+                };
+                card.Children.Add(new HorizontalStackLayout
+                {
+                    Spacing = 8,
+                    Children = { selection, new Label { Text = AppStrings.SmsSelectForBatch, VerticalOptions = LayoutOptions.Center } }
+                });
                 card.Children.Add(new Label
                 {
                     Text = string.IsNullOrWhiteSpace(item.Sender) ? AppStrings.SmsUnknownSender : item.Sender,
@@ -242,8 +261,11 @@ public sealed class BankSmsPage : ContentPage
         var expectedCategoryType = type == BankSmsTransactionType.Income ? AccountType.Income : AccountType.Expense;
         var categories = accountResult.Value.Where(x => !x.Account.IsArchived &&
             x.Account.Kind == AccountKind.Category && x.Account.Type == expectedCategoryType).ToArray();
-        var category = await ChooseAsync(AppStrings.TransactionCategoryPrompt,
-            categories.Select(x => (x.Account.Id, x.Account.Name)).ToArray());
+        var rememberedCategory = GetRememberedCategoryId(item, type);
+        var categoryChoices = categories.Select(x => (x.Account.Id, x.Account.Name)).ToArray();
+        if (rememberedCategory is Guid remembered)
+            categoryChoices = categoryChoices.OrderByDescending(x => x.Id == remembered).ToArray();
+        var category = await ChooseAsync(AppStrings.TransactionCategoryPrompt, categoryChoices);
         if (category is null) return;
 
         var initialBusinessDate = item.DateText is { } smsDateText &&
@@ -272,6 +294,7 @@ public sealed class BankSmsPage : ContentPage
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.SmsConfirmFailed, AppStrings.Ok);
             return;
         }
+        RememberCategory(item, type, category.Value.Id);
         await DisplayAlertAsync(AppStrings.SmsHeading, AppStrings.SmsImported, AppStrings.Ok);
 
         var balanceCheck = await _inbox.GetBalanceReconciliationAsync(item.Id);
@@ -294,6 +317,99 @@ public sealed class BankSmsPage : ContentPage
                     AppStrings.Ok);
             }
         }
+        await ReloadAsync();
+    }
+
+    private void UpdateBatchButton()
+    {
+        _batchConfirmButton.Text = $"{AppStrings.SmsConfirmSelected} ({_selectedInboxIds.Count})";
+        _batchConfirmButton.IsEnabled = _selectedInboxIds.Count > 0;
+    }
+
+    private static string CategoryMemoryKey(BankSmsInboxRecord item, BankSmsTransactionType type)
+    {
+        var sender = BankSmsParser.Normalize(item.BankKey ?? item.Sender);
+        var digest = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(sender)))[..16];
+        return $"sms-category-memory:{digest}:{type}";
+    }
+
+    private static Guid? GetRememberedCategoryId(BankSmsInboxRecord item, BankSmsTransactionType type)
+    {
+        var raw = Preferences.Default.Get(CategoryMemoryKey(item, type), string.Empty);
+        return Guid.TryParse(raw, out var id) ? id : null;
+    }
+
+    private static void RememberCategory(BankSmsInboxRecord item, BankSmsTransactionType type, Guid categoryId) =>
+        Preferences.Default.Set(CategoryMemoryKey(item, type), categoryId.ToString("D"));
+
+    private async void OnBatchConfirmClicked(object? sender, EventArgs e)
+    {
+        var selected = (await _inbox.GetPendingAsync())
+            .Where(x => _selectedInboxIds.Contains(x.Id)).ToArray();
+        if (selected.Length == 0) return;
+        if (selected.Any(x => !x.AmountUnitKnown || x.AmountMinor is not > 0 ||
+            x.TransactionType is not (BankSmsTransactionType.Expense or BankSmsTransactionType.Income)))
+        {
+            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.SmsBatchRequiresKnownAmounts, AppStrings.Ok);
+            return;
+        }
+        if (selected.Select(x => x.TransactionType).Distinct().Count() != 1)
+        {
+            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.SmsBatchSameTypeRequired, AppStrings.Ok);
+            return;
+        }
+
+        var type = selected[0].TransactionType;
+        var accountResult = await _accounts.GetAccountsAsync();
+        if (!accountResult.IsSuccess || accountResult.Value is null) return;
+        var accounts = accountResult.Value.Where(x => !x.Account.IsArchived &&
+            (type == BankSmsTransactionType.Income ? x.Account.Type == AccountType.Asset :
+                x.Account.Type is AccountType.Asset or AccountType.Liability)).ToArray();
+        var account = await ChooseAsync(AppStrings.TransactionAccountPrompt,
+            accounts.Select(x => (x.Account.Id, x.Account.Name)).ToArray());
+        if (account is null) return;
+
+        var categoryType = type == BankSmsTransactionType.Income ? AccountType.Income : AccountType.Expense;
+        var categories = accountResult.Value.Where(x => !x.Account.IsArchived &&
+            x.Account.Kind == AccountKind.Category && x.Account.Type == categoryType).ToArray();
+        var remembered = GetRememberedCategoryId(selected[0], type);
+        var categoryChoices = categories.Select(x => (x.Account.Id, x.Account.Name)).ToArray();
+        if (remembered is Guid rememberedId)
+            categoryChoices = categoryChoices.OrderByDescending(x => x.Id == rememberedId).ToArray();
+        var category = await ChooseAsync(AppStrings.TransactionCategoryPrompt, categoryChoices);
+        if (category is null) return;
+
+        var confirmations = new List<SmsBatchConfirmation>(selected.Length);
+        foreach (var item in selected)
+        {
+            var initialDate = item.DateText is { } rawDate && rawDate.Count(c => c == '/') == 2 &&
+                _calendar.TryParse(rawDate, out var parsedDate) ? _calendar.Format(parsedDate) : null;
+            var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD",
+                AppStrings.Save, AppStrings.Cancel, initialValue: initialDate);
+            if (dateText is null || !_calendar.TryParse(dateText, out var date)) return;
+            if (await _inbox.HasPossibleManualDuplicateAsync(account.Value.Id, category.Value.Id,
+                type, item.AmountMinor!.Value, date))
+            {
+                var proceed = await DisplayAlertAsync(AppStrings.SmsPossibleDuplicateTitle,
+                    AppStrings.SmsPossibleDuplicateMessage, AppStrings.SmsConfirmAnyway, AppStrings.Cancel);
+                if (!proceed) return;
+            }
+            confirmations.Add(new SmsBatchConfirmation(item.Id, account.Value.Id, category.Value.Id,
+                type, item.AmountMinor.Value, date));
+        }
+
+        var success = await _inbox.ConfirmBatchAsync(confirmations);
+        if (!success)
+        {
+            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.SmsBatchConfirmFailed, AppStrings.Ok);
+            return;
+        }
+        foreach (var item in selected) RememberCategory(item, type, category.Value.Id);
+        _selectedInboxIds.Clear();
+        UpdateBatchButton();
+        await DisplayAlertAsync(AppStrings.SmsHeading,
+            string.Format(AppStrings.SmsBatchImported, confirmations.Count), AppStrings.Ok);
         await ReloadAsync();
     }
 

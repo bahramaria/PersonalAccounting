@@ -340,5 +340,12 @@ public static class AppStrings
 
     public static string SmsIgnored => Get(nameof(SmsIgnored));
 
+    public static string SmsConfirmSelected => Get(nameof(SmsConfirmSelected));
+    public static string SmsSelectForBatch => Get(nameof(SmsSelectForBatch));
+    public static string SmsBatchRequiresKnownAmounts => Get(nameof(SmsBatchRequiresKnownAmounts));
+    public static string SmsBatchSameTypeRequired => Get(nameof(SmsBatchSameTypeRequired));
+    public static string SmsBatchConfirmFailed => Get(nameof(SmsBatchConfirmFailed));
+    public static string SmsBatchImported => Get(nameof(SmsBatchImported));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

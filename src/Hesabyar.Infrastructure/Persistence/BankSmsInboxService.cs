@@ -12,6 +12,9 @@ public enum SmsImportOutcome { Added, Duplicate, Ignored }
 
 public sealed record SmsBalanceReconciliation(long SmsBalanceMinor, long LedgerBalanceMinor, long DifferenceMinor);
 
+public sealed record SmsBatchConfirmation(Guid InboxItemId, Guid AccountId, Guid CategoryId,
+    BankSmsTransactionType TransactionType, long AmountMinor, DateOnly BusinessDate);
+
 public sealed record BankSmsInboxRecord(
     Guid Id, string Sender, string Body, string? BankKey,
     BankSmsParseStatus ParseStatus, BankSmsTransactionType TransactionType,
@@ -149,6 +152,81 @@ public sealed class BankSmsInboxService(
         return true;
     }
 
+
+    public async Task<bool> ConfirmBatchAsync(
+        IReadOnlyCollection<SmsBatchConfirmation> confirmations,
+        CancellationToken cancellationToken = default)
+    {
+        if (confirmations.Count == 0 || confirmations.Count > 100 ||
+            confirmations.Any(x => x.AmountMinor <= 0 ||
+                x.TransactionType is not (BankSmsTransactionType.Expense or BankSmsTransactionType.Income)))
+            return false;
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var ids = confirmations.Select(x => x.InboxItemId).ToArray();
+        if (ids.Distinct().Count() != ids.Length)
+            return false;
+
+        var items = await db.SmsInboxItems
+            .Where(x => ids.Contains(x.Id) && x.Status == SmsInboxStatus.Pending.ToString())
+            .ToDictionaryAsync(x => x.Id, cancellationToken);
+        if (items.Count != confirmations.Count)
+            return false;
+
+        var now = timeProvider.GetUtcNow();
+        foreach (var confirmation in confirmations)
+        {
+            var item = items[confirmation.InboxItemId];
+            if (await db.Transactions.AnyAsync(x => x.SmsMessageId == item.DedupeHash, cancellationToken))
+                return false;
+
+            var account = await db.Accounts.SingleOrDefaultAsync(
+                x => x.Id == confirmation.AccountId && !x.IsArchived, cancellationToken);
+            var category = await db.Accounts.SingleOrDefaultAsync(
+                x => x.Id == confirmation.CategoryId && !x.IsArchived, cancellationToken);
+            if (account is null || category is null || category.Kind != AccountKind.Category)
+                return false;
+
+            var isIncome = confirmation.TransactionType == BankSmsTransactionType.Income;
+            var accountValid = isIncome ? account.Type == AccountType.Asset :
+                account.Type is AccountType.Asset or AccountType.Liability;
+            var categoryValid = isIncome ? category.Type == AccountType.Income : category.Type == AccountType.Expense;
+            if (!accountValid || !categoryValid || account.CurrencyCode != category.CurrencyCode)
+                return false;
+
+            var accountAmount = isIncome ? confirmation.AmountMinor : -confirmation.AmountMinor;
+            var ledger = new DbLedgerTransaction
+            {
+                BusinessDate = confirmation.BusinessDate,
+                Kind = isIncome ? TransactionKind.Income : TransactionKind.Expense,
+                Description = string.IsNullOrWhiteSpace(item.Sender) ? "SMS import" : $"SMS · {item.Sender}",
+                Source = TransactionSource.Sms,
+                SmsMessageId = item.DedupeHash,
+                IsConfirmed = true,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            };
+            ledger.Postings.Add(new DbPosting
+            {
+                AccountId = account.Id, AmountMinor = accountAmount, CurrencyCode = account.CurrencyCode,
+                CreatedAtUtc = now, UpdatedAtUtc = now
+            });
+            ledger.Postings.Add(new DbPosting
+            {
+                AccountId = category.Id, AmountMinor = -accountAmount, CurrencyCode = category.CurrencyCode,
+                CreatedAtUtc = now, UpdatedAtUtc = now
+            });
+            db.Transactions.Add(ledger);
+            item.Status = SmsInboxStatus.Imported.ToString();
+            item.TransactionId = ledger.Id;
+            item.UpdatedAtUtc = now;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return true;
+    }
 
     public async Task<bool> HasPossibleManualDuplicateAsync(
         Guid accountId, Guid categoryId, BankSmsTransactionType transactionType,

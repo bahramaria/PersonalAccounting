@@ -321,4 +321,10 @@
   <data name="SmsAdjustmentCreated" xml:space="preserve"><value>The adjustment transaction was created and the account balance now matches the SMS.</value></data>
   <data name="SmsAdjustmentFailed" xml:space="preserve"><value>The adjustment could not be created. Review the account balance and related transactions.</value></data>
   <data name="SmsIgnored" xml:space="preserve"><value>Non-financial or verification-code SMS was ignored.</value></data>
+  <data name="SmsConfirmSelected" xml:space="preserve"><value>Confirm selected messages</value></data>
+  <data name="SmsSelectForBatch" xml:space="preserve"><value>Select for batch confirmation</value></data>
+  <data name="SmsBatchRequiresKnownAmounts" xml:space="preserve"><value>Batch confirmation requires a known transaction type and a verified currency unit for every selected message.</value></data>
+  <data name="SmsBatchSameTypeRequired" xml:space="preserve"><value>Select messages of the same transaction type for batch confirmation.</value></data>
+  <data name="SmsBatchConfirmFailed" xml:space="preserve"><value>The batch could not be confirmed. No selected transaction was imported.</value></data>
+  <data name="SmsBatchImported" xml:space="preserve"><value>{0} messages were imported successfully.</value></data>
 </root>

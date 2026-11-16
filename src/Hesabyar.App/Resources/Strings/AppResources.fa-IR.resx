@@ -321,4 +321,10 @@
   <data name="SmsAdjustmentCreated" xml:space="preserve"><value>تراکنش تعدیل ثبت شد و مانده حساب با پیامک تطبیق داده شد.</value></data>
   <data name="SmsAdjustmentFailed" xml:space="preserve"><value>ثبت تعدیل انجام نشد. مانده حساب و تراکنش‌های مرتبط را بررسی کنید.</value></data>
   <data name="SmsIgnored" xml:space="preserve"><value>پیامک غیرمالی یا حاوی رمز تأیید نادیده گرفته شد.</value></data>
+  <data name="SmsConfirmSelected" xml:space="preserve"><value>تأیید گروهی پیام‌ها</value></data>
+  <data name="SmsSelectForBatch" xml:space="preserve"><value>انتخاب برای تأیید گروهی</value></data>
+  <data name="SmsBatchRequiresKnownAmounts" xml:space="preserve"><value>برای تأیید گروهی، نوع تراکنش و واحد پول همه پیام‌های انتخاب‌شده باید مشخص باشد.</value></data>
+  <data name="SmsBatchSameTypeRequired" xml:space="preserve"><value>برای تأیید گروهی، پیام‌هایی با نوع تراکنش یکسان انتخاب کنید.</value></data>
+  <data name="SmsBatchConfirmFailed" xml:space="preserve"><value>تأیید گروهی انجام نشد و هیچ‌یک از تراکنش‌های انتخاب‌شده ثبت نشد.</value></data>
+  <data name="SmsBatchImported" xml:space="preserve"><value>{0} پیام با موفقیت ثبت شد.</value></data>
 </root>
