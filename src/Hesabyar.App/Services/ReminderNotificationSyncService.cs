@@ -31,6 +31,15 @@ public sealed class ReminderNotificationSyncService(
         }
     }
 
-    public Task CancelAsync(Guid reminderId, CancellationToken cancellationToken = default) =>
-        scheduler.CancelAsync(reminderId, cancellationToken);
+    public async Task CancelAsync(Guid reminderId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await scheduler.CancelAsync(reminderId, cancellationToken);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            // A platform cancellation failure must not undo a persisted reminder change.
+        }
+    }
 }
