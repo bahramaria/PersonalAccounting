@@ -8,7 +8,7 @@ namespace Hesabyar.Application.Sms;
 public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
 {
     private static readonly Regex AmountRegex = new(
-        @"(?:مبلغ|برداشت|واریز|خرید|پرداخت|انتقال)\s*(?:از\s+حساب\s*)?[:：]?\s*([0-9][0-9,٬،. \t]*)([+-]?)",
+        @"(?:مبلغ|برداشت|واریز|خرید|پرداخت|انتقال)\s*(?:از\s+حساب\s*)?[:：]?\s*([0-9][0-9,٬،.٫ \t]*)([+-]?)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly Regex BalanceRegex = new(
@@ -186,7 +186,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         if (!match.Success)
             return null;
 
-        var value = Regex.Replace(match.Groups[1].Value.Trim(), @"\\s+", " ");
+        var value = Regex.Replace(match.Groups[1].Value.Trim(), @"\s+", " ");
         var separators = value.Where(character =>
                 character is ',' or '٬' or '،' or '.' or '٫' || character == ' ')
             .Distinct()
