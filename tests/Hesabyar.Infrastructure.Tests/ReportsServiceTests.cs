@@ -21,7 +21,11 @@ public sealed class ReportsServiceTests
             var cash = new DbAccount { Name = "Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" };
             var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
             var salary = new DbAccount { Name = "Salary", Type = AccountType.Income, Kind = AccountKind.Category, CurrencyCode = "IRR" };
-            db.Accounts.AddRange(cash, food, salary);
+            var clearing = new DbAccount { Name = "People clearing", Type = AccountType.Asset, Kind = AccountKind.System,
+                CurrencyCode = "IRR", SystemKey = "people-clearing", IncludeInTotal = false };
+            var person = new DbParty { Name = "Ali" };
+            db.Accounts.AddRange(cash, food, salary, clearing);
+            db.Parties.Add(person);
             var firstDay = new DateOnly(2026, 3, 21);
             db.Transactions.AddRange(
                 new DbLedgerTransaction
@@ -53,6 +57,16 @@ public sealed class ReportsServiceTests
                         new DbPosting { Account = food, AmountMinor = 900_000, CurrencyCode = "IRR" },
                         new DbPosting { Account = cash, AmountMinor = -900_000, CurrencyCode = "IRR" }
                     ]
+                },
+                new DbLedgerTransaction
+                {
+                    BusinessDate = firstDay.AddDays(3), Kind = TransactionKind.PersonDebt, Source = TransactionSource.Manual,
+                    IsConfirmed = true, PartyId = person.Id, Description = "Lent to Ali",
+                    Postings =
+                    [
+                        new DbPosting { Account = clearing, AmountMinor = 50_000, CurrencyCode = "IRR", PartyId = person.Id },
+                        new DbPosting { Account = cash, AmountMinor = -50_000, CurrencyCode = "IRR" }
+                    ]
                 });
             await db.SaveChangesAsync();
         }
@@ -68,6 +82,10 @@ public sealed class ReportsServiceTests
         Assert.Equal("1405/01", report.MonthlyTrend[0].Label);
         Assert.Equal(375_000, report.AssetsMinor);
         Assert.Equal(375_000, report.NetWorthMinor);
+        var personReport = Assert.Single(report.People);
+        Assert.Equal(50_000, personReport.BalanceMinor);
+        Assert.Equal(50_000, personReport.PeriodChangeMinor);
+        Assert.Equal(1, personReport.ActivityCount);
     }
 
     [Fact]
