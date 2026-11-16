@@ -7,7 +7,7 @@ namespace Hesabyar.Infrastructure.Persistence;
 public sealed record ReportCategoryRow(string Name, long AmountMinor);
 public sealed record ReportMonthRow(DateOnly MonthStart, string Label, long IncomeMinor, long ExpenseMinor);
 public sealed record ReportAccountRow(string Name, string Type, long BalanceMinor);
-public sealed record ReportPersonRow(string Name, long BalanceMinor);
+public sealed record ReportPersonRow(string Name, long BalanceMinor, long PeriodChangeMinor, int ActivityCount);
 
 public sealed record FinancialReportSnapshot(
     DateOnly FromDate,
@@ -102,8 +102,23 @@ public sealed class ReportsService(IDbContextFactory<AppDbContext> contextFactor
                 .Select(x => new { PartyId = x.Key, Balance = x.Sum(p => p.AmountMinor) })
                 .ToDictionaryAsync(x => x.PartyId, x => x.Balance, cancellationToken);
 
-        var peopleRows = parties.Select(x => new ReportPersonRow(
-            x.Name, partyBalances.GetValueOrDefault(x.Id))).ToArray();
+        var periodPartyBalances = partyIds.Length == 0
+            ? new Dictionary<Guid, (long Balance, int Count)>()
+            : await db.Postings.AsNoTracking()
+                .Where(x => x.PartyId != null && partyIds.Contains(x.PartyId.Value) &&
+                    x.Account.SystemKey == "people-clearing" && !x.Transaction.IsDeleted &&
+                    x.Transaction.IsConfirmed && x.Transaction.BusinessDate >= fromDate &&
+                    x.Transaction.BusinessDate <= toDate)
+                .GroupBy(x => x.PartyId!.Value)
+                .Select(x => new { PartyId = x.Key, Balance = x.Sum(p => p.AmountMinor), Count = x.Count() })
+                .ToDictionaryAsync(x => x.PartyId, x => (x.Balance, x.Count), cancellationToken);
+
+        var peopleRows = parties.Select(x =>
+        {
+            var period = periodPartyBalances.GetValueOrDefault(x.Id);
+            return new ReportPersonRow(x.Name, partyBalances.GetValueOrDefault(x.Id),
+                period.Balance, period.Count);
+        }).ToArray();
         var peopleAssets = peopleRows.Where(x => x.BalanceMinor > 0).Sum(x => (decimal)x.BalanceMinor);
         var peopleLiabilities = peopleRows.Where(x => x.BalanceMinor < 0).Sum(x => Math.Abs((decimal)x.BalanceMinor));
 
