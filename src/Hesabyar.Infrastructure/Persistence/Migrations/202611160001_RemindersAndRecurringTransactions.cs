@@ -106,5 +106,5 @@ public sealed class RemindersAndRecurringTransactions : Migration
     }
 
     protected override void BuildTargetModel(ModelBuilder modelBuilder) =>
-        new AppDbContextModelSnapshot().BuildTargetModel(modelBuilder);
+        new AppDbContextModelSnapshot().BuildTargetModelForMigration(modelBuilder);
 }
