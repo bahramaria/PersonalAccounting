@@ -33,6 +33,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ILoanRepository, LoanRepository>();
         services.AddSingleton<DatabaseInitializer>();
         services.AddScoped<ReminderService>();
+        services.AddScoped<RecurringOccurrenceScheduler>();
+        services.AddScoped<RecurringTransactionService>();
 
         return services;
     }
