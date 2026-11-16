@@ -37,7 +37,7 @@ public interface IDeviceSecretStore
 - الگوریتم و پارامترها (تعداد تکرار KDF و …) را از مستندات روز/OWASP تأیید کنید؛ از حافظه عدد ننویسید.
 
 ## ۳. قفل برنامه
-- PIN (۴–۸ رقم، Hash با Salt + KDF، شمارنده تلاش و قفل تصاعدی) + بیومتریک (افزونه سازگار با MAUI؛ ارزیابی در Spike).
+- PIN (۴–۸ رقم، Hash با Salt + KDF، شمارنده تلاش و قفل تصاعدی) + بیومتریک بومی سیستم‌عامل؛ در Android از `BiometricPrompt` و در Windows از `UserConsentVerifier` استفاده می‌شود. در صورت نبود سخت‌افزار/قابلیت یا شکست احراز هویت، ورود با PIN در دسترس می‌ماند.
 - قفل خودکار: فوری/۳۰ثانیه/۱دقیقه/۵دقیقه پس از Background.
 - مخفی‌سازی مبالغ (Toggle سراسری) و Widget/Notification بدون مبلغ (تنظیم).
 - فراموشی PIN = بازیابی فقط از بکاپ (اطلاع‌رسانی صریح)؛ بدون Backdoor.
@@ -50,6 +50,8 @@ public interface IDeviceSecretStore
 - Credential و وضعیت محدودیت تلاش در MAUI SecureStorage نگهداری می‌شوند و fallback ناامن وجود ندارد.
 - پس از ۵ تلاش ناموفق، قفل افزایشی ۳۰ ثانیه، ۱ دقیقه، ۵ دقیقه و سپس ۱۵ دقیقه اعمال می‌شود.
 - قفل هنگام شروع و پس از بازگشت از پس‌زمینه، با انتخاب فوری/۳۰ ثانیه/۱ دقیقه/۵ دقیقه فعال می‌شود.
+- زمان‌سنجی محدودیت تلاش ناموفق از `TimeProvider` تزریق‌شده استفاده می‌کند تا رفتار قفل قابل‌آزمون و مستقل از ساعت سیستم باشد.
+- پیاده‌سازی بیومتریک Android از `BiometricPrompt` بومی (Android 9/API 28 به بالا) و مجوز `USE_BIOMETRIC` استفاده می‌کند؛ پیاده‌سازی Windows از `UserConsentVerifier` بهره می‌برد. در هر دو پلتفرم، PIN مسیر جایگزین است.
 - قفل PIN جایگزین رمزنگاری دیتابیس نیست. رمزنگاری فعال دیتابیس با SQLite3MC در حالت سازگار SQLCipher v4 پیاده‌سازی شده است؛ Build اندروید و ویندوز در CI سبز شده و اعتبارسنجی Runtime روی دستگاه واقعی هنوز لازم است.
 - مرجع پارامتر PBKDF2: [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
 
