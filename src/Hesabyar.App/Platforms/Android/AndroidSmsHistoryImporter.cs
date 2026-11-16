@@ -54,9 +54,18 @@ public sealed class AndroidSmsHistoryImporter
                 continue;
             }
 
-            var receivedAtUtc = cursor.IsNull(dateIndex)
-                ? (DateTimeOffset?)null
-                : DateTimeOffset.FromUnixTimeMilliseconds(cursor.GetLong(dateIndex));
+            DateTimeOffset? receivedAtUtc = null;
+            if (!cursor.IsNull(dateIndex))
+            {
+                try
+                {
+                    receivedAtUtc = DateTimeOffset.FromUnixTimeMilliseconds(cursor.GetLong(dateIndex));
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Keep the message importable without a timestamp-based identity.
+                }
+            }
             var outcome = await inbox.ImportAsync(sender, body, cancellationToken, receivedAtUtc);
             switch (outcome)
             {

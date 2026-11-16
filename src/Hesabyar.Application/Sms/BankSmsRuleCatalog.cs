@@ -37,6 +37,12 @@ public static class BankSmsRuleCatalog
         var bankKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var rule in rules)
         {
+            if (rule is null ||
+                rule.SenderAliases is null ||
+                rule.ExpenseKeywords is null ||
+                rule.IncomeKeywords is null)
+                throw new InvalidDataException("A bank SMS rule or one of its required collections is null.");
+
             if (string.IsNullOrWhiteSpace(rule.BankKey) || !bankKeys.Add(rule.BankKey.Trim()))
                 throw new InvalidDataException("Bank SMS rule keys must be non-empty and unique.");
 

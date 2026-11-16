@@ -44,6 +44,26 @@ public sealed class BankSmsParserTests
     }
 
     [Fact]
+    public void RuleCatalogRejectsNullRequiredCollections()
+    {
+        const string json = """
+            [
+              {
+                "BankKey": "invalid",
+                "SenderAliases": null,
+                "ExpenseKeywords": [],
+                "IncomeKeywords": [],
+                "BodyPattern": "^test$"
+              }
+            ]
+            """;
+
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+
+        Assert.Throws<InvalidDataException>(() => BankSmsRuleCatalog.Load(stream));
+    }
+
+    [Fact]
     public void RuleCatalogRejectsDuplicateBankKeys()
     {
         const string json = """
