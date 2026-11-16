@@ -420,4 +420,5 @@
   <data name="ReportsTheyOweMe" xml:space="preserve"><value>طلب من</value></data>
   <data name="ReportsIOweThem" xml:space="preserve"><value>بدهی من</value></data>
   <data name="ReportsPeriodChange" xml:space="preserve"><value>تغییر در بازه</value></data>
+  <data name="ReportsActivityCount" xml:space="preserve"><value>تعداد گردش</value></data>
 </root>
