@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
+using Hesabyar.Application.Planning;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
@@ -73,7 +74,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                 return;
             }
 
-            var allChoices = accountResult.Value.Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
+            var allChoices = accountResult.Value.Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type, x.Account.CurrencyCode)).ToArray();
             _accountNames = allChoices.ToDictionary(x => x.Id, x => x.Name);
             var active = accountResult.Value.Where(x => !x.Account.IsArchived).ToArray();
             Accounts = active.Where(x => x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet or AccountKind.CreditCard)
@@ -125,7 +126,7 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
             var dateText = calendar.Format(item.BusinessDate);
             Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                 item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
-                item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText));
+                item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText, item.DocumentNumber));
         }
     }
 
@@ -186,14 +187,34 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
         return true;
     }
 
+    public async Task<IReadOnlyList<TagSnapshot>> GetTagsAsync(CancellationToken cancellationToken = default)
+    {
+        using var scope = scopeFactory.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<TagService>().GetAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetTransactionTagIdsAsync(Guid transactionId, CancellationToken cancellationToken = default)
+    {
+        using var scope = scopeFactory.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<TagService>().GetForTransactionAsync(transactionId, cancellationToken);
+    }
+
+    public async Task<bool> SetTransactionTagsAsync(Guid transactionId, IReadOnlyCollection<Guid> tagIds, CancellationToken cancellationToken = default)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<TagService>().SetTransactionTagsAsync(transactionId, tagIds, cancellationToken);
+        if (!result.IsSuccess) StatusMessage = result.Error.Message ?? AppStrings.TransactionCreateFailed;
+        return result.IsSuccess;
+    }
+
     private Task ReloadCurrentAsync(CancellationToken cancellationToken) => LoadAsync(
         _search, _fromDate, _toDate, _accountId, _categoryId,
         _minimumAmountMinor, _maximumAmountMinor, _sortOrder, cancellationToken);
 }
 
-public sealed record TransactionChoice(Guid Id, string Name, AccountType Type);
+public sealed record TransactionChoice(Guid Id, string Name, AccountType Type, string CurrencyCode = "IRR");
 public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly BusinessDate, long AmountMinor,
-    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText, string DateText)
+    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText, string DateText, string? DocumentNumber = null)
 {
     public string KindName => Kind switch
     {
@@ -204,6 +225,13 @@ public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly
         TransactionKind.LoanPayment => AppStrings.LoanPaymentTransaction,
         _ => string.Empty
     };
-    public string DetailText => string.IsNullOrWhiteSpace(Description)
-        ? $"{AccountName} • {SecondaryName}" : $"{AccountName} • {SecondaryName} • {Description}";
+    public string DetailText
+    {
+        get
+        {
+            var detail = string.IsNullOrWhiteSpace(Description)
+                ? $"{AccountName} • {SecondaryName}" : $"{AccountName} • {SecondaryName} • {Description}";
+            return string.IsNullOrWhiteSpace(DocumentNumber) ? detail : $"{DocumentNumber} • {detail}";
+        }
+    }
 }

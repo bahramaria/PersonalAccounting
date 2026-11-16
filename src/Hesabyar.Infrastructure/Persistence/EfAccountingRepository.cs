@@ -221,7 +221,8 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             transaction.Kind == TransactionKind.Income ? positive?.AccountId ?? Guid.Empty : negative?.AccountId ?? Guid.Empty,
             transaction.Kind == TransactionKind.Transfer || transaction.Kind == TransactionKind.Expense ? positive?.AccountId : negative?.AccountId,
             transaction.Description,
-            transaction.IsConfirmed);
+            transaction.IsConfirmed,
+            transaction.DocumentNumber);
     }
 
     public async Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken)

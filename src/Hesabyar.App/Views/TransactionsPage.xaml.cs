@@ -168,8 +168,26 @@ public partial class TransactionsPage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not TransactionListItem item) return;
         if (sender is CollectionView list) list.SelectedItem = null;
         var action = await DisplayActionSheetAsync(item.KindName, AppStrings.Cancel, null,
-            AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete);
-        if (action == AppStrings.TransactionEdit) await ShowEditorAsync(item);
+            AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags);
+        if (action == AppStrings.TransactionManageTags)
+        {
+            var tags = await _viewModel.GetTagsAsync();
+            var currentIds = await _viewModel.GetTransactionTagIdsAsync(item.Id);
+            var currentNames = tags.Where(x => currentIds.Contains(x.Id)).Select(x => x.Name);
+            var text = await DisplayPromptAsync(AppStrings.TransactionManageTags, AppStrings.TransactionTagsPrompt,
+                AppStrings.Save, AppStrings.Cancel, initialValue: string.Join(", ", currentNames), maxLength: 400);
+            if (text is null) return;
+            var selectedNames = text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var selectedTags = tags.Where(x => selectedNames.Contains(x.Name, StringComparer.OrdinalIgnoreCase)).ToArray();
+            if (selectedTags.Length != selectedNames.Length)
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionTagsPrompt, AppStrings.Ok);
+                return;
+            }
+            if (!await _viewModel.SetTransactionTagsAsync(item.Id, selectedTags.Select(x => x.Id).ToArray()))
+                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        }
+        else if (action == AppStrings.TransactionEdit) await ShowEditorAsync(item);
         else if (action == AppStrings.TransactionDuplicate)
         {
             if (!await _viewModel.DuplicateAsync(item.Id))
@@ -225,9 +243,11 @@ public partial class TransactionsPage : ContentPage
         var accountId = await SelectAsync(AppStrings.TransactionAccountPrompt, accountChoices, existing?.AccountId);
         if (accountId is null) return;
 
+        var currencyCode = _viewModel.Accounts.First(x => x.Id == accountId).CurrencyCode;
         var secondChoices = kind == TransactionKind.Transfer
-            ? _viewModel.Accounts.Where(x => x.Type == AccountType.Asset && x.Id != accountId).ToArray()
-            : kind == TransactionKind.Expense ? _viewModel.ExpenseCategories : _viewModel.IncomeCategories;
+            ? _viewModel.Accounts.Where(x => x.Type == AccountType.Asset && x.Id != accountId && x.CurrencyCode == currencyCode).ToArray()
+            : (kind == TransactionKind.Expense ? _viewModel.ExpenseCategories : _viewModel.IncomeCategories)
+                .Where(x => x.CurrencyCode == currencyCode).ToArray();
         var secondId = await SelectAsync(kind == TransactionKind.Transfer ? AppStrings.TransactionDestinationPrompt : AppStrings.TransactionCategoryPrompt,
             secondChoices, existing?.SecondaryId);
         if (secondId is null) return;

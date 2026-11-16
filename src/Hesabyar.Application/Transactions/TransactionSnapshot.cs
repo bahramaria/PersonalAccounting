@@ -10,4 +10,5 @@ public sealed record TransactionSnapshot(
     Guid AccountId,
     Guid? CounterpartyAccountId,
     string? Description,
-    bool IsConfirmed);
+    bool IsConfirmed,
+    string? DocumentNumber = null);
