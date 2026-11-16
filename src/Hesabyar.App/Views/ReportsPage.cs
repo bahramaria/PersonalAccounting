@@ -34,10 +34,7 @@ public sealed class ReportsPage : ContentPage
             : Microsoft.Maui.FlowDirection.LeftToRight;
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var persianToday = calendar.CurrentCalendar == CalendarKind.Persian
-            ? today
-            : today;
-        var currentPersian = GetPersianDate(persianToday);
+        var currentPersian = GetPersianDate(today);
         _fromDate = calendar.CurrentCalendar == CalendarKind.Persian
             ? GetPersianYearStart(currentPersian)
             : new DateOnly(today.Year, 1, 1);
@@ -176,7 +173,7 @@ public sealed class ReportsPage : ContentPage
         foreach (var account in report.Accounts)
             _body.Children.Add(new Label
             {
-                Text = $"{account.Name} · {account.Type} · {MoneyDisplayService.Format(account.BalanceMinor)}",
+                Text = $"{account.Name} · {MoneyDisplayService.Format(account.BalanceMinor)}",
                 FontSize = 13
             });
 
@@ -187,7 +184,7 @@ public sealed class ReportsPage : ContentPage
         foreach (var person in people)
             _body.Children.Add(new Label
             {
-                Text = $"{person.Name} · {MoneyDisplayService.Format(person.BalanceMinor)}",
+                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : AppStrings.ReportsIOweThem)} · {MoneyDisplayService.Format(person.BalanceMinor)}",
                 FontSize = 13
             });
     }
