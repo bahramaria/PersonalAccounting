@@ -20,11 +20,12 @@ public sealed class ReportsServiceTests
             await db.Database.EnsureCreatedAsync();
             var cash = new DbAccount { Name = "Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" };
             var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            var foodDuplicate = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
             var salary = new DbAccount { Name = "Salary", Type = AccountType.Income, Kind = AccountKind.Category, CurrencyCode = "IRR" };
             var clearing = new DbAccount { Name = "People clearing", Type = AccountType.Asset, Kind = AccountKind.System,
                 CurrencyCode = "IRR", SystemKey = "people-clearing", IncludeInTotal = false };
             var person = new DbParty { Name = "Ali" };
-            db.Accounts.AddRange(cash, food, salary, clearing);
+            db.Accounts.AddRange(cash, food, foodDuplicate, salary, clearing);
             db.Parties.Add(person);
             var firstDay = new DateOnly(2026, 3, 21);
             db.Transactions.AddRange(
@@ -60,7 +61,17 @@ public sealed class ReportsServiceTests
                 },
                 new DbLedgerTransaction
                 {
-                    BusinessDate = firstDay.AddDays(3), Kind = TransactionKind.PersonDebt, Source = TransactionSource.Manual,
+                    BusinessDate = firstDay.AddDays(3), Kind = TransactionKind.Expense, Source = TransactionSource.Manual,
+                    IsConfirmed = true, Description = "Food purchase",
+                    Postings =
+                    [
+                        new DbPosting { Account = foodDuplicate, AmountMinor = 25_000, CurrencyCode = "IRR" },
+                        new DbPosting { Account = cash, AmountMinor = -25_000, CurrencyCode = "IRR" }
+                    ]
+                },
+                new DbLedgerTransaction
+                {
+                    BusinessDate = firstDay.AddDays(4), Kind = TransactionKind.PersonDebt, Source = TransactionSource.Manual,
                     IsConfirmed = true, PartyId = person.Id, Description = "Lent to Ali",
                     Postings =
                     [
@@ -76,12 +87,15 @@ public sealed class ReportsServiceTests
         var report = await service.GetAsync(new DateOnly(2026, 3, 21), new DateOnly(2026, 4, 20));
 
         Assert.Equal(500_000, report.IncomeMinor);
-        Assert.Equal(125_000, report.ExpenseMinor);
-        Assert.Equal(125_000, Assert.Single(report.ExpensesByCategory).AmountMinor);
+        Assert.Equal(150_000, report.ExpenseMinor);
+        Assert.Equal(2, report.ExpensesByCategory.Count);
+        Assert.Equal(new long[] { 125_000, 25_000 }, report.ExpensesByCategory.Select(x => x.AmountMinor).ToArray());
         Assert.Single(report.MonthlyTrend);
         Assert.Equal("1405/01", report.MonthlyTrend[0].Label);
-        Assert.Equal(375_000, report.AssetsMinor);
-        Assert.Equal(375_000, report.NetWorthMinor);
+        Assert.Equal(500_000, report.MonthlyTrend[0].IncomeMinor);
+        Assert.Equal(150_000, report.MonthlyTrend[0].ExpenseMinor);
+        Assert.Equal(350_000, report.AssetsMinor);
+        Assert.Equal(350_000, report.NetWorthMinor);
         var personReport = Assert.Single(report.People);
         Assert.Equal(50_000, personReport.BalanceMinor);
         Assert.Equal(50_000, personReport.PeriodChangeMinor);
