@@ -57,8 +57,8 @@ public sealed class ReportsService(IDbContextFactory<AppDbContext> contextFactor
         var income = incomePostings.Sum(x => Math.Abs((decimal)x.AmountMinor));
 
         var expensesByCategory = expensePostings
-            .GroupBy(x => x.Account.Name)
-            .Select(x => new ReportCategoryRow(x.Key, decimal.ToInt64(x.Sum(p => (decimal)p.AmountMinor))))
+            .GroupBy(x => new { x.AccountId, x.Account.Name })
+            .Select(x => new ReportCategoryRow(x.Key.Name, decimal.ToInt64(x.Sum(p => (decimal)p.AmountMinor))))
             .OrderByDescending(x => x.AmountMinor)
             .ThenBy(x => x.Name)
             .ToArray();
