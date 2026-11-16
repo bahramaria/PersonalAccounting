@@ -246,9 +246,13 @@ public sealed class BankSmsPage : ContentPage
             categories.Select(x => (x.Account.Id, x.Account.Name)).ToArray());
         if (category is null) return;
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var initialBusinessDate = item.DateText is { } smsDateText &&
+            smsDateText.Count(character => character == '/') == 2 &&
+            _calendar.TryParse(smsDateText, out var parsedSmsDate)
+                ? _calendar.Format(parsedSmsDate)
+                : null;
         var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD",
-            AppStrings.Save, AppStrings.Cancel, initialValue: _calendar.Format(today));
+            AppStrings.Save, AppStrings.Cancel, initialValue: initialBusinessDate);
         if (dateText is null || !_calendar.TryParse(dateText, out var date))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionDateInvalid, AppStrings.Ok);
