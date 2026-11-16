@@ -395,4 +395,6 @@
   <data name="RecurringNoAccount" xml:space="preserve"><value>حساب مناسبی برای این نوع تراکنش وجود ندارد.</value></data>
   <data name="RecurringNoCategory" xml:space="preserve"><value>دسته‌ای با ارز انتخاب‌شده وجود ندارد.</value></data>
 
+  <data name="ReminderNotificationBody" xml:space="preserve"><value>زمان یادآوری فرا رسیده است.</value></data>
+  <data name="ReminderNotificationChannel" xml:space="preserve"><value>یادآورهای حسابیار</value></data>
 </root>
