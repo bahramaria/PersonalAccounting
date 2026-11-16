@@ -281,8 +281,6 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasIndex(x => x.BusinessDate).IsDescending();
             entity.HasIndex(x => x.PartyId);
             entity.HasIndex(x => x.LoanId);
-            entity.HasIndex(x => new { x.FiscalPeriodId, x.DocumentNumber }).IsUnique()
-                .HasFilter("\"FiscalPeriodId\" IS NOT NULL AND \"DocumentNumber\" IS NOT NULL");
             entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => !x.IsDeleted);
         });

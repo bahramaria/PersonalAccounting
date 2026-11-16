@@ -94,9 +94,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
             table.ForeignKey("FK_TransactionTags_Transactions_TransactionId", x => x.TransactionId, "Transactions", "Id", onDelete: ReferentialAction.Cascade);
         });
 
-        migrationBuilder.CreateIndex("IX_Transactions_FiscalPeriodId_DocumentNumber", "Transactions",
-            new[] { "FiscalPeriodId", "DocumentNumber" }, unique: true,
-            filter: "\"FiscalPeriodId\" IS NOT NULL AND \"DocumentNumber\" IS NOT NULL");
         migrationBuilder.CreateIndex("IX_Budgets_CategoryAccountId_PeriodStart_PeriodEnd", "Budgets",
             new[] { "CategoryAccountId", "PeriodStart", "PeriodEnd" }, unique: true);
         migrationBuilder.CreateIndex("IX_Tags_Name", "Tags", "Name", unique: true, filter: "\"IsDeleted\" = 0");
@@ -106,7 +103,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
         migrationBuilder.CreateIndex("IX_DocumentSequences_FiscalPeriodId", "DocumentSequences", "FiscalPeriodId", unique: true);
         migrationBuilder.CreateIndex("IX_TransactionTags_TagId", "TransactionTags", "TagId");
         migrationBuilder.CreateIndex("IX_Budgets_CategoryAccountId", "Budgets", "CategoryAccountId");
-        migrationBuilder.CreateIndex("IX_Transactions_FiscalPeriodId", "Transactions", "FiscalPeriodId");
         migrationBuilder.InsertData(
             table: "FiscalPeriods",
             columns: new[] { "Id", "Name", "StartDate", "EndDate", "IsClosed", "CreatedAtUtc", "UpdatedAtUtc", "IsDeleted" },
@@ -125,8 +121,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropIndex("IX_Transactions_FiscalPeriodId_DocumentNumber", "Transactions");
-        migrationBuilder.DropIndex("IX_Transactions_FiscalPeriodId", "Transactions");
         migrationBuilder.DropColumn("FiscalPeriodId", "Transactions");
         migrationBuilder.DropColumn("DocumentNumber", "Transactions");
         migrationBuilder.DropTable("TransactionTags");
