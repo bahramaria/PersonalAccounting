@@ -69,6 +69,87 @@ public sealed class RecurringTransactionServiceTests
     }
 
     [Fact]
+    public async Task SetPaused_DoesNotResumeAnExpiredSchedule()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var setup = new AppDbContext(options);
+        await setup.Database.MigrateAsync();
+
+        var account = new DbAccount
+        {
+            Name = "Cash",
+            Type = AccountType.Asset,
+            Kind = AccountKind.Cash,
+            CurrencyCode = "IRR"
+        };
+        var category = new DbAccount
+        {
+            Name = "Rent",
+            Type = AccountType.Expense,
+            Kind = AccountKind.Category,
+            CurrencyCode = "IRR"
+        };
+        setup.Accounts.AddRange(account, category);
+        await setup.SaveChangesAsync();
+
+        var clock = new FixedClock();
+        var factory = new TestDbContextFactory(options);
+        var service = new RecurringTransactionService(factory, clock, new RecurringOccurrenceScheduler(factory, clock));
+        var id = await service.CreateAsync(new CreateRecurringScheduleRequest(
+            "Expired rent", "Expense", "IRR", 1000, account.Id, category.Id,
+            new DateOnly(2026, 11, 1), new DateOnly(2026, 11, 15), 1, "Month"));
+
+        Assert.True(await service.SetPausedAsync(id, true));
+        Assert.False(await service.SetPausedAsync(id, false));
+        Assert.True(Assert.Single(await service.GetSchedulesAsync()).IsPaused);
+    }
+
+    [Fact]
+    public async Task GenerateTransaction_ReturnsNullWhenLinkedAccountWasArchived()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var setup = new AppDbContext(options);
+        await setup.Database.MigrateAsync();
+
+        var account = new DbAccount
+        {
+            Name = "Cash",
+            Type = AccountType.Asset,
+            Kind = AccountKind.Cash,
+            CurrencyCode = "IRR"
+        };
+        var category = new DbAccount
+        {
+            Name = "Rent",
+            Type = AccountType.Expense,
+            Kind = AccountKind.Category,
+            CurrencyCode = "IRR"
+        };
+        setup.Accounts.AddRange(account, category);
+        await setup.SaveChangesAsync();
+
+        var clock = new FixedClock();
+        var factory = new TestDbContextFactory(options);
+        var scheduler = new RecurringOccurrenceScheduler(factory, clock);
+        var service = new RecurringTransactionService(factory, clock, scheduler);
+        var scheduleId = await service.CreateAsync(new CreateRecurringScheduleRequest(
+            "Monthly rent", "Expense", "IRR", 1000, account.Id, category.Id,
+            new DateOnly(2026, 11, 16), null, 1, "Month"));
+        Assert.Equal(1, await service.PrepareDueOccurrencesAsync(new DateOnly(2026, 11, 16)));
+        var occurrence = Assert.Single(await service.GetOccurrencesAsync(scheduleId));
+
+        account.IsArchived = true;
+        await setup.SaveChangesAsync();
+
+        Assert.Null(await service.GenerateTransactionAsync(occurrence.Id));
+        Assert.Empty(await setup.Transactions.ToListAsync());
+    }
+
+    [Fact]
     public async Task Create_RejectsUnsupportedTransactionKind()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
