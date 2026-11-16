@@ -392,7 +392,7 @@ public sealed class BankSmsInboxService(
          join transaction in db.Transactions on posting.TransactionId equals transaction.Id
          where posting.AccountId == accountId &&
                transaction.Id != currentTransactionId &&
-               transaction.BusinessDate >= currentBusinessDate
+               transaction.BusinessDate > currentBusinessDate
          select posting.Id).AnyAsync(cancellationToken);
 
     public async Task<bool> IgnoreAsync(Guid inboxItemId, CancellationToken cancellationToken = default)
