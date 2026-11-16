@@ -20,6 +20,11 @@ public sealed class AppDbContext(
     public DbSet<DbReminder> Reminders => Set<DbReminder>();
     public DbSet<DbRecurringTransaction> RecurringTransactions => Set<DbRecurringTransaction>();
     public DbSet<DbRecurringTransactionOccurrence> RecurringTransactionOccurrences => Set<DbRecurringTransactionOccurrence>();
+    public DbSet<DbBudget> Budgets => Set<DbBudget>();
+    public DbSet<DbTag> Tags => Set<DbTag>();
+    public DbSet<DbTransactionTag> TransactionTags => Set<DbTransactionTag>();
+    public DbSet<DbFiscalPeriod> FiscalPeriods => Set<DbFiscalPeriod>();
+    public DbSet<DbDocumentSequence> DocumentSequences => Set<DbDocumentSequence>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +37,7 @@ public sealed class AppDbContext(
         ConfigureSmsInbox(modelBuilder);
         ConfigureReminders(modelBuilder);
         ConfigureRecurringTransactions(modelBuilder);
+        ConfigurePlanningAndFiscalFeatures(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -96,6 +102,10 @@ public sealed class AppDbContext(
         entity.Property(x => x.Description).HasMaxLength(500);
         entity.Property(x => x.DueDate).HasColumnType("TEXT");
         entity.Property(x => x.SmsMessageId).HasMaxLength(160);
+        entity.Property(x => x.DocumentNumber).HasMaxLength(32);
+        entity.HasIndex(x => new { x.FiscalPeriodId, x.DocumentNumber }).IsUnique()
+            .HasFilter("\"FiscalPeriodId\" IS NOT NULL AND \"DocumentNumber\" IS NOT NULL");
+        entity.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Restrict);
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
         entity.HasIndex(x => x.LoanId);
@@ -240,6 +250,61 @@ public sealed class AppDbContext(
         occurrence.HasOne<DbLedgerTransaction>().WithMany()
             .HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
         occurrence.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+
+    private static void ConfigurePlanningAndFiscalFeatures(ModelBuilder modelBuilder)
+    {
+        var budget = modelBuilder.Entity<DbBudget>();
+        budget.ToTable("Budgets", table =>
+        {
+            table.HasCheckConstraint("CK_Budgets_Limit_Positive", "LimitMinor > 0");
+            table.HasCheckConstraint("CK_Budgets_Period_Valid", "PeriodEnd >= PeriodStart");
+            table.HasCheckConstraint("CK_Budgets_Currency_Length", "length(CurrencyCode) = 3");
+        });
+        budget.HasKey(x => x.Id);
+        budget.Property(x => x.PeriodStart).HasColumnType("TEXT");
+        budget.Property(x => x.PeriodEnd).HasColumnType("TEXT");
+        budget.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
+        budget.Property(x => x.Note).HasMaxLength(300);
+        budget.HasIndex(x => new { x.CategoryAccountId, x.PeriodStart, x.PeriodEnd }).IsUnique();
+        budget.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+        budget.HasQueryFilter(x => !x.IsDeleted);
+
+        var tag = modelBuilder.Entity<DbTag>();
+        tag.ToTable("Tags");
+        tag.HasKey(x => x.Id);
+        tag.Property(x => x.Name).HasMaxLength(40).IsRequired();
+        tag.Property(x => x.Color).HasMaxLength(16);
+        tag.HasIndex(x => x.Name).IsUnique().HasFilter("\"IsDeleted\" = 0");
+        tag.HasQueryFilter(x => !x.IsDeleted);
+
+        var transactionTag = modelBuilder.Entity<DbTransactionTag>();
+        transactionTag.ToTable("TransactionTags");
+        transactionTag.HasKey(x => x.Id);
+        transactionTag.HasIndex(x => new { x.TransactionId, x.TagId }).IsUnique();
+        transactionTag.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Cascade);
+        transactionTag.HasOne<DbTag>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Restrict);
+        transactionTag.HasQueryFilter(x => !x.IsDeleted);
+
+        var period = modelBuilder.Entity<DbFiscalPeriod>();
+        period.ToTable("FiscalPeriods", table =>
+            table.HasCheckConstraint("CK_FiscalPeriods_DateRange", "EndDate >= StartDate"));
+        period.HasKey(x => x.Id);
+        period.Property(x => x.Name).HasMaxLength(80).IsRequired();
+        period.Property(x => x.StartDate).HasColumnType("TEXT");
+        period.Property(x => x.EndDate).HasColumnType("TEXT");
+        period.HasIndex(x => x.StartDate).IsUnique();
+        period.HasIndex(x => new { x.StartDate, x.EndDate });
+        period.HasQueryFilter(x => !x.IsDeleted);
+
+        var sequence = modelBuilder.Entity<DbDocumentSequence>();
+        sequence.ToTable("DocumentSequences", table =>
+            table.HasCheckConstraint("CK_DocumentSequences_LastNumber_NonNegative", "LastNumber >= 0"));
+        sequence.HasKey(x => x.Id);
+        sequence.HasIndex(x => x.FiscalPeriodId).IsUnique();
+        sequence.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Cascade);
+        sequence.HasQueryFilter(x => !x.IsDeleted);
     }
 
     private static void ConfigurePostings(ModelBuilder modelBuilder)

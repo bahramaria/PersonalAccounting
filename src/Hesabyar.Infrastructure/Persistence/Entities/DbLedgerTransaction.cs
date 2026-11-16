@@ -13,5 +13,7 @@ public sealed class DbLedgerTransaction : DbEntity
     public TransactionSource Source { get; set; }
     public string? SmsMessageId { get; set; }
     public bool IsConfirmed { get; set; }
+    public Guid? FiscalPeriodId { get; set; }
+    public string? DocumentNumber { get; set; }
     public ICollection<DbPosting> Postings { get; set; } = new List<DbPosting>();
 }

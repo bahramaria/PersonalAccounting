@@ -272,6 +272,8 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.LoanId).HasColumnType("TEXT");
             entity.Property(x => x.Source).HasConversion<string>().HasMaxLength(16);
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);
+            entity.Property(x => x.FiscalPeriodId).HasColumnType("TEXT");
+            entity.Property(x => x.DocumentNumber).HasMaxLength(32);
             entity.Property(x => x.IsConfirmed);
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
@@ -279,7 +281,98 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasIndex(x => x.BusinessDate).IsDescending();
             entity.HasIndex(x => x.PartyId);
             entity.HasIndex(x => x.LoanId);
+            entity.HasIndex(x => new { x.FiscalPeriodId, x.DocumentNumber }).IsUnique()
+                .HasFilter("\"FiscalPeriodId\" IS NOT NULL AND \"DocumentNumber\" IS NOT NULL");
+            entity.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+
+        modelBuilder.Entity<DbBudget>(entity =>
+        {
+            entity.ToTable("Budgets", table =>
+            {
+                table.HasCheckConstraint("CK_Budgets_Limit_Positive", "LimitMinor > 0");
+                table.HasCheckConstraint("CK_Budgets_Period_Valid", "PeriodEnd >= PeriodStart");
+                table.HasCheckConstraint("CK_Budgets_Currency_Length", "length(CurrencyCode) = 3");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.CategoryAccountId).HasColumnType("TEXT");
+            entity.Property(x => x.PeriodStart).HasColumnType("TEXT");
+            entity.Property(x => x.PeriodEnd).HasColumnType("TEXT");
+            entity.Property(x => x.LimitMinor);
+            entity.Property(x => x.CurrencyCode).IsRequired().HasMaxLength(3);
+            entity.Property(x => x.IsActive);
+            entity.Property(x => x.Note).HasMaxLength(300);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.CategoryAccountId, x.PeriodStart, x.PeriodEnd }).IsUnique();
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbTag>(entity =>
+        {
+            entity.ToTable("Tags");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(40);
+            entity.Property(x => x.Color).HasMaxLength(16);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.Name).IsUnique().HasFilter("\"IsDeleted\" = 0");
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbTransactionTag>(entity =>
+        {
+            entity.ToTable("TransactionTags");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.TransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.TagId).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.TransactionId, x.TagId }).IsUnique();
+            entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<DbTag>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbFiscalPeriod>(entity =>
+        {
+            entity.ToTable("FiscalPeriods", table => table.HasCheckConstraint("CK_FiscalPeriods_DateRange", "EndDate >= StartDate"));
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(80);
+            entity.Property(x => x.StartDate).HasColumnType("TEXT");
+            entity.Property(x => x.EndDate).HasColumnType("TEXT");
+            entity.Property(x => x.IsClosed);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.StartDate).IsUnique();
+            entity.HasIndex(x => new { x.StartDate, x.EndDate });
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbDocumentSequence>(entity =>
+        {
+            entity.ToTable("DocumentSequences", table => table.HasCheckConstraint("CK_DocumentSequences_LastNumber_NonNegative", "LastNumber >= 0"));
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.FiscalPeriodId).HasColumnType("TEXT");
+            entity.Property(x => x.LastNumber);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.FiscalPeriodId).IsUnique();
+            entity.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Cascade);
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
