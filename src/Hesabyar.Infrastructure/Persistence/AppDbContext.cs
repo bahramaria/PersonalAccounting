@@ -42,14 +42,62 @@ public sealed class AppDbContext(
 
     public override int SaveChanges()
     {
+        var ownsTransaction = Database.CurrentTransaction is null;
+        using var transaction = ownsTransaction ? Database.BeginTransaction() : null;
+        AssignDocumentNumbersAsync(CancellationToken.None).GetAwaiter().GetResult();
         ApplyAuditFields();
-        return base.SaveChanges();
+        var result = base.SaveChanges();
+        transaction?.Commit();
+        return result;
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var ownsTransaction = Database.CurrentTransaction is null;
+        await using var transaction = ownsTransaction
+            ? await Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        await AssignDocumentNumbersAsync(cancellationToken);
         ApplyAuditFields();
-        return base.SaveChangesAsync(cancellationToken);
+        var result = await base.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+            await transaction.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    private async Task AssignDocumentNumbersAsync(CancellationToken cancellationToken)
+    {
+        var pending = ChangeTracker.Entries<DbLedgerTransaction>()
+            .Where(x => x.State == EntityState.Added && x.Entity.DocumentNumber is null)
+            .Select(x => x.Entity)
+            .ToArray();
+        foreach (var item in pending)
+        {
+            var period = await FiscalPeriods.SingleOrDefaultAsync(
+                x => x.StartDate <= item.BusinessDate && x.EndDate >= item.BusinessDate,
+                cancellationToken);
+            if (period is null)
+                continue;
+            if (period.IsClosed)
+                throw new InvalidOperationException("Transactions cannot be added to a closed fiscal period.");
+
+            var sequence = await DocumentSequences.SingleOrDefaultAsync(
+                x => x.FiscalPeriodId == period.Id, cancellationToken);
+            if (sequence is null)
+            {
+                sequence = new DbDocumentSequence
+                {
+                    Id = Guid.CreateVersion7(),
+                    FiscalPeriodId = period.Id,
+                    LastNumber = 0
+                };
+                DocumentSequences.Add(sequence);
+            }
+
+            sequence.LastNumber = checked(sequence.LastNumber + 1);
+            item.FiscalPeriodId = period.Id;
+            item.DocumentNumber = $"{period.Name}-{sequence.LastNumber:000000}";
+        }
     }
 
     private void ApplyAuditFields()

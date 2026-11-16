@@ -108,6 +108,20 @@ public sealed class PlanningAndFiscalFeatures : Migration
         migrationBuilder.CreateIndex("IX_Budgets_CategoryAccountId", "Budgets", "CategoryAccountId");
         migrationBuilder.CreateIndex("IX_Transactions_FiscalPeriodId", "Transactions", "FiscalPeriodId");
         migrationBuilder.AddForeignKey("FK_Transactions_FiscalPeriods_FiscalPeriodId", "Transactions", "FiscalPeriodId", "FiscalPeriods", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+        migrationBuilder.InsertData(
+            table: "FiscalPeriods",
+            columns: new[] { "Id", "Name", "StartDate", "EndDate", "IsClosed", "CreatedAtUtc", "UpdatedAtUtc", "IsDeleted" },
+            values: new object[] { new Guid("14050000-0000-4000-8000-000000000001"), "1405",
+                new DateOnly(2026, 3, 21), new DateOnly(2027, 3, 20), false,
+                new DateTimeOffset(2026, 11, 17, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 11, 17, 0, 0, 0, TimeSpan.Zero), false });
+        migrationBuilder.InsertData(
+            table: "DocumentSequences",
+            columns: new[] { "Id", "FiscalPeriodId", "LastNumber", "CreatedAtUtc", "UpdatedAtUtc", "IsDeleted" },
+            values: new object[] { new Guid("14050000-0000-4000-8000-000000000002"),
+                new Guid("14050000-0000-4000-8000-000000000001"), 0,
+                new DateTimeOffset(2026, 11, 17, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 11, 17, 0, 0, 0, TimeSpan.Zero), false });
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
