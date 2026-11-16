@@ -74,17 +74,17 @@ public sealed class ReportsExportService
     {
         var rows = new List<string[]>
         {
-            ["Summary", "Amount (IRR)"],
-            ["From date", report.FromDate.ToString("yyyy-MM-dd")],
-            ["To date", report.ToDate.ToString("yyyy-MM-dd")],
-            ["Income", report.IncomeMinor.ToString()],
-            ["Expenses", report.ExpenseMinor.ToString()],
-            ["Net cash flow", checked(report.IncomeMinor - report.ExpenseMinor).ToString()],
-            ["Assets", report.AssetsMinor.ToString()],
-            ["Liabilities", report.LiabilitiesMinor.ToString()],
-            ["Net worth", report.NetWorthMinor.ToString()],
-            [],
-            ["Monthly trend", "Income (IRR)", "Expenses (IRR)", "Net (IRR)"]
+            new[] { "Summary", "Amount (IRR)" },
+            new[] { "From date", report.FromDate.ToString("yyyy-MM-dd") },
+            new[] { "To date", report.ToDate.ToString("yyyy-MM-dd") },
+            new[] { "Income", report.IncomeMinor.ToString() },
+            new[] { "Expenses", report.ExpenseMinor.ToString() },
+            new[] { "Net cash flow", checked(report.IncomeMinor - report.ExpenseMinor).ToString() },
+            new[] { "Assets", report.AssetsMinor.ToString() },
+            new[] { "Liabilities", report.LiabilitiesMinor.ToString() },
+            new[] { "Net worth", report.NetWorthMinor.ToString() },
+            Array.Empty<string>(),
+            new[] { "Monthly trend", "Income (IRR)", "Expenses (IRR)", "Net (IRR)" }
         };
         rows.AddRange(report.MonthlyTrend.Select(x => new[]
         {
