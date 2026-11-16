@@ -38,7 +38,10 @@ public sealed class SmsBroadcastReceiver : BroadcastReceiver
                 if (platform is null) return;
                 using var scope = platform.Services.CreateScope();
                 var inbox = scope.ServiceProvider.GetRequiredService<BankSmsInboxService>();
-                await inbox.ImportAsync(sender, body);
+                var receivedAtUtc = messages[0].TimestampMillis > 0
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(messages[0].TimestampMillis)
+                    : (DateTimeOffset?)null;
+                await inbox.ImportAsync(sender, body, receivedAtUtc: receivedAtUtc);
             }
             catch
             {

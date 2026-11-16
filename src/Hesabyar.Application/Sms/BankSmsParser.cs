@@ -39,11 +39,11 @@ public sealed class BankSmsParser
         BankSmsRuleCatalog.Validate(_rules);
     }
 
-    public ParsedBankSms Parse(string? sender, string? body)
+    public ParsedBankSms Parse(string? sender, string? body, DateTimeOffset? receivedAtUtc = null)
     {
         var normalizedSender = Normalize(sender ?? string.Empty);
         var normalizedBody = Normalize(body ?? string.Empty);
-        var dedupeHash = CreateDedupeHash(normalizedSender, normalizedBody);
+        var dedupeHash = CreateDedupeHash(normalizedSender, normalizedBody, receivedAtUtc);
 
         if (string.IsNullOrWhiteSpace(normalizedBody))
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
@@ -253,9 +253,12 @@ public sealed class BankSmsParser
         return new TimeOnly(hour, minute);
     }
 
-    private static string CreateDedupeHash(string sender, string body)
+    private static string CreateDedupeHash(string sender, string body, DateTimeOffset? receivedAtUtc)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{sender}\n{body}"));
+        var identity = receivedAtUtc is null
+            ? $"{sender}\n{body}"
+            : $"{sender}\n{body}\n{receivedAtUtc.Value.ToUniversalTime().ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture)}";
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(identity));
         return Convert.ToHexString(bytes);
     }
 

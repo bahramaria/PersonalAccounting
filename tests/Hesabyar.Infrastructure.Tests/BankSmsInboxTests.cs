@@ -60,6 +60,26 @@ public sealed class BankSmsInboxTests
     }
 
     [Fact]
+    public async Task ImportDeduplicatesRepeatedDeliveryButKeepsIdenticalTransactionsAtDifferentTimes()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using (var db = new AppDbContext(options))
+            await db.Database.MigrateAsync();
+
+        var service = new BankSmsInboxService(
+            new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        var firstTime = new DateTimeOffset(2026, 11, 16, 10, 0, 0, TimeSpan.Zero);
+        const string body = "برداشت مبلغ: ۱۰۰۰ ریال";
+
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", body, receivedAtUtc: firstTime));
+        Assert.Equal(SmsImportOutcome.Duplicate, await service.ImportAsync("bank", body, receivedAtUtc: firstTime));
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", body, receivedAtUtc: firstTime.AddMinutes(5)));
+        Assert.Equal(2, (await service.GetPendingAsync()).Count);
+    }
+
+    [Fact]
     public async Task Ignore_RemovesItemFromReviewQueue_AndPreventsReimport()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

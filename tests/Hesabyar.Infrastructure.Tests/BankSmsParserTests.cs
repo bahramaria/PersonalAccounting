@@ -281,6 +281,20 @@ public sealed class BankSmsParserTests
     }
 
     [Fact]
+    public void DedupeHashUsesReceivedTimestampToDistinguishIdenticalLegitimateTransactions()
+    {
+        var parser = new BankSmsParser([MellatRule]);
+        var firstTime = new DateTimeOffset(2026, 11, 16, 10, 0, 0, TimeSpan.Zero);
+
+        var first = parser.Parse("Mellat", "برداشت مبلغ: ۱۰۰۰", firstTime);
+        var repeatedDelivery = parser.Parse("Mellat", "برداشت مبلغ: ۱۰۰۰", firstTime);
+        var laterTransaction = parser.Parse("Mellat", "برداشت مبلغ: ۱۰۰۰", firstTime.AddMinutes(5));
+
+        Assert.Equal(first.DedupeHash, repeatedDelivery.DedupeHash);
+        Assert.NotEqual(first.DedupeHash, laterTransaction.DedupeHash);
+    }
+
+    [Fact]
     public void DedupeHashChangesWhenMessageChanges()
     {
         var parser = new BankSmsParser([MellatRule]);

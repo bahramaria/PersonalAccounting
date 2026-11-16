@@ -18,7 +18,7 @@ public sealed class AndroidSmsHistoryImporter
         ArgumentNullException.ThrowIfNull(inbox);
         var cutoff = DateTimeOffset.UtcNow.Subtract(Lookback).ToUnixTimeMilliseconds()
             .ToString(CultureInfo.InvariantCulture);
-        var projection = new[] { "address", "body" };
+        var projection = new[] { "address", "body", "date" };
         var inboxUri = Telephony.Sms.Inbox.ContentUri;
         if (inboxUri is null)
             return new SmsHistoryImportSummary(0, 0, 0, 0);
@@ -34,7 +34,8 @@ public sealed class AndroidSmsHistoryImporter
 
         var addressIndex = cursor.GetColumnIndex("address");
         var bodyIndex = cursor.GetColumnIndex("body");
-        if (addressIndex < 0 || bodyIndex < 0)
+        var dateIndex = cursor.GetColumnIndex("date");
+        if (addressIndex < 0 || bodyIndex < 0 || dateIndex < 0)
             return new SmsHistoryImportSummary(0, 0, 0, 0);
 
         var scanned = 0;
@@ -53,7 +54,10 @@ public sealed class AndroidSmsHistoryImporter
                 continue;
             }
 
-            var outcome = await inbox.ImportAsync(sender, body, cancellationToken);
+            var receivedAtUtc = cursor.IsNull(dateIndex)
+                ? (DateTimeOffset?)null
+                : DateTimeOffset.FromUnixTimeMilliseconds(cursor.GetLong(dateIndex));
+            var outcome = await inbox.ImportAsync(sender, body, cancellationToken, receivedAtUtc);
             switch (outcome)
             {
                 case SmsImportOutcome.Added: added++; break;

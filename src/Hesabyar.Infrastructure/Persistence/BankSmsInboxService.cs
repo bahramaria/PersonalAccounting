@@ -27,7 +27,7 @@ public sealed class BankSmsInboxService(
     BankSmsParser parser,
     TimeProvider timeProvider)
 {
-    public async Task<SmsImportOutcome> ImportAsync(string? sender, string body, CancellationToken cancellationToken = default)
+    public async Task<SmsImportOutcome> ImportAsync(string? sender, string body, CancellationToken cancellationToken = default, DateTimeOffset? receivedAtUtc = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(body);
         if (body.Length > 4000 || sender?.Length > 120)
@@ -35,7 +35,7 @@ public sealed class BankSmsInboxService(
 
         var safeSender = BankSmsParser.Normalize(sender ?? string.Empty);
         var safeBody = BankSmsParser.Normalize(body);
-        var parsed = parser.Parse(safeSender, safeBody);
+        var parsed = parser.Parse(safeSender, safeBody, receivedAtUtc);
         if (parsed.Status == BankSmsParseStatus.Unsupported)
             return SmsImportOutcome.Ignored;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
