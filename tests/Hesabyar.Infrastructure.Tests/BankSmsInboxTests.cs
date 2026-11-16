@@ -184,6 +184,54 @@ public sealed class BankSmsInboxTests
 
 
     [Fact]
+    public async Task HistoricalSmsBalanceIsNotReconciledAgainstLaterLedgerActivity()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        Guid bankId;
+        Guid categoryId;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.MigrateAsync();
+            var bank = new DbAccount { Name = "Bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR" };
+            var category = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            db.Accounts.AddRange(bank, category);
+            await db.SaveChangesAsync();
+            bankId = bank.Id;
+            categoryId = category.Id;
+        }
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.Equal(SmsImportOutcome.Added,
+            await service.ImportAsync("sender", "برداشت مبلغ: ۵۰۰۰ ریال مانده: ۱۰۰۰۰۰ ریال"));
+        var item = Assert.Single(await service.GetPendingAsync());
+        Assert.True(await service.ConfirmAsync(item.Id, bankId, categoryId,
+            BankSmsTransactionType.Expense, 5_000, new DateOnly(2026, 11, 15)));
+
+        await using (var db = new AppDbContext(options))
+        {
+            var later = new DbLedgerTransaction
+            {
+                BusinessDate = new DateOnly(2026, 11, 16),
+                Kind = TransactionKind.Expense,
+                Source = TransactionSource.Manual,
+                IsConfirmed = true
+            };
+            later.Postings.Add(new DbPosting { AccountId = bankId, AmountMinor = -1_000, CurrencyCode = "IRR" });
+            later.Postings.Add(new DbPosting { AccountId = categoryId, AmountMinor = 1_000, CurrencyCode = "IRR" });
+            db.Transactions.Add(later);
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Null(await service.GetBalanceReconciliationAsync(item.Id));
+        Assert.False(await service.CreateBalanceAdjustmentAsync(item.Id));
+
+        await using var verify = new AppDbContext(options);
+        Assert.Empty(await verify.Transactions.Where(x => x.Kind == TransactionKind.Adjustment).ToListAsync());
+    }
+
+    [Fact]
     public async Task VerificationCodeSmsIsIgnoredWithoutPersistingIt()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

@@ -269,6 +269,15 @@ public sealed class BankSmsInboxService(
         if (bankAccount is null || bankAccount.CurrencyCode != "IRR")
             return null;
 
+        var transactionDate = await db.Transactions.AsNoTracking()
+            .Where(x => x.Id == transactionId)
+            .Select(x => (DateOnly?)x.BusinessDate)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (transactionDate is null ||
+            await HasOtherBankActivityOnOrAfterAsync(
+                db, bankAccount.Id, transactionId, transactionDate.Value, cancellationToken))
+            return null;
+
         var ledgerBalance = await db.Postings
             .Where(x => x.AccountId == bankAccount.Id)
             .SumAsync(x => (long?)x.AmountMinor, cancellationToken) ?? 0L;
@@ -300,7 +309,9 @@ public sealed class BankSmsInboxService(
                   account.Kind != AccountKind.Category
             select account)
             .FirstOrDefaultAsync(cancellationToken);
-        if (bankAccount is null || bankAccount.CurrencyCode != "IRR")
+        if (bankAccount is null || bankAccount.CurrencyCode != "IRR" ||
+            await HasOtherBankActivityOnOrAfterAsync(
+                db, bankAccount.Id, transactionId, original.BusinessDate, cancellationToken))
             return false;
 
         var ledgerBalance = await db.Postings
@@ -363,6 +374,19 @@ public sealed class BankSmsInboxService(
         await transaction.CommitAsync(cancellationToken);
         return true;
     }
+
+    private static Task<bool> HasOtherBankActivityOnOrAfterAsync(
+        AppDbContext db,
+        Guid accountId,
+        Guid currentTransactionId,
+        DateOnly currentBusinessDate,
+        CancellationToken cancellationToken) =>
+        (from posting in db.Postings
+         join transaction in db.Transactions on posting.TransactionId equals transaction.Id
+         where posting.AccountId == accountId &&
+               transaction.Id != currentTransactionId &&
+               transaction.BusinessDate >= currentBusinessDate
+         select posting.Id).AnyAsync(cancellationToken);
 
     public async Task<bool> IgnoreAsync(Guid inboxItemId, CancellationToken cancellationToken = default)
     {
