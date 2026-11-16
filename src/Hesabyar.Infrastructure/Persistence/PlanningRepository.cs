@@ -56,6 +56,10 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
         await db.Tags.AsNoTracking().OrderBy(x => x.Name)
             .Select(x => new TagSnapshot(x.Id, x.Name, x.Color)).ToArrayAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<Guid>> GetTransactionTagIdsAsync(Guid transactionId, CancellationToken cancellationToken) =>
+        await db.TransactionTags.AsNoTracking().Where(x => x.TransactionId == transactionId)
+            .Select(x => x.TagId).ToArrayAsync(cancellationToken);
+
     public async Task<Guid?> SaveTagAsync(Guid? tagId, string name, string? color, DateTimeOffset nowUtc,
         CancellationToken cancellationToken)
     {

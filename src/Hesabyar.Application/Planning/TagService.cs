@@ -7,6 +7,9 @@ public sealed class TagService(IPlanningRepository repository, IClock clock)
     public Task<IReadOnlyList<TagSnapshot>> GetAsync(CancellationToken cancellationToken = default) =>
         repository.GetTagsAsync(cancellationToken);
 
+    public Task<IReadOnlyList<Guid>> GetForTransactionAsync(Guid transactionId, CancellationToken cancellationToken = default) =>
+        repository.GetTransactionTagIdsAsync(transactionId, cancellationToken);
+
     public async Task<Result<Guid>> SaveAsync(Guid? id, string name, string? color,
         CancellationToken cancellationToken = default)
     {
