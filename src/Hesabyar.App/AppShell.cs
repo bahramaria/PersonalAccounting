@@ -57,6 +57,10 @@ public sealed class AppShell : Shell
             "reports",
             () => services.GetRequiredService<ReportsPage>()));
         tabs.Items.Add(CreateTab(
+            AppStrings.PlanningTab,
+            "planning",
+            () => services.GetRequiredService<PlanningPage>()));
+        tabs.Items.Add(CreateTab(
             AppStrings.SettingsTab,
             "settings",
             () => services.GetRequiredService<SettingsPage>()));

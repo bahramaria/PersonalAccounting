@@ -425,4 +425,27 @@
   <data name="BiometricUnlockTitle" xml:space="preserve"><value>تأیید هویت بیومتریک</value></data>
   <data name="BiometricUnlockReason" xml:space="preserve"><value>برای بازکردن حسابیار هویت خود را تأیید کنید.</value></data>
   <data name="BiometricUnlockFailed" xml:space="preserve"><value>تأیید بیومتریک انجام نشد. از رمز ورود استفاده کنید.</value></data>
+  <data name="PlanningTab" xml:space="preserve"><value>برنامه‌ریزی</value></data>
+  <data name="PlanningHeading" xml:space="preserve"><value>بودجه‌ها، برچسب‌ها و دوره‌های مالی</value></data>
+  <data name="BudgetsHeading" xml:space="preserve"><value>بودجه‌ها</value></data>
+  <data name="AddBudget" xml:space="preserve"><value>افزودن بودجه</value></data>
+  <data name="BudgetCategoryPrompt" xml:space="preserve"><value>انتخاب دسته هزینه</value></data>
+  <data name="BudgetStartPrompt" xml:space="preserve"><value>تاریخ شروع بودجه</value></data>
+  <data name="BudgetEndPrompt" xml:space="preserve"><value>تاریخ پایان بودجه</value></data>
+  <data name="BudgetLimitPrompt" xml:space="preserve"><value>سقف بودجه</value></data>
+  <data name="BudgetEmpty" xml:space="preserve"><value>هنوز بودجه‌ای تعریف نشده است.</value></data>
+  <data name="BudgetSaveFailed" xml:space="preserve"><value>ذخیره بودجه انجام نشد.</value></data>
+  <data name="TagsHeading" xml:space="preserve"><value>برچسب‌ها</value></data>
+  <data name="AddTag" xml:space="preserve"><value>افزودن برچسب</value></data>
+  <data name="TagNamePrompt" xml:space="preserve"><value>نام برچسب را وارد کنید</value></data>
+  <data name="TagSaveFailed" xml:space="preserve"><value>ذخیره برچسب انجام نشد.</value></data>
+  <data name="FiscalPeriodsHeading" xml:space="preserve"><value>دوره‌های مالی</value></data>
+  <data name="AddFiscalPeriod" xml:space="preserve"><value>افزودن دوره مالی</value></data>
+  <data name="FiscalPeriodNamePrompt" xml:space="preserve"><value>نام دوره مالی (مثلاً ۱۴۰۶)</value></data>
+  <data name="FiscalPeriodStartPrompt" xml:space="preserve"><value>تاریخ شروع دوره مالی</value></data>
+  <data name="FiscalPeriodEndPrompt" xml:space="preserve"><value>تاریخ پایان دوره مالی</value></data>
+  <data name="FiscalPeriodClose" xml:space="preserve"><value>بستن دوره</value></data>
+  <data name="FiscalPeriodClosed" xml:space="preserve"><value>بسته‌شده</value></data>
+  <data name="FiscalPeriodSaveFailed" xml:space="preserve"><value>ذخیره دوره مالی انجام نشد.</value></data>
+  <data name="PlanningLoadFailed" xml:space="preserve"><value>بارگذاری اطلاعات برنامه‌ریزی انجام نشد.</value></data>
 </root>

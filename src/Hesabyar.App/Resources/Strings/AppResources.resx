@@ -425,4 +425,27 @@
   <data name="BiometricUnlockTitle" xml:space="preserve"><value>Biometric verification</value></data>
   <data name="BiometricUnlockReason" xml:space="preserve"><value>Verify your identity to unlock Hesabyar.</value></data>
   <data name="BiometricUnlockFailed" xml:space="preserve"><value>Biometric verification was not completed. Use your PIN.</value></data>
+  <data name="PlanningTab" xml:space="preserve"><value>Planning</value></data>
+  <data name="PlanningHeading" xml:space="preserve"><value>Budgets, tags and fiscal periods</value></data>
+  <data name="BudgetsHeading" xml:space="preserve"><value>Budgets</value></data>
+  <data name="AddBudget" xml:space="preserve"><value>Add budget</value></data>
+  <data name="BudgetCategoryPrompt" xml:space="preserve"><value>Select expense category</value></data>
+  <data name="BudgetStartPrompt" xml:space="preserve"><value>Budget start date</value></data>
+  <data name="BudgetEndPrompt" xml:space="preserve"><value>Budget end date</value></data>
+  <data name="BudgetLimitPrompt" xml:space="preserve"><value>Budget limit</value></data>
+  <data name="BudgetEmpty" xml:space="preserve"><value>No budgets have been defined.</value></data>
+  <data name="BudgetSaveFailed" xml:space="preserve"><value>Budget could not be saved.</value></data>
+  <data name="TagsHeading" xml:space="preserve"><value>Tags</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Add tag</value></data>
+  <data name="TagNamePrompt" xml:space="preserve"><value>Enter a tag name</value></data>
+  <data name="TagSaveFailed" xml:space="preserve"><value>Tag could not be saved.</value></data>
+  <data name="FiscalPeriodsHeading" xml:space="preserve"><value>Fiscal periods</value></data>
+  <data name="AddFiscalPeriod" xml:space="preserve"><value>Add fiscal period</value></data>
+  <data name="FiscalPeriodNamePrompt" xml:space="preserve"><value>Fiscal period name (for example 1406)</value></data>
+  <data name="FiscalPeriodStartPrompt" xml:space="preserve"><value>Fiscal period start date</value></data>
+  <data name="FiscalPeriodEndPrompt" xml:space="preserve"><value>Fiscal period end date</value></data>
+  <data name="FiscalPeriodClose" xml:space="preserve"><value>Close period</value></data>
+  <data name="FiscalPeriodClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="FiscalPeriodSaveFailed" xml:space="preserve"><value>Fiscal period could not be saved.</value></data>
+  <data name="PlanningLoadFailed" xml:space="preserve"><value>Planning data could not be loaded.</value></data>
 </root>

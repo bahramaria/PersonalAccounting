@@ -12,6 +12,29 @@ public static class AppStrings
     public static CultureInfo? Culture { get; set; }
 
     public static string HomeTab => Get(nameof(HomeTab));
+    public static string PlanningTab => Get(nameof(PlanningTab));
+    public static string PlanningHeading => Get(nameof(PlanningHeading));
+    public static string BudgetsHeading => Get(nameof(BudgetsHeading));
+    public static string AddBudget => Get(nameof(AddBudget));
+    public static string BudgetCategoryPrompt => Get(nameof(BudgetCategoryPrompt));
+    public static string BudgetStartPrompt => Get(nameof(BudgetStartPrompt));
+    public static string BudgetEndPrompt => Get(nameof(BudgetEndPrompt));
+    public static string BudgetLimitPrompt => Get(nameof(BudgetLimitPrompt));
+    public static string BudgetEmpty => Get(nameof(BudgetEmpty));
+    public static string BudgetSaveFailed => Get(nameof(BudgetSaveFailed));
+    public static string TagsHeading => Get(nameof(TagsHeading));
+    public static string AddTag => Get(nameof(AddTag));
+    public static string TagNamePrompt => Get(nameof(TagNamePrompt));
+    public static string TagSaveFailed => Get(nameof(TagSaveFailed));
+    public static string FiscalPeriodsHeading => Get(nameof(FiscalPeriodsHeading));
+    public static string AddFiscalPeriod => Get(nameof(AddFiscalPeriod));
+    public static string FiscalPeriodNamePrompt => Get(nameof(FiscalPeriodNamePrompt));
+    public static string FiscalPeriodStartPrompt => Get(nameof(FiscalPeriodStartPrompt));
+    public static string FiscalPeriodEndPrompt => Get(nameof(FiscalPeriodEndPrompt));
+    public static string FiscalPeriodClose => Get(nameof(FiscalPeriodClose));
+    public static string FiscalPeriodClosed => Get(nameof(FiscalPeriodClosed));
+    public static string FiscalPeriodSaveFailed => Get(nameof(FiscalPeriodSaveFailed));
+    public static string PlanningLoadFailed => Get(nameof(PlanningLoadFailed));
     public static string TransactionsTab => Get(nameof(TransactionsTab));
     public static string AccountsTab => Get(nameof(AccountsTab));
     public static string CategoriesTab => Get(nameof(CategoriesTab));
