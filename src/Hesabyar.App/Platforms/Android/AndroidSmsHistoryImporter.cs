@@ -19,8 +19,12 @@ public sealed class AndroidSmsHistoryImporter
         var cutoff = DateTimeOffset.UtcNow.Subtract(Lookback).ToUnixTimeMilliseconds()
             .ToString(CultureInfo.InvariantCulture);
         var projection = new[] { "address", "body" };
+        var inboxUri = Telephony.Sms.Inbox.ContentUri;
+        if (inboxUri is null)
+            return new SmsHistoryImportSummary(0, 0, 0, 0);
+
         using var cursor = Platform.AppContext.ContentResolver?.Query(
-            Telephony.Sms.Inbox.ContentUri,
+            inboxUri,
             projection,
             "date >= ?",
             [cutoff],
