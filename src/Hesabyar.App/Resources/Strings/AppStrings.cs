@@ -347,5 +347,10 @@ public static class AppStrings
     public static string SmsBatchConfirmFailed => Get(nameof(SmsBatchConfirmFailed));
     public static string SmsBatchImported => Get(nameof(SmsBatchImported));
 
+    public static string SmsImportHistory => Get(nameof(SmsImportHistory));
+    public static string SmsHistoryPermissionTitle => Get(nameof(SmsHistoryPermissionTitle));
+    public static string SmsHistoryPermissionExplain => Get(nameof(SmsHistoryPermissionExplain));
+    public static string SmsHistoryImportSummary => Get(nameof(SmsHistoryImportSummary));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }

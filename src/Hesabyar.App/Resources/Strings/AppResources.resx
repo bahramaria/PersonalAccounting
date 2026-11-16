@@ -327,4 +327,7 @@
   <data name="SmsBatchSameTypeRequired" xml:space="preserve"><value>Select messages of the same transaction type for batch confirmation.</value></data>
   <data name="SmsBatchConfirmFailed" xml:space="preserve"><value>The batch could not be confirmed. No selected transaction was imported.</value></data>
   <data name="SmsBatchImported" xml:space="preserve"><value>{0} messages were imported successfully.</value></data>
-</root>
+  <data name="SmsImportHistory" xml:space="preserve"><value>Import recent SMS history</value></data>
+  <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>SMS history access</value></data>
+  <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>With your explicit permission, Hesabyar will inspect up to 500 messages from the last 90 days. Only messages recognized as potentially financial are saved in the review queue; other messages are discarded. This permission is used only for this manual import.</value></data>
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}\nAdded to review: {1}\nDuplicates: {2}\nIgnored: {3}</value></data>\n</root>

@@ -1,4 +1,5 @@
 using Hesabyar.Application.Accounts;
+using Hesabyar.App;
 using Hesabyar.Application.Sms;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Domain.Accounts;
@@ -19,6 +20,7 @@ public sealed class BankSmsPage : ContentPage
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
     private readonly Button _autoImportButton;
     private readonly Button _batchConfirmButton;
+    private readonly Button _historyImportButton;
     private readonly HashSet<Guid> _selectedInboxIds = [];
     private bool _loading;
 
@@ -41,6 +43,8 @@ public sealed class BankSmsPage : ContentPage
         _autoImportButton = new Button();
         _batchConfirmButton = new Button { Text = AppStrings.SmsConfirmSelected, IsEnabled = false };
         _batchConfirmButton.Clicked += OnBatchConfirmClicked;
+        _historyImportButton = new Button { Text = AppStrings.SmsImportHistory };
+        _historyImportButton.Clicked += OnHistoryImportClicked;
         _autoImportButton.Clicked += OnAutoImportClicked;
         UpdateAutoImportButton();
         Content = new ScrollView
@@ -56,6 +60,7 @@ public sealed class BankSmsPage : ContentPage
                     pasteButton,
                     _autoImportButton,
                     _batchConfirmButton,
+                    _historyImportButton,
                     _items
                 }
             }
@@ -106,6 +111,37 @@ public sealed class BankSmsPage : ContentPage
         await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsAutoImportEnabled, AppStrings.Ok);
 #else
         await DisplayAlertAsync(AppStrings.SmsPermissionTitle, AppStrings.SmsAndroidOnly, AppStrings.Ok);
+#endif
+    }
+
+    private async void OnHistoryImportClicked(object? sender, EventArgs e)
+    {
+#if ANDROID
+        var accepted = await DisplayAlertAsync(AppStrings.SmsHistoryPermissionTitle,
+            AppStrings.SmsHistoryPermissionExplain, AppStrings.SmsImportHistory, AppStrings.Cancel);
+        if (!accepted) return;
+
+        var permission = await Permissions.RequestAsync<ReadSmsPermission>();
+        if (permission != PermissionStatus.Granted)
+        {
+            await DisplayAlertAsync(AppStrings.SmsHistoryPermissionTitle, AppStrings.SmsPermissionDenied, AppStrings.Ok);
+            return;
+        }
+
+        try
+        {
+            var result = await new AndroidSmsHistoryImporter().ImportRecentAsync(_inbox);
+            await DisplayAlertAsync(AppStrings.SmsHeading,
+                string.Format(AppStrings.SmsHistoryImportSummary, result.Scanned, result.Added,
+                    result.Duplicates, result.Ignored), AppStrings.Ok);
+            await ReloadAsync();
+        }
+        catch
+        {
+            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.SmsLoadFailed, AppStrings.Ok);
+        }
+#else
+        await DisplayAlertAsync(AppStrings.SmsHistoryPermissionTitle, AppStrings.SmsAndroidOnly, AppStrings.Ok);
 #endif
     }
 
