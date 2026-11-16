@@ -233,7 +233,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasIndex(x => x.CategoryAccountId);
             entity.HasIndex(x => new { x.IsPaused, x.NextOccurrenceDate });
             entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.CategoryAccount).WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 

@@ -268,7 +268,7 @@ public sealed class AppDbContext(
         budget.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
         budget.Property(x => x.Note).HasMaxLength(300);
         budget.HasIndex(x => new { x.CategoryAccountId, x.PeriodStart, x.PeriodEnd }).IsUnique();
-        budget.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+        budget.HasOne(x => x.CategoryAccount).WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
         budget.HasQueryFilter(x => !x.IsDeleted);
 
         var tag = modelBuilder.Entity<DbTag>();
