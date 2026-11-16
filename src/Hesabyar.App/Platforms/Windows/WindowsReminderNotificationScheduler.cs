@@ -1,4 +1,5 @@
 using Hesabyar.App.Services;
+using Hesabyar.App.Resources.Strings;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Data.Xml.Dom;
@@ -22,7 +23,7 @@ public sealed class WindowsReminderNotificationScheduler : IReminderNotification
 
         var escapedTitle = System.Security.SecurityElement.Escape(title) ?? "Hesabyar";
         var xml = new XmlDocument();
-        xml.LoadXml($"<toast><visual><binding template='ToastGeneric'><text>{escapedTitle}</text><text>A reminder is due.</text></binding></visual></toast>");
+        xml.LoadXml($"<toast><visual><binding template='ToastGeneric'><text>{escapedTitle}</text><text>{System.Security.SecurityElement.Escape(AppStrings.ReminderNotificationBody)}</text></binding></visual></toast>");
         var scheduled = new ScheduledToastNotification(xml, notifyAtUtc.LocalDateTime)
         {
             Tag = reminderId.ToString("N"),
