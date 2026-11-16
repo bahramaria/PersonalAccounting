@@ -419,4 +419,5 @@
   <data name="ReportsExportFailed" xml:space="preserve"><value>The report could not be exported.</value></data>
   <data name="ReportsTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
   <data name="ReportsIOweThem" xml:space="preserve"><value>I owe them</value></data>
+  <data name="ReportsPeriodChange" xml:space="preserve"><value>Period change</value></data>
 </root>
