@@ -35,6 +35,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ReminderService>();
         services.AddScoped<RecurringOccurrenceScheduler>();
         services.AddScoped<RecurringTransactionService>();
+        services.AddScoped<ReportsService>();
 
         return services;
     }
