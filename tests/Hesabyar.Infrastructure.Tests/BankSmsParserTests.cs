@@ -12,6 +12,63 @@ public sealed class BankSmsParserTests
 
 
     [Fact]
+    public void DefaultRuleCatalogLoadsParsianRuleFromEmbeddedJson()
+    {
+        var parser = new BankSmsParser();
+        var result = parser.Parse("bank-sender", "12345678901234 مبلغ:400,000- مانده:6,640,235");
+
+        Assert.Equal("parsian", result.BankKey);
+        Assert.Equal(BankSmsParseStatus.Parsed, result.Status);
+        Assert.Equal(400_000, result.AmountMinor);
+        Assert.True(result.AmountUnitKnown);
+    }
+
+    [Fact]
+    public void RuleCatalogRejectsInvalidRegularExpression()
+    {
+        const string json = """
+            [
+              {
+                "BankKey": "invalid",
+                "SenderAliases": [],
+                "ExpenseKeywords": [],
+                "IncomeKeywords": [],
+                "BodyPattern": "["
+              }
+            ]
+            """;
+
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+
+        Assert.Throws<InvalidDataException>(() => BankSmsRuleCatalog.Load(stream));
+    }
+
+    [Fact]
+    public void RuleCatalogRejectsDuplicateBankKeys()
+    {
+        const string json = """
+            [
+              {
+                "BankKey": "duplicate",
+                "SenderAliases": ["Bank A"],
+                "ExpenseKeywords": [],
+                "IncomeKeywords": []
+              },
+              {
+                "BankKey": "DUPLICATE",
+                "SenderAliases": ["Bank B"],
+                "ExpenseKeywords": [],
+                "IncomeKeywords": []
+              }
+            ]
+            """;
+
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+
+        Assert.Throws<InvalidDataException>(() => BankSmsRuleCatalog.Load(stream));
+    }
+
+    [Fact]
     public void ConvertsTomanAmountsAndBalancesToRials()
     {
         var parser = new BankSmsParser();

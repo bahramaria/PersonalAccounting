@@ -31,18 +31,13 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         @"(?<![0-9])([0-9]{1,2}):([0-9]{2})(?![0-9])",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private static readonly IReadOnlyList<BankSmsRule> DefaultRules =
-    [
-        new BankSmsRule(
-            "parsian",
-            [],
-            [],
-            [],
-            AmountMultiplier: 1,
-            BodyPattern: @"^\d{14}\s+مبلغ\s*[:：]")
-    ];
+    private readonly IReadOnlyList<BankSmsRule> _rules;
 
-    private readonly IReadOnlyList<BankSmsRule> _rules = rules?.ToArray() ?? DefaultRules;
+    public BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
+    {
+        _rules = rules?.ToArray() ?? BankSmsRuleCatalog.LoadDefault();
+        BankSmsRuleCatalog.Validate(_rules);
+    }
 
     public ParsedBankSms Parse(string? sender, string? body)
     {
@@ -59,8 +54,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         var matchedRule = _rules.FirstOrDefault(rule =>
             rule.SenderAliases.Any(alias =>
                 normalizedSender.Contains(Normalize(alias), StringComparison.OrdinalIgnoreCase)) ||
-            (!string.IsNullOrWhiteSpace(rule.BodyPattern) &&
-             Regex.IsMatch(normalizedBody, rule.BodyPattern, RegexOptions.CultureInvariant)));
+            MatchesBodyPattern(normalizedBody, rule.BodyPattern));
 
         var amountMatch = AmountRegex.Match(normalizedBody);
         var transactionType = amountMatch.Success && amountMatch.Groups[2].Value == "-"
@@ -130,6 +124,21 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         }
 
         return Regex.Replace(builder.ToString(), @"[\t\r\n ]+", " ").Trim();
+    }
+
+    private static bool MatchesBodyPattern(string body, string? pattern)
+    {
+        if (string.IsNullOrWhiteSpace(pattern))
+            return false;
+
+        try
+        {
+            return Regex.IsMatch(body, pattern, RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
     }
 
     private static BankSmsTransactionType DetectTransactionType(string body, BankSmsRule? rule)

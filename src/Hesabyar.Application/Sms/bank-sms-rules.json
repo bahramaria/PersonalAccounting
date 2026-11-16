@@ -1,0 +1,10 @@
+[
+  {
+    "BankKey": "parsian",
+    "SenderAliases": [],
+    "ExpenseKeywords": [],
+    "IncomeKeywords": [],
+    "AmountMultiplier": 1,
+    "BodyPattern": "^\\d{14}\\s+مبلغ\\s*[:：]"
+  }
+]
