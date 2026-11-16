@@ -331,4 +331,32 @@
   <data name="SmsImportHistory" xml:space="preserve"><value>Import recent SMS history</value></data>
   <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>SMS history access</value></data>
   <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>With your explicit permission, Hesabyar will inspect up to 500 messages from the last 90 days. Only messages recognized as potentially financial are saved in the review queue; other messages are discarded. This permission is used only for this manual import.</value></data>
-  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}\nAdded to review: {1}\nDuplicates: {2}\nIgnored: {3}</value></data>\n</root>
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}\nAdded to review: {1}\nDuplicates: {2}\nIgnored: {3}</value></data>\n
+  <data name="RemindersTab" xml:space="preserve"><value>Reminders</value></data>
+  <data name="RemindersHeading" xml:space="preserve"><value>Reminders</value></data>
+  <data name="RemindersEmpty" xml:space="preserve"><value>No reminders have been added.</value></data>
+  <data name="RemindersLoadFailed" xml:space="preserve"><value>Reminders could not be loaded.</value></data>
+  <data name="ReminderAdd" xml:space="preserve"><value>Add reminder</value></data>
+  <data name="ReminderEdit" xml:space="preserve"><value>Edit reminder</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ReminderKind" xml:space="preserve"><value>Reminder type</value></data>
+  <data name="ReminderKindGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="ReminderKindBill" xml:space="preserve"><value>Bill</value></data>
+  <data name="ReminderKindDebt" xml:space="preserve"><value>Debt</value></data>
+  <data name="ReminderKindCheque" xml:space="preserve"><value>Cheque</value></data>
+  <data name="ReminderKindInstallment" xml:space="preserve"><value>Installment</value></data>
+  <data name="ReminderDueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="ReminderDateFormat" xml:space="preserve"><value>Enter date as year/month/day in the selected calendar</value></data>
+  <data name="ReminderDateInvalid" xml:space="preserve"><value>Enter a valid date using the selected calendar.</value></data>
+  <data name="ReminderNotifyTime" xml:space="preserve"><value>Notification time (optional)</value></data>
+  <data name="ReminderNotifyTimeFormat" xml:space="preserve"><value>24-hour time, HH:mm</value></data>
+  <data name="ReminderTimeInvalid" xml:space="preserve"><value>Enter notification time in HH:mm format.</value></data>
+  <data name="ReminderNote" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="ReminderComplete" xml:space="preserve"><value>Mark complete</value></data>
+  <data name="ReminderReopen" xml:space="preserve"><value>Reopen</value></data>
+  <data name="ReminderArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ReminderArchiveConfirm" xml:space="preserve"><value>This reminder will be removed from the active list. Continue?</value></data>
+  <data name="ReminderActionFailed" xml:space="preserve"><value>The reminder could not be updated.</value></data>
+  <data name="ReminderInvalid" xml:space="preserve"><value>Check the reminder details and try again.</value></data>
+
+</root>
