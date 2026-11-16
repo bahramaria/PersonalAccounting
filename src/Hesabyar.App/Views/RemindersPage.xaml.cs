@@ -121,7 +121,7 @@ public partial class RemindersPage : ContentPage
         DateTimeOffset? notifyAtUtc = null;
         if (!string.IsNullOrWhiteSpace(notifyTime))
         {
-            if (!TimeOnly.TryParseExact(_numbers.ToLatinDigits(notifyTime), "HH:mm", System.Globalization.CultureInfo.InvariantCulture, out var time))
+            if (!TimeOnly.TryParseExact(_numbers.ToLatinDigits(notifyTime), "HH:mm", out var time))
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ReminderTimeInvalid, AppStrings.Ok);
                 return;
