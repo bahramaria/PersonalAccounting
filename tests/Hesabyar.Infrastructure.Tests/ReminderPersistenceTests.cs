@@ -74,12 +74,13 @@ public sealed class ReminderPersistenceTests
             Kind = "Expense",
             CurrencyCode = "IRR",
             AmountMinor = 1000,
-            Account = account,
+            AccountId = account.Id,
             StartDate = new DateOnly(2026, 12, 1),
             NextOccurrenceDate = new DateOnly(2026, 12, 1),
             IntervalCount = 1,
             IntervalUnit = "Month"
         };
+        db.Accounts.Add(account);
         db.RecurringTransactions.Add(schedule);
         await db.SaveChangesAsync();
 
