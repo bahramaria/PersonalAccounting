@@ -153,7 +153,6 @@ public sealed class AppDbContext(
         entity.Property(x => x.DocumentNumber).HasMaxLength(32);
         entity.HasIndex(x => new { x.FiscalPeriodId, x.DocumentNumber }).IsUnique()
             .HasFilter("\"FiscalPeriodId\" IS NOT NULL AND \"DocumentNumber\" IS NOT NULL");
-        entity.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Restrict);
         entity.HasIndex(x => x.BusinessDate).IsDescending();
         entity.HasIndex(x => x.PartyId);
         entity.HasIndex(x => x.LoanId);

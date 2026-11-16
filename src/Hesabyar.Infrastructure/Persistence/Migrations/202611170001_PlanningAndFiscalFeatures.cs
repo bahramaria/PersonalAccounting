@@ -13,8 +13,8 @@ public sealed class PlanningAndFiscalFeatures : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.AddColumn<Guid>(name: "FiscalPeriodId", table: "Transactions", type: "TEXT", nullable: true);
-        migrationBuilder.AddColumn<string>(name: "DocumentNumber", table: "Transactions", type: "TEXT", maxLength: 32, nullable: true);
+        migrationBuilder.Sql("ALTER TABLE \"Transactions\" ADD COLUMN \"FiscalPeriodId\" TEXT NULL;");
+        migrationBuilder.Sql("ALTER TABLE \"Transactions\" ADD COLUMN \"DocumentNumber\" TEXT NULL;")
 
         migrationBuilder.CreateTable("FiscalPeriods", table => new
         {
@@ -107,7 +107,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
         migrationBuilder.CreateIndex("IX_TransactionTags_TagId", "TransactionTags", "TagId");
         migrationBuilder.CreateIndex("IX_Budgets_CategoryAccountId", "Budgets", "CategoryAccountId");
         migrationBuilder.CreateIndex("IX_Transactions_FiscalPeriodId", "Transactions", "FiscalPeriodId");
-        migrationBuilder.AddForeignKey("FK_Transactions_FiscalPeriods_FiscalPeriodId", "Transactions", "FiscalPeriodId", "FiscalPeriods", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         migrationBuilder.InsertData(
             table: "FiscalPeriods",
             columns: new[] { "Id", "Name", "StartDate", "EndDate", "IsClosed", "CreatedAtUtc", "UpdatedAtUtc", "IsDeleted" },
@@ -126,7 +125,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropForeignKey("FK_Transactions_FiscalPeriods_FiscalPeriodId", "Transactions");
         migrationBuilder.DropIndex("IX_Transactions_FiscalPeriodId_DocumentNumber", "Transactions");
         migrationBuilder.DropIndex("IX_Transactions_FiscalPeriodId", "Transactions");
         migrationBuilder.DropColumn("FiscalPeriodId", "Transactions");
