@@ -17,6 +17,9 @@ public sealed class AppDbContext(
     public DbSet<DbLoan> Loans => Set<DbLoan>();
     public DbSet<DbLoanInstallment> LoanInstallments => Set<DbLoanInstallment>();
     public DbSet<DbSmsInboxItem> SmsInboxItems => Set<DbSmsInboxItem>();
+    public DbSet<DbReminder> Reminders => Set<DbReminder>();
+    public DbSet<DbRecurringTransaction> RecurringTransactions => Set<DbRecurringTransaction>();
+    public DbSet<DbRecurringTransactionOccurrence> RecurringTransactionOccurrences => Set<DbRecurringTransactionOccurrence>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +30,8 @@ public sealed class AppDbContext(
         ConfigureCheques(modelBuilder);
         ConfigureLoans(modelBuilder);
         ConfigureSmsInbox(modelBuilder);
+        ConfigureReminders(modelBuilder);
+        ConfigureRecurringTransactions(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -182,6 +187,57 @@ public sealed class AppDbContext(
         installment.Property(x => x.DueDate).HasColumnType("TEXT");
         installment.HasIndex(x => new { x.LoanId, x.DueDate, x.Sequence }).IsUnique();
         installment.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+
+    private static void ConfigureReminders(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbReminder>();
+        entity.ToTable("Reminders");
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.Title).HasMaxLength(160).IsRequired();
+        entity.Property(x => x.Kind).HasMaxLength(24).IsRequired();
+        entity.Property(x => x.DueDate).HasColumnType("TEXT");
+        entity.Property(x => x.Note).HasMaxLength(500);
+        entity.HasIndex(x => new { x.IsCompleted, x.DueDate });
+        entity.HasIndex(x => x.NotifyAtUtc);
+        entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+    private static void ConfigureRecurringTransactions(ModelBuilder modelBuilder)
+    {
+        var schedule = modelBuilder.Entity<DbRecurringTransaction>();
+        schedule.ToTable("RecurringTransactions", table =>
+        {
+            table.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "AmountMinor > 0");
+            table.HasCheckConstraint("CK_RecurringTransactions_Interval_Positive", "IntervalCount > 0");
+            table.HasCheckConstraint("CK_RecurringTransactions_CurrencyCode_Length", "length(CurrencyCode) = 3");
+        });
+        schedule.HasKey(x => x.Id);
+        schedule.Property(x => x.Title).HasMaxLength(160).IsRequired();
+        schedule.Property(x => x.Kind).HasMaxLength(20).IsRequired();
+        schedule.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
+        schedule.Property(x => x.StartDate).HasColumnType("TEXT");
+        schedule.Property(x => x.NextOccurrenceDate).HasColumnType("TEXT");
+        schedule.Property(x => x.EndDate).HasColumnType("TEXT");
+        schedule.Property(x => x.IntervalUnit).HasMaxLength(12).IsRequired();
+        schedule.HasIndex(x => new { x.IsPaused, x.NextOccurrenceDate });
+        schedule.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+        schedule.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+        schedule.HasQueryFilter(x => !x.IsDeleted);
+
+        var occurrence = modelBuilder.Entity<DbRecurringTransactionOccurrence>();
+        occurrence.ToTable("RecurringTransactionOccurrences");
+        occurrence.HasKey(x => x.Id);
+        occurrence.Property(x => x.OccurrenceDate).HasColumnType("TEXT");
+        occurrence.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        occurrence.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique();
+        occurrence.HasIndex(x => x.TransactionId).IsUnique().HasFilter("\"TransactionId\" IS NOT NULL");
+        occurrence.HasOne<DbRecurringTransaction>().WithMany()
+            .HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict);
+        occurrence.HasOne<DbLedgerTransaction>().WithMany()
+            .HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
+        occurrence.HasQueryFilter(x => !x.IsDeleted);
     }
 
     private static void ConfigurePostings(ModelBuilder modelBuilder)
