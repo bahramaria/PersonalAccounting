@@ -49,12 +49,14 @@ public sealed class AndroidReminderNotificationScheduler : Services.IReminderNot
             GetRequestCode(reminderId),
             intent,
             PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+        if (pendingIntent is null)
+            return;
         var alarmManager = context.GetSystemService(Context.AlarmService) as AlarmManager;
         if (alarmManager is null)
             return;
 
         var triggerAt = notifyAtUtc.ToUnixTimeMilliseconds();
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+        if (OperatingSystem.IsAndroidVersionAtLeast(31))
         {
             if (alarmManager.CanScheduleExactAlarms())
                 alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, triggerAt, pendingIntent);
@@ -140,7 +142,7 @@ public sealed class ReminderBootReceiver : BroadcastReceiver
 
         foreach (var entry in preferences.All)
         {
-            if (!entry.Key.EndsWith(":at", StringComparison.Ordinal) ||
+            if (string.IsNullOrEmpty(entry.Key) || !entry.Key.EndsWith(":at", StringComparison.Ordinal) ||
                 !long.TryParse(entry.Value?.ToString(), out var timestamp))
                 continue;
 
