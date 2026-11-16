@@ -62,7 +62,7 @@ public sealed class WindowsReminderNotificationScheduler : IReminderNotification
         Directory.CreateDirectory(programs);
         var shortcutPath = Path.Combine(programs, "Hesabyar.lnk");
 
-        var link = (IShellLinkW)new ShellLink();
+        var link = (IShellLinkW)(object)new ShellLink();
         try
         {
             link.SetPath(executable);
