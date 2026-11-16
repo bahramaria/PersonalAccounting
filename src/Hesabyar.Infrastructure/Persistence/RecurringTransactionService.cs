@@ -61,11 +61,14 @@ public sealed class RecurringTransactionService(
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Accounts.AsNoTracking()
+        var accounts = await db.Accounts.AsNoTracking()
             .Where(x => !x.IsArchived && (x.Type == AccountType.Asset || x.Type == AccountType.Liability))
             .OrderBy(x => x.Name)
-            .Select(x => new RecurringAccountChoice(x.Id, x.Name, x.CurrencyCode, x.Type.ToString()))
             .ToListAsync(cancellationToken);
+
+        return accounts
+            .Select(x => new RecurringAccountChoice(x.Id, x.Name, x.CurrencyCode, x.Type.ToString()))
+            .ToArray();
     }
 
     public async Task<IReadOnlyList<RecurringCategoryChoice>> GetCategoryChoicesAsync(
@@ -108,6 +111,9 @@ public sealed class RecurringTransactionService(
         var schedule = await db.RecurringTransactions.SingleOrDefaultAsync(x => x.Id == scheduleId, cancellationToken);
         if (schedule is null)
             return false;
+        if (!paused && schedule.EndDate is not null &&
+            schedule.EndDate.Value < DateOnly.FromDateTime(clock.UtcNow.LocalDateTime))
+            return false;
         schedule.IsPaused = paused;
         await db.SaveChangesAsync(cancellationToken);
         return true;
@@ -135,9 +141,18 @@ public sealed class RecurringTransactionService(
             return null;
 
         var kind = ParseKind(schedule.Kind);
-        var (account, category) = await ValidateAccountsAsync(
-            db, schedule.Kind, schedule.AccountId, schedule.CategoryAccountId,
-            schedule.CurrencyCode, cancellationToken);
+        DbAccount account;
+        DbAccount category;
+        try
+        {
+            (account, category) = await ValidateAccountsAsync(
+                db, schedule.Kind, schedule.AccountId, schedule.CategoryAccountId,
+                schedule.CurrencyCode, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
 
         var currency = new CurrencyCode(schedule.CurrencyCode);
         var amount = new Money(schedule.AmountMinor, currency);
