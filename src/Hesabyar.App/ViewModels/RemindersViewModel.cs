@@ -9,7 +9,8 @@ namespace Hesabyar.App.ViewModels;
 
 public sealed class RemindersViewModel(
     IServiceScopeFactory scopeFactory,
-    IDateCalendarService calendar) : ObservableObject
+    IDateCalendarService calendar,
+    ReminderNotificationSyncService notificationSync) : ObservableObject
 {
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -26,6 +27,7 @@ public sealed class RemindersViewModel(
             using var scope = scopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<ReminderService>();
             var reminders = await service.GetAsync(includeCompleted: true, cancellationToken: cancellationToken);
+            await notificationSync.SyncAsync(cancellationToken);
             Reminders.Clear();
             foreach (var reminder in reminders)
                 Reminders.Add(new ReminderListItemViewModel(
@@ -85,7 +87,13 @@ public sealed class RemindersViewModel(
 
     public async Task<bool> CompleteAsync(Guid id) => await ExecuteAsync(service => service.CompleteAsync(id));
     public async Task<bool> ReopenAsync(Guid id) => await ExecuteAsync(service => service.ReopenAsync(id));
-    public async Task<bool> ArchiveAsync(Guid id) => await ExecuteAsync(service => service.ArchiveAsync(id));
+    public async Task<bool> ArchiveAsync(Guid id)
+    {
+        var archived = await ExecuteAsync(service => service.ArchiveAsync(id));
+        if (archived)
+            await notificationSync.CancelAsync(id);
+        return archived;
+    }
 
     private async Task<bool> ExecuteAsync(Func<ReminderService, Task<bool>> action)
     {
