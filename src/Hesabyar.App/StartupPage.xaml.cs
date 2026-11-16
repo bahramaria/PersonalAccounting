@@ -55,9 +55,16 @@ public partial class StartupPage : ContentPage
             var backupDirectory = Path.Combine(FileSystem.AppDataDirectory, "migration-backups");
             await _databaseKeyInitializer.InitializeAsync(backupDirectory);
             await _databaseInitializer.InitializeAsync(backupDirectory);
-            await _services.GetRequiredService<RecurringTransactionService>()
-                .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(DateTime.Today));
-            await _services.GetRequiredService<ReminderNotificationSyncService>().SyncAsync();
+            try
+            {
+                await _services.GetRequiredService<RecurringTransactionService>()
+                    .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(DateTime.Today));
+                await _services.GetRequiredService<ReminderNotificationSyncService>().SyncAsync();
+            }
+            catch
+            {
+                // Scheduled work is retried on the next app activation.
+            }
             try
             {
                 await _backupService.CreateDailyAutomaticBackupAsync(
