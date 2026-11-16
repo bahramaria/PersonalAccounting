@@ -437,6 +437,7 @@ public static class AppStrings
     public static string ReportsPeople => Get(nameof(ReportsPeople));
     public static string ReportsTheyOweMe => Get(nameof(ReportsTheyOweMe));
     public static string ReportsIOweThem => Get(nameof(ReportsIOweThem));
+    public static string ReportsPeriodChange => Get(nameof(ReportsPeriodChange));
     public static string ReportsExportCsv => Get(nameof(ReportsExportCsv));
     public static string ReportsExportExcel => Get(nameof(ReportsExportExcel));
     public static string ReportsEmpty => Get(nameof(ReportsEmpty));
