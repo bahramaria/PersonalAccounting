@@ -380,6 +380,8 @@ public static class AppStrings
     public static string ReminderArchiveConfirm => Get(nameof(ReminderArchiveConfirm));
     public static string ReminderActionFailed => Get(nameof(ReminderActionFailed));
     public static string ReminderInvalid => Get(nameof(ReminderInvalid));
+    public static string ReminderNotificationBody => Get(nameof(ReminderNotificationBody));
+    public static string ReminderNotificationChannel => Get(nameof(ReminderNotificationChannel));
 
 
     public static string RecurringTab => Get(nameof(RecurringTab));
