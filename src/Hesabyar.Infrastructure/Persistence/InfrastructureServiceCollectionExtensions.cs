@@ -32,6 +32,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IChequeRepository, ChequesRepository>();
         services.AddScoped<ILoanRepository, LoanRepository>();
         services.AddSingleton<DatabaseInitializer>();
+        services.AddScoped<ReminderService>();
 
         return services;
     }
