@@ -17,10 +17,17 @@ public sealed class ReminderNotificationSyncService(
 
         foreach (var reminder in reminders)
         {
-            if (!reminder.IsCompleted && reminder.NotifyAtUtc is { } notifyAt && notifyAt > now)
-                await scheduler.ScheduleAsync(reminder.Id, reminder.Title, notifyAt, cancellationToken);
-            else
-                await scheduler.CancelAsync(reminder.Id, cancellationToken);
+            try
+            {
+                if (!reminder.IsCompleted && reminder.NotifyAtUtc is { } notifyAt && notifyAt > now)
+                    await scheduler.ScheduleAsync(reminder.Id, reminder.Title, notifyAt, cancellationToken);
+                else
+                    await scheduler.CancelAsync(reminder.Id, cancellationToken);
+            }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                // A platform notification failure must not prevent access to the financial data.
+            }
         }
     }
 
