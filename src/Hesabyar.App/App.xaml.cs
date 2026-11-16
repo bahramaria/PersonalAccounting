@@ -26,6 +26,12 @@ public partial class App : Microsoft.Maui.Controls.Application
         };
     }
 
+    protected override async void OnStart()
+    {
+        base.OnStart();
+        await PrepareRecurringOccurrencesAsync();
+    }
+
     protected override Window CreateWindow(IActivationState? activationState)
     {
         var window = new Window(_services.GetRequiredService<StartupPage>());
@@ -36,6 +42,7 @@ public partial class App : Microsoft.Maui.Controls.Application
 
     private async void OnWindowResumed(object? sender, EventArgs e)
     {
+        await PrepareRecurringOccurrencesAsync();
         if (_backgroundedAt is not { } backgroundedAt) return;
         var elapsed = DateTimeOffset.UtcNow - backgroundedAt;
         _backgroundedAt = null;
@@ -46,5 +53,19 @@ public partial class App : Microsoft.Maui.Controls.Application
         var window = Windows.FirstOrDefault();
         if (window is not null && window.Page is not PinLockPage)
             window.Page = _services.GetRequiredService<PinLockPage>();
+    }
+
+    private async Task PrepareRecurringOccurrencesAsync()
+    {
+        try
+        {
+            using var scope = _services.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<Infrastructure.Persistence.RecurringTransactionService>()
+                .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(DateTime.Today));
+        }
+        catch
+        {
+            // Recurring occurrence preparation is retried on the next app activation.
+        }
     }
 }
