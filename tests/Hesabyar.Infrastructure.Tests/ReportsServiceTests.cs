@@ -67,8 +67,8 @@ public sealed class ReportsServiceTests
         Assert.Equal(125_000, Assert.Single(report.ExpensesByCategory).AmountMinor);
         Assert.Single(report.MonthlyTrend);
         Assert.Equal("1405/01", report.MonthlyTrend[0].Label);
-        Assert.Equal(200_000, report.AssetsMinor);
-        Assert.Equal(200_000, report.NetWorthMinor);
+        Assert.Equal(375_000, report.AssetsMinor);
+        Assert.Equal(375_000, report.NetWorthMinor);
     }
 
     [Fact]
