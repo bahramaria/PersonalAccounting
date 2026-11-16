@@ -1,5 +1,6 @@
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
+using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Infrastructure.Persistence;
