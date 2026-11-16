@@ -24,7 +24,7 @@ public sealed class WindowsReminderNotificationScheduler : IReminderNotification
         var escapedTitle = System.Security.SecurityElement.Escape(title) ?? "Hesabyar";
         var xml = new XmlDocument();
         xml.LoadXml($"<toast><visual><binding template='ToastGeneric'><text>{escapedTitle}</text><text>{System.Security.SecurityElement.Escape(AppStrings.ReminderNotificationBody)}</text></binding></visual></toast>");
-        var scheduled = new ScheduledToastNotification(xml, notifyAtUtc.LocalDateTime)
+        var scheduled = new ScheduledToastNotification(xml, notifyAtUtc.ToLocalTime())
         {
             Tag = reminderId.ToString("N"),
             Group = "reminders"
@@ -148,10 +148,16 @@ public sealed class WindowsReminderNotificationScheduler : IReminderNotification
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    private struct PropertyKey(Guid formatId, uint propertyId)
+    private struct PropertyKey
     {
-        public Guid FormatId = formatId;
-        public uint PropertyId = propertyId;
+        public Guid FormatId;
+        public uint PropertyId;
+
+        public PropertyKey(Guid formatId, uint propertyId)
+        {
+            FormatId = formatId;
+            PropertyId = propertyId;
+        }
     }
 
     [StructLayout(LayoutKind.Explicit)]
