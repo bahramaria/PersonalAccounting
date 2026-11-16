@@ -448,4 +448,7 @@
   <data name="FiscalPeriodClosed" xml:space="preserve"><value>بسته‌شده</value></data>
   <data name="FiscalPeriodSaveFailed" xml:space="preserve"><value>ذخیره دوره مالی انجام نشد.</value></data>
   <data name="PlanningLoadFailed" xml:space="preserve"><value>بارگذاری اطلاعات برنامه‌ریزی انجام نشد.</value></data>
+  <data name="CurrencyCodePrompt" xml:space="preserve"><value>کد ارز سه‌حرفی را وارد کنید (IRR، USD، EUR)</value></data>
+  <data name="TransactionManageTags" xml:space="preserve"><value>مدیریت برچسب‌ها</value></data>
+  <data name="TransactionTagsPrompt" xml:space="preserve"><value>نام برچسب‌ها را با ویرگول جدا کنید (برای پاک‌کردن خالی بگذارید)</value></data>
 </root>

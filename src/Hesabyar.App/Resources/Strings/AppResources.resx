@@ -448,4 +448,7 @@
   <data name="FiscalPeriodClosed" xml:space="preserve"><value>Closed</value></data>
   <data name="FiscalPeriodSaveFailed" xml:space="preserve"><value>Fiscal period could not be saved.</value></data>
   <data name="PlanningLoadFailed" xml:space="preserve"><value>Planning data could not be loaded.</value></data>
+  <data name="CurrencyCodePrompt" xml:space="preserve"><value>Enter ISO 4217 currency code (IRR, USD, EUR)</value></data>
+  <data name="TransactionManageTags" xml:space="preserve"><value>Manage tags</value></data>
+  <data name="TransactionTagsPrompt" xml:space="preserve"><value>Enter tag names separated by commas (leave empty to clear)</value></data>
 </root>

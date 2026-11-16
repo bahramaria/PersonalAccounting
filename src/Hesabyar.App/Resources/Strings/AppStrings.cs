@@ -13,6 +13,9 @@ public static class AppStrings
 
     public static string HomeTab => Get(nameof(HomeTab));
     public static string PlanningTab => Get(nameof(PlanningTab));
+    public static string CurrencyCodePrompt => Get(nameof(CurrencyCodePrompt));
+    public static string TransactionManageTags => Get(nameof(TransactionManageTags));
+    public static string TransactionTagsPrompt => Get(nameof(TransactionTagsPrompt));
     public static string PlanningHeading => Get(nameof(PlanningHeading));
     public static string BudgetsHeading => Get(nameof(BudgetsHeading));
     public static string AddBudget => Get(nameof(AddBudget));
