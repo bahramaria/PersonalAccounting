@@ -167,4 +167,4 @@ public sealed class ReportsService(
 
         return result;
     }
-}}
+}
