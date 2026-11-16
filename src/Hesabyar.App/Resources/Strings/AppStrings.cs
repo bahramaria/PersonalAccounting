@@ -419,5 +419,27 @@ public static class AppStrings
     public static string RecurringNoAccount => Get(nameof(RecurringNoAccount));
     public static string RecurringNoCategory => Get(nameof(RecurringNoCategory));
 
+
+    public static string ReportsHeading => Get(nameof(ReportsHeading));
+    public static string ReportsRange => Get(nameof(ReportsRange));
+    public static string ReportsFromDate => Get(nameof(ReportsFromDate));
+    public static string ReportsToDate => Get(nameof(ReportsToDate));
+    public static string ReportsDateInvalid => Get(nameof(ReportsDateInvalid));
+    public static string ReportsIncome => Get(nameof(ReportsIncome));
+    public static string ReportsExpenses => Get(nameof(ReportsExpenses));
+    public static string ReportsNetCashFlow => Get(nameof(ReportsNetCashFlow));
+    public static string ReportsAssets => Get(nameof(ReportsAssets));
+    public static string ReportsLiabilities => Get(nameof(ReportsLiabilities));
+    public static string ReportsNetWorth => Get(nameof(ReportsNetWorth));
+    public static string ReportsByCategory => Get(nameof(ReportsByCategory));
+    public static string ReportsMonthlyTrend => Get(nameof(ReportsMonthlyTrend));
+    public static string ReportsAccounts => Get(nameof(ReportsAccounts));
+    public static string ReportsPeople => Get(nameof(ReportsPeople));
+    public static string ReportsExportCsv => Get(nameof(ReportsExportCsv));
+    public static string ReportsExportExcel => Get(nameof(ReportsExportExcel));
+    public static string ReportsEmpty => Get(nameof(ReportsEmpty));
+    public static string ReportsLoadFailed => Get(nameof(ReportsLoadFailed));
+    public static string ReportsExportFailed => Get(nameof(ReportsExportFailed));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
