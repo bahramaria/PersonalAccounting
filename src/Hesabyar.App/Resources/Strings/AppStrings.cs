@@ -191,6 +191,10 @@ public static class AppStrings
     public static string PinUnlockDescription => Get(nameof(PinUnlockDescription));
     public static string PinUnlockButton => Get(nameof(PinUnlockButton));
     public static string PinLockedForSeconds => Get(nameof(PinLockedForSeconds));
+    public static string BiometricUnlockButton => Get(nameof(BiometricUnlockButton));
+    public static string BiometricUnlockTitle => Get(nameof(BiometricUnlockTitle));
+    public static string BiometricUnlockReason => Get(nameof(BiometricUnlockReason));
+    public static string BiometricUnlockFailed => Get(nameof(BiometricUnlockFailed));
     public static string PinAutoLock => Get(nameof(PinAutoLock));
     public static string PinAutoLockImmediate => Get(nameof(PinAutoLockImmediate));
     public static string PinAutoLock30Seconds => Get(nameof(PinAutoLock30Seconds));
