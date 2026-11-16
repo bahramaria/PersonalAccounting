@@ -33,6 +33,12 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDateCalendarService, DateCalendarService>();
         builder.Services.AddSingleton<INumberNormalizer, NumberNormalizer>();
         builder.Services.AddSingleton<AppLockService>();
+        builder.Services.AddSingleton<ReminderNotificationSyncService>();
+#if ANDROID
+        builder.Services.AddSingleton<IReminderNotificationScheduler, AndroidReminderNotificationScheduler>();
+#elif WINDOWS
+        builder.Services.AddSingleton<IReminderNotificationScheduler, WindowsReminderNotificationScheduler>();
+#endif
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");
         builder.Services.AddSingleton<IDeviceSecretStore, MauiSecureStorageAdapter>();
