@@ -353,5 +353,33 @@ public static class AppStrings
     public static string SmsHistoryPermissionExplain => Get(nameof(SmsHistoryPermissionExplain));
     public static string SmsHistoryImportSummary => Get(nameof(SmsHistoryImportSummary));
 
+
+    public static string RemindersTab => Get(nameof(RemindersTab));
+    public static string RemindersHeading => Get(nameof(RemindersHeading));
+    public static string RemindersEmpty => Get(nameof(RemindersEmpty));
+    public static string RemindersLoadFailed => Get(nameof(RemindersLoadFailed));
+    public static string ReminderAdd => Get(nameof(ReminderAdd));
+    public static string ReminderEdit => Get(nameof(ReminderEdit));
+    public static string ReminderTitle => Get(nameof(ReminderTitle));
+    public static string ReminderKind => Get(nameof(ReminderKind));
+    public static string ReminderKindGeneral => Get(nameof(ReminderKindGeneral));
+    public static string ReminderKindBill => Get(nameof(ReminderKindBill));
+    public static string ReminderKindDebt => Get(nameof(ReminderKindDebt));
+    public static string ReminderKindCheque => Get(nameof(ReminderKindCheque));
+    public static string ReminderKindInstallment => Get(nameof(ReminderKindInstallment));
+    public static string ReminderDueDate => Get(nameof(ReminderDueDate));
+    public static string ReminderDateFormat => Get(nameof(ReminderDateFormat));
+    public static string ReminderDateInvalid => Get(nameof(ReminderDateInvalid));
+    public static string ReminderNotifyTime => Get(nameof(ReminderNotifyTime));
+    public static string ReminderNotifyTimeFormat => Get(nameof(ReminderNotifyTimeFormat));
+    public static string ReminderTimeInvalid => Get(nameof(ReminderTimeInvalid));
+    public static string ReminderNote => Get(nameof(ReminderNote));
+    public static string ReminderComplete => Get(nameof(ReminderComplete));
+    public static string ReminderReopen => Get(nameof(ReminderReopen));
+    public static string ReminderArchive => Get(nameof(ReminderArchive));
+    public static string ReminderArchiveConfirm => Get(nameof(ReminderArchiveConfirm));
+    public static string ReminderActionFailed => Get(nameof(ReminderActionFailed));
+    public static string ReminderInvalid => Get(nameof(ReminderInvalid));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
