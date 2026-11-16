@@ -47,7 +47,8 @@ public sealed class ReportsPage : ContentPage
         var excelButton = new Button { Text = AppStrings.ReportsExportExcel };
         excelButton.Clicked += OnExportExcelClicked;
 
-        var toolbar = new HorizontalStackLayout { Spacing = 8, Children = { rangeButton, csvButton, excelButton } };
+        var exportButtons = new HorizontalStackLayout { Spacing = 8, Children = { csvButton, excelButton } };
+        var toolbar = new VerticalStackLayout { Spacing = 6, Children = { rangeButton, exportButtons } };
         _body.Children.Add(new Label { Text = AppStrings.ReportsHeading, FontSize = 26, FontAttributes = FontAttributes.Bold });
         _body.Children.Add(toolbar);
         _body.Children.Add(_rangeLabel);
