@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Hesabyar.App.Resources.Strings;
 
 namespace Hesabyar.App;
 
@@ -108,7 +109,7 @@ public sealed class ReminderAlarmReceiver : BroadcastReceiver
 
         if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             manager.CreateNotificationChannel(new NotificationChannel(
-                ChannelId, "Hesabyar reminders", NotificationImportance.Default));
+                ChannelId, AppStrings.ReminderNotificationChannel, NotificationImportance.Default));
 
         var title = intent.GetStringExtra(ReminderTitleExtra) ?? "Hesabyar";
         var builder = Build.VERSION.SdkInt >= BuildVersionCodes.O
@@ -116,7 +117,7 @@ public sealed class ReminderAlarmReceiver : BroadcastReceiver
             : new Notification.Builder(context);
         var notification = builder
             .SetContentTitle(title)
-            .SetContentText("A reminder is due.")
+            .SetContentText(AppStrings.ReminderNotificationBody)
             .SetSmallIcon(Android.Resource.Drawable.IcDialogInfo)
             .SetAutoCancel(true)
             .Build();
