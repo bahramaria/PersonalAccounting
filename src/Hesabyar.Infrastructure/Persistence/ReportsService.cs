@@ -1,6 +1,5 @@
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
-using Hesabyar.Localization.Calendar;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Infrastructure.Persistence;
@@ -23,9 +22,7 @@ public sealed record FinancialReportSnapshot(
     IReadOnlyList<ReportAccountRow> Accounts,
     IReadOnlyList<ReportPersonRow> People);
 
-public sealed class ReportsService(
-    IDbContextFactory<AppDbContext> contextFactory,
-    ICalendarService calendar)
+public sealed class ReportsService(IDbContextFactory<AppDbContext> contextFactory)
 {
     public async Task<FinancialReportSnapshot> GetAsync(
         DateOnly fromDate,
@@ -141,16 +138,21 @@ public sealed class ReportsService(
         DateOnly toDate,
         IReadOnlyCollection<DbLedgerTransaction> transactions)
     {
-        var first = calendar.ToPersian(fromDate);
-        var last = calendar.ToPersian(toDate);
-        var month = new PersianDate(first.Year, first.Month, 1);
+        var persianCalendar = new System.Globalization.PersianCalendar();
+        var fromValue = fromDate.ToDateTime(TimeOnly.MinValue);
+        var toValue = toDate.ToDateTime(TimeOnly.MinValue);
+        var year = persianCalendar.GetYear(fromValue);
+        var monthNumber = persianCalendar.GetMonth(fromValue);
+        var lastYear = persianCalendar.GetYear(toValue);
+        var lastMonth = persianCalendar.GetMonth(toValue);
         var result = new List<ReportMonthRow>();
 
-        while (month.Year < last.Year || month.Year == last.Year && month.Month <= last.Month)
+        while (year < lastYear || year == lastYear && monthNumber <= lastMonth)
         {
-            var start = calendar.ToGregorian(month);
-            var next = calendar.AddMonths(month, 1);
-            var end = calendar.ToGregorian(next).AddDays(-1);
+            var start = DateOnly.FromDateTime(persianCalendar.ToDateTime(year, monthNumber, 1, 0, 0, 0, 0));
+            var nextYear = monthNumber == 12 ? year + 1 : year;
+            var nextMonth = monthNumber == 12 ? 1 : monthNumber + 1;
+            var end = DateOnly.FromDateTime(persianCalendar.ToDateTime(nextYear, nextMonth, 1, 0, 0, 0, 0)).AddDays(-1);
             var monthTransactions = transactions.Where(x => x.BusinessDate >= start && x.BusinessDate <= end);
             var monthIncome = monthTransactions.Where(x => x.Kind == TransactionKind.Income)
                 .SelectMany(x => x.Postings)
@@ -160,9 +162,10 @@ public sealed class ReportsService(
                 .SelectMany(x => x.Postings)
                 .Where(x => x.Account.Type == AccountType.Expense && x.AmountMinor > 0)
                 .Sum(x => (decimal)x.AmountMinor);
-            result.Add(new ReportMonthRow(start, $"{month.Year:0000}/{month.Month:00}",
+            result.Add(new ReportMonthRow(start, $"{year:0000}/{monthNumber:00}",
                 decimal.ToInt64(monthIncome), decimal.ToInt64(monthExpense)));
-            month = next;
+            year = nextYear;
+            monthNumber = nextMonth;
         }
 
         return result;
