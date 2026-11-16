@@ -4,6 +4,7 @@ using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Graphics;
 
 namespace Hesabyar.App.Views;
 
