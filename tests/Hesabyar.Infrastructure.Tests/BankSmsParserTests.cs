@@ -157,6 +157,14 @@ public sealed class BankSmsParserTests
     }
 
     [Fact]
+    public void MessageThatOnlyMentionsAnAmountIsNotImportedAsFinancial()
+    {
+        var result = new BankSmsParser().Parse("sender", "مبلغی که درباره‌اش صحبت کردیم فردا پرداخت می‌شود.");
+
+        Assert.Equal(BankSmsParseStatus.Unsupported, result.Status);
+    }
+
+    [Fact]
     public void UnrelatedPersonalMessageIsUnsupported()
     {
         var result = new BankSmsParser().Parse("sender", "سلام، جلسه فردا ساعت ۱۰ برگزار می‌شود.");

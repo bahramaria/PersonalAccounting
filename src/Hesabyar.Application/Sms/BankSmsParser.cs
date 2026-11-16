@@ -76,7 +76,9 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         var time = ExtractTime(normalizedBody);
 
         var hasFinancialSignal = transactionType != BankSmsTransactionType.Unknown ||
-                                 ContainsAny(normalizedBody, "مانده", "موجودی", "تراکنش", "مبلغ");
+                                 ContainsAny(normalizedBody, "مانده", "موجودی") ||
+                                 (normalizedBody.Contains("تراکنش", StringComparison.Ordinal) &&
+                                  normalizedBody.Contains("مبلغ", StringComparison.Ordinal));
 
         if (!hasFinancialSignal)
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
