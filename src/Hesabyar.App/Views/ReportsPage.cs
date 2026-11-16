@@ -79,6 +79,9 @@ public sealed class ReportsPage : ContentPage
     private async Task LoadAsync()
     {
         _status.Text = string.Empty;
+        while (_body.Children.Count > 4)
+            _body.Children.RemoveAt(4);
+        _rangeLabel.Text = $"{_calendar.Format(_fromDate)} — {_calendar.Format(_toDate)}";
         try
         {
             _snapshot = await _reports.GetAsync(_fromDate, _toDate);
@@ -185,7 +188,7 @@ public sealed class ReportsPage : ContentPage
         foreach (var person in people)
             _body.Children.Add(new Label
             {
-                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : person.BalanceMinor < 0 ? AppStrings.ReportsIOweThem : AppStrings.PersonSettled)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {person.ActivityCount}",
+                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : person.BalanceMinor < 0 ? AppStrings.ReportsIOweThem : AppStrings.PersonSettled)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {AppStrings.ReportsActivityCount}: {person.ActivityCount}",
                 FontSize = 13
             });
     }
