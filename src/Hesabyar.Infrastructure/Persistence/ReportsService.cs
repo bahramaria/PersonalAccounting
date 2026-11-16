@@ -110,7 +110,7 @@ public sealed class ReportsService(IDbContextFactory<AppDbContext> contextFactor
                     x.Transaction.IsConfirmed && x.Transaction.BusinessDate >= fromDate &&
                     x.Transaction.BusinessDate <= toDate)
                 .GroupBy(x => x.PartyId!.Value)
-                .Select(x => new { PartyId = x.Key, Balance = x.Sum(p => p.AmountMinor), Count = x.Count() })
+                .Select(x => new { PartyId = x.Key, Balance = x.Sum(p => p.AmountMinor), Count = x.Select(p => p.TransactionId).Distinct().Count() })
                 .ToDictionaryAsync(x => x.PartyId, x => (Balance: x.Balance, Count: x.Count), cancellationToken);
 
         var peopleRows = parties.Select(x =>
