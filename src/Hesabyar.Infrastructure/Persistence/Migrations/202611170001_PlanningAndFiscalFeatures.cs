@@ -106,7 +106,6 @@ public sealed class PlanningAndFiscalFeatures : Migration
         migrationBuilder.CreateIndex("IX_DocumentSequences_FiscalPeriodId", "DocumentSequences", "FiscalPeriodId", unique: true);
         migrationBuilder.CreateIndex("IX_TransactionTags_TagId", "TransactionTags", "TagId");
         migrationBuilder.CreateIndex("IX_Budgets_CategoryAccountId", "Budgets", "CategoryAccountId");
-        migrationBuilder.CreateIndex("IX_DocumentSequences_FiscalPeriodId", "DocumentSequences", "FiscalPeriodId", unique: true);
         migrationBuilder.CreateIndex("IX_Transactions_FiscalPeriodId", "Transactions", "FiscalPeriodId");
         migrationBuilder.AddForeignKey("FK_Transactions_FiscalPeriods_FiscalPeriodId", "Transactions", "FiscalPeriodId", "FiscalPeriods", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
     }
