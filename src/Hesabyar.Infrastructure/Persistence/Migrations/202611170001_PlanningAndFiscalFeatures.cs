@@ -14,7 +14,7 @@ public sealed class PlanningAndFiscalFeatures : Migration
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.Sql("ALTER TABLE \"Transactions\" ADD COLUMN \"FiscalPeriodId\" TEXT NULL;");
-        migrationBuilder.Sql("ALTER TABLE \"Transactions\" ADD COLUMN \"DocumentNumber\" TEXT NULL;")
+        migrationBuilder.Sql("ALTER TABLE \"Transactions\" ADD COLUMN \"DocumentNumber\" TEXT NULL;");
 
         migrationBuilder.CreateTable("FiscalPeriods", table => new
         {
