@@ -417,4 +417,6 @@
   <data name="ReportsEmpty" xml:space="preserve"><value>There is no data for this section in the selected period.</value></data>
   <data name="ReportsLoadFailed" xml:space="preserve"><value>Financial reports could not be loaded.</value></data>
   <data name="ReportsExportFailed" xml:space="preserve"><value>The report could not be exported.</value></data>
+  <data name="ReportsTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
+  <data name="ReportsIOweThem" xml:space="preserve"><value>I owe them</value></data>
 </root>
