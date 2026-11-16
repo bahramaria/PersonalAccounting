@@ -40,7 +40,7 @@ public sealed class AndroidBiometricAuthenticator : IBiometricAuthenticator
         public override void OnAuthenticationSucceeded(BiometricPrompt.AuthenticationResult? result) =>
             completion.TrySetResult(true);
 
-        public override void OnAuthenticationError(int errorCode, Java.Lang.ICharSequence? errString) =>
+        public override void OnAuthenticationError(BiometricErrorCode errorCode, Java.Lang.ICharSequence? errString) =>
             completion.TrySetResult(false);
     }
 
