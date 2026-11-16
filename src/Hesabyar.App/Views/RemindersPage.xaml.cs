@@ -2,6 +2,7 @@ using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
+using Hesabyar.Localization.Numbers;
 
 namespace Hesabyar.App.Views;
 
@@ -9,12 +10,14 @@ public partial class RemindersPage : ContentPage
 {
     private readonly RemindersViewModel _viewModel;
     private readonly IDateCalendarService _calendar;
+    private readonly INumberNormalizer _numbers;
 
-    public RemindersPage(RemindersViewModel viewModel, ILocalizationService localization, IDateCalendarService calendar)
+    public RemindersPage(RemindersViewModel viewModel, ILocalizationService localization, IDateCalendarService calendar, INumberNormalizer numbers)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _calendar = calendar;
+        _numbers = numbers;
         BindingContext = viewModel;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
@@ -118,7 +121,7 @@ public partial class RemindersPage : ContentPage
         DateTimeOffset? notifyAtUtc = null;
         if (!string.IsNullOrWhiteSpace(notifyTime))
         {
-            if (!TimeOnly.TryParseExact(notifyTime, "HH:mm", out var time))
+            if (!TimeOnly.TryParseExact(_numbers.ToLatinDigits(notifyTime), "HH:mm", System.Globalization.CultureInfo.InvariantCulture, out var time))
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ReminderTimeInvalid, AppStrings.Ok);
                 return;
