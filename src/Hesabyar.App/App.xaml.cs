@@ -1,5 +1,6 @@
 using Hesabyar.App.Services;
 using Hesabyar.App.Views;
+using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Storage;
@@ -60,7 +61,7 @@ public partial class App : Microsoft.Maui.Controls.Application
         try
         {
             using var scope = _services.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<Infrastructure.Persistence.RecurringTransactionService>()
+            await scope.ServiceProvider.GetRequiredService<RecurringTransactionService>()
                 .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(DateTime.Today));
         }
         catch
