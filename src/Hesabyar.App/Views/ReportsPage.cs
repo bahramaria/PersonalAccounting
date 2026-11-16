@@ -13,6 +13,7 @@ public sealed class ReportsPage : ContentPage
     private readonly ReportsExportService _exports;
     private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _body = new() { Padding = new Thickness(20, 12), Spacing = 14 };
+    private readonly Label _rangeLabel = new() { FontSize = 12, TextColor = Colors.Gray };
     private readonly Label _status = new() { FontSize = 13 };
     private FinancialReportSnapshot? _snapshot;
     private DateOnly _fromDate;
@@ -29,8 +30,8 @@ public sealed class ReportsPage : ContentPage
         _calendar = calendar;
         Title = AppStrings.ReportsTab;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
-            ? FlowDirection.RightToLeft
-            : FlowDirection.LeftToRight;
+            ? Microsoft.Maui.FlowDirection.RightToLeft
+            : Microsoft.Maui.FlowDirection.LeftToRight;
 
         var today = DateOnly.FromDateTime(DateTime.Today);
         var persianToday = calendar.CurrentCalendar == CalendarKind.Persian
@@ -52,7 +53,7 @@ public sealed class ReportsPage : ContentPage
         var toolbar = new HorizontalStackLayout { Spacing = 8, Children = { rangeButton, csvButton, excelButton } };
         _body.Children.Add(new Label { Text = AppStrings.ReportsHeading, FontSize = 26, FontAttributes = FontAttributes.Bold });
         _body.Children.Add(toolbar);
-        _body.Children.Add(new Label { Text = string.Empty, FontSize = 12 });
+        _body.Children.Add(_rangeLabel);
         _body.Children.Add(_status);
 
         Content = new ScrollView { Content = _body };
@@ -143,12 +144,7 @@ public sealed class ReportsPage : ContentPage
         while (_body.Children.Count > 4)
             _body.Children.RemoveAt(4);
 
-        _body.Children.Insert(2, new Label
-        {
-            Text = $"{_calendar.Format(report.FromDate)} — {_calendar.Format(report.ToDate)}",
-            FontSize = 13,
-            TextColor = Colors.Gray
-        });
+        _rangeLabel.Text = $"{_calendar.Format(report.FromDate)} — {_calendar.Format(report.ToDate)}";
 
         AddMetric(AppStrings.ReportsIncome, report.IncomeMinor);
         AddMetric(AppStrings.ReportsExpenses, report.ExpenseMinor);
@@ -201,7 +197,7 @@ public sealed class ReportsPage : ContentPage
         _body.Children.Add(new Border
         {
             Padding = 14,
-            Stroke = Color.FromArgb("#E2E2E2"),
+            Stroke = new SolidColorBrush(Color.FromArgb("#E2E2E2")),
             StrokeThickness = 1,
             Content = new VerticalStackLayout
             {
