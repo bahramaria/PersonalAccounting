@@ -101,7 +101,7 @@ public sealed class ReminderAlarmReceiver : BroadcastReceiver
             !Guid.TryParseExact(intent.GetStringExtra(ReminderIdExtra), "N", out var reminderId))
             return;
 
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+        if (OperatingSystem.IsAndroidVersionAtLeast(33) &&
             context.CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Android.Content.PM.Permission.Granted)
             return;
 
@@ -109,20 +109,28 @@ public sealed class ReminderAlarmReceiver : BroadcastReceiver
         if (manager is null)
             return;
 
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+        var title = intent.GetStringExtra(ReminderTitleExtra) ?? "Hesabyar";
+        Notification notification;
+        if (OperatingSystem.IsAndroidVersionAtLeast(26))
+        {
             manager.CreateNotificationChannel(new NotificationChannel(
                 ChannelId, AppStrings.ReminderNotificationChannel, NotificationImportance.Default));
-
-        var title = intent.GetStringExtra(ReminderTitleExtra) ?? "Hesabyar";
-        var builder = Build.VERSION.SdkInt >= BuildVersionCodes.O
-            ? new Notification.Builder(context, ChannelId)
-            : new Notification.Builder(context);
-        var notification = builder
-            .SetContentTitle(title)
-            .SetContentText(AppStrings.ReminderNotificationBody)
-            .SetSmallIcon(Android.Resource.Drawable.IcDialogInfo)
-            .SetAutoCancel(true)
-            .Build();
+            notification = new Notification.Builder(context, ChannelId)
+                .SetContentTitle(title)
+                .SetContentText(AppStrings.ReminderNotificationBody)
+                .SetSmallIcon(Android.Resource.Drawable.IcDialogInfo)
+                .SetAutoCancel(true)
+                .Build();
+        }
+        else
+        {
+            notification = new Notification.Builder(context)
+                .SetContentTitle(title)
+                .SetContentText(AppStrings.ReminderNotificationBody)
+                .SetSmallIcon(Android.Resource.Drawable.IcDialogInfo)
+                .SetAutoCancel(true)
+                .Build();
+        }
         manager.Notify(AndroidReminderNotificationScheduler.GetRequestCode(reminderId), notification);
     }
 }
@@ -142,11 +150,12 @@ public sealed class ReminderBootReceiver : BroadcastReceiver
 
         foreach (var entry in preferences.All)
         {
-            if (string.IsNullOrEmpty(entry.Key) || !entry.Key.EndsWith(":at", StringComparison.Ordinal) ||
+            var key = entry.Key ?? string.Empty;
+            if (!key.EndsWith(":at", StringComparison.Ordinal) ||
                 !long.TryParse(entry.Value?.ToString(), out var timestamp))
                 continue;
 
-            var idText = entry.Key["reminder:".Length..^":at".Length];
+            var idText = key["reminder:".Length..^":at".Length];
             if (!Guid.TryParseExact(idText, "N", out var reminderId))
                 continue;
 
