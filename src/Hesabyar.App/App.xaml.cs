@@ -31,6 +31,7 @@ public partial class App : Microsoft.Maui.Controls.Application
     {
         base.OnStart();
         await PrepareRecurringOccurrencesAsync();
+        await SyncReminderNotificationsAsync();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
@@ -44,6 +45,7 @@ public partial class App : Microsoft.Maui.Controls.Application
     private async void OnWindowResumed(object? sender, EventArgs e)
     {
         await PrepareRecurringOccurrencesAsync();
+        await SyncReminderNotificationsAsync();
         if (_backgroundedAt is not { } backgroundedAt) return;
         var elapsed = DateTimeOffset.UtcNow - backgroundedAt;
         _backgroundedAt = null;
@@ -54,6 +56,18 @@ public partial class App : Microsoft.Maui.Controls.Application
         var window = Windows.FirstOrDefault();
         if (window is not null && window.Page is not PinLockPage)
             window.Page = _services.GetRequiredService<PinLockPage>();
+    }
+
+    private async Task SyncReminderNotificationsAsync()
+    {
+        try
+        {
+            await _services.GetRequiredService<ReminderNotificationSyncService>().SyncAsync();
+        }
+        catch
+        {
+            // Notification synchronization is retried on the next app activation.
+        }
     }
 
     private async Task PrepareRecurringOccurrencesAsync()
