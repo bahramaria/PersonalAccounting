@@ -359,4 +359,40 @@
   <data name="ReminderActionFailed" xml:space="preserve"><value>به‌روزرسانی یادآور انجام نشد.</value></data>
   <data name="ReminderInvalid" xml:space="preserve"><value>اطلاعات یادآور را بررسی و دوباره تلاش کنید.</value></data>
 
+
+  <data name="RecurringTab" xml:space="preserve"><value>تکرارشونده</value></data>
+  <data name="RecurringHeading" xml:space="preserve"><value>تراکنش‌های تکرارشونده</value></data>
+  <data name="RecurringEmpty" xml:space="preserve"><value>هنوز برنامه تکرارشونده‌ای ثبت نشده است.</value></data>
+  <data name="RecurringLoadFailed" xml:space="preserve"><value>بارگذاری برنامه‌های تکرارشونده انجام نشد.</value></data>
+  <data name="RecurringAdd" xml:space="preserve"><value>افزودن برنامه</value></data>
+  <data name="RecurringTitle" xml:space="preserve"><value>عنوان برنامه</value></data>
+  <data name="RecurringKind" xml:space="preserve"><value>نوع تراکنش</value></data>
+  <data name="RecurringStartDate" xml:space="preserve"><value>تاریخ شروع</value></data>
+  <data name="RecurringEndDate" xml:space="preserve"><value>تاریخ پایان (اختیاری)</value></data>
+  <data name="RecurringEndDateOptional" xml:space="preserve"><value>برای بدون تاریخ پایان، خالی بگذارید.</value></data>
+  <data name="RecurringEndDateInvalid" xml:space="preserve"><value>تاریخ پایان معتبر نیست یا قبل از تاریخ شروع است.</value></data>
+  <data name="RecurringInterval" xml:space="preserve"><value>تکرار هر چند</value></data>
+  <data name="RecurringIntervalFormat" xml:space="preserve"><value>یک عدد صحیح مثبت وارد کنید.</value></data>
+  <data name="RecurringIntervalInvalid" xml:space="preserve"><value>فاصله تکرار باید عدد صحیح مثبت باشد.</value></data>
+  <data name="RecurringIntervalUnit" xml:space="preserve"><value>واحد تکرار</value></data>
+  <data name="RecurringDaily" xml:space="preserve"><value>روز</value></data>
+  <data name="RecurringWeekly" xml:space="preserve"><value>هفته</value></data>
+  <data name="RecurringMonthly" xml:space="preserve"><value>ماه</value></data>
+  <data name="RecurringYearly" xml:space="preserve"><value>سال</value></data>
+  <data name="RecurringPause" xml:space="preserve"><value>توقف برنامه</value></data>
+  <data name="RecurringResume" xml:space="preserve"><value>ادامه برنامه</value></data>
+  <data name="RecurringOccurrences" xml:space="preserve"><value>نوبت‌ها</value></data>
+  <data name="RecurringPrepareDue" xml:space="preserve"><value>آماده‌سازی نوبت‌های سررسیدشده</value></data>
+  <data name="RecurringPreparedCount" xml:space="preserve"><value>{0} نوبت در انتظار آماده شد.</value></data>
+  <data name="RecurringNoOccurrences" xml:space="preserve"><value>هنوز نوبتی آماده نشده است.</value></data>
+  <data name="RecurringPending" xml:space="preserve"><value>در انتظار تأیید</value></data>
+  <data name="RecurringGenerated" xml:space="preserve"><value>تراکنش ثبت شد</value></data>
+  <data name="RecurringAlreadyGenerated" xml:space="preserve"><value>برای این نوبت قبلاً تراکنش ثبت شده است.</value></data>
+  <data name="RecurringGenerate" xml:space="preserve"><value>ثبت تراکنش</value></data>
+  <data name="RecurringGenerateConfirm" xml:space="preserve"><value>تراکنش قطعی با تاریخ {0} در دفتر کل ثبت شود؟</value></data>
+  <data name="RecurringActionFailed" xml:space="preserve"><value>عملیات برنامه تکرارشونده انجام نشد.</value></data>
+  <data name="RecurringInvalid" xml:space="preserve"><value>اطلاعات برنامه را بررسی و دوباره تلاش کنید.</value></data>
+  <data name="RecurringNoAccount" xml:space="preserve"><value>حساب مناسبی برای این نوع تراکنش وجود ندارد.</value></data>
+  <data name="RecurringNoCategory" xml:space="preserve"><value>دسته‌ای با ارز انتخاب‌شده وجود ندارد.</value></data>
+
 </root>
