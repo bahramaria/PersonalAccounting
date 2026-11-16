@@ -1,6 +1,7 @@
 using System.Globalization;
 using Android.Provider;
 using Hesabyar.Infrastructure.Persistence;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Hesabyar.App;
 
