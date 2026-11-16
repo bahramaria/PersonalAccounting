@@ -2,7 +2,6 @@ using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
-using Hesabyar.Localization.Calendar;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,7 +58,7 @@ public sealed class ReportsServiceTests
         }
 
         var factory = new TestContextFactory(options);
-        var service = new ReportsService(factory, new PersianCalendarService());
+        var service = new ReportsService(factory);
         var report = await service.GetAsync(new DateOnly(2026, 3, 21), new DateOnly(2026, 4, 20));
 
         Assert.Equal(500_000, report.IncomeMinor);
@@ -77,7 +76,7 @@ public sealed class ReportsServiceTests
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
-        var service = new ReportsService(new TestContextFactory(options), new PersianCalendarService());
+        var service = new ReportsService(new TestContextFactory(options));
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             service.GetAsync(new DateOnly(2026, 4, 2), new DateOnly(2026, 4, 1)));
