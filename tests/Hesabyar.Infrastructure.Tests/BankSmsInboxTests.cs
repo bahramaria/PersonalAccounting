@@ -183,6 +183,77 @@ public sealed class BankSmsInboxTests
         Assert.Empty(await verify.SmsInboxItems.ToListAsync());
     }
 
+    [Fact]
+    public async Task BatchConfirmationImportsAllSelectedMessagesAtomically()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        Guid bankId;
+        Guid categoryId;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.MigrateAsync();
+            var bank = new DbAccount { Name = "Bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR" };
+            var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            db.Accounts.AddRange(bank, food);
+            await db.SaveChangesAsync();
+            bankId = bank.Id;
+            categoryId = food.Id;
+        }
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", "برداشت مبلغ: ۱۰۰۰ ریال"));
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", "برداشت مبلغ: ۲۰۰۰ ریال"));
+        var pending = await service.GetPendingAsync();
+        var date = new DateOnly(2026, 11, 16);
+        var confirmations = pending.Select(item => new SmsBatchConfirmation(
+            item.Id, bankId, categoryId, BankSmsTransactionType.Expense, item.AmountMinor!.Value, date)).ToArray();
+
+        Assert.True(await service.ConfirmBatchAsync(confirmations));
+        Assert.Empty(await service.GetPendingAsync());
+
+        await using var verify = new AppDbContext(options);
+        var transactions = await verify.Transactions.Include(x => x.Postings).ToListAsync();
+        Assert.Equal(2, transactions.Count);
+        Assert.All(transactions, item => Assert.Equal(0, item.Postings.Sum(posting => posting.AmountMinor)));
+    }
+
+    [Fact]
+    public async Task BatchConfirmationRollsBackEveryItemWhenOneConfirmationIsInvalid()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        Guid bankId;
+        Guid categoryId;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.MigrateAsync();
+            var bank = new DbAccount { Name = "Bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR" };
+            var food = new DbAccount { Name = "Food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            db.Accounts.AddRange(bank, food);
+            await db.SaveChangesAsync();
+            bankId = bank.Id;
+            categoryId = food.Id;
+        }
+
+        var service = new BankSmsInboxService(new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", "برداشت مبلغ: ۱۰۰۰ ریال"));
+        Assert.Equal(SmsImportOutcome.Added, await service.ImportAsync("bank", "برداشت مبلغ: ۲۰۰۰ ریال"));
+        var pending = await service.GetPendingAsync();
+        var date = new DateOnly(2026, 11, 16);
+        var confirmations = pending.Select((item, index) => new SmsBatchConfirmation(
+            item.Id, bankId, index == 0 ? categoryId : bankId,
+            BankSmsTransactionType.Expense, item.AmountMinor!.Value, date)).ToArray();
+
+        Assert.False(await service.ConfirmBatchAsync(confirmations));
+        Assert.Equal(2, (await service.GetPendingAsync()).Count);
+
+        await using var verify = new AppDbContext(options);
+        Assert.Empty(await verify.Transactions.ToListAsync());
+    }
+
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext() => new(options);
