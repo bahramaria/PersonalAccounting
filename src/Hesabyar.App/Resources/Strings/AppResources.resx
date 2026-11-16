@@ -359,4 +359,40 @@
   <data name="ReminderActionFailed" xml:space="preserve"><value>The reminder could not be updated.</value></data>
   <data name="ReminderInvalid" xml:space="preserve"><value>Check the reminder details and try again.</value></data>
 
+
+  <data name="RecurringTab" xml:space="preserve"><value>Recurring</value></data>
+  <data name="RecurringHeading" xml:space="preserve"><value>Recurring transactions</value></data>
+  <data name="RecurringEmpty" xml:space="preserve"><value>No recurring schedules have been added.</value></data>
+  <data name="RecurringLoadFailed" xml:space="preserve"><value>Recurring schedules could not be loaded.</value></data>
+  <data name="RecurringAdd" xml:space="preserve"><value>Add schedule</value></data>
+  <data name="RecurringTitle" xml:space="preserve"><value>Schedule title</value></data>
+  <data name="RecurringKind" xml:space="preserve"><value>Transaction type</value></data>
+  <data name="RecurringStartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="RecurringEndDate" xml:space="preserve"><value>End date (optional)</value></data>
+  <data name="RecurringEndDateOptional" xml:space="preserve"><value>Leave empty for no end date</value></data>
+  <data name="RecurringEndDateInvalid" xml:space="preserve"><value>End date must be valid and cannot be earlier than the start date.</value></data>
+  <data name="RecurringInterval" xml:space="preserve"><value>Repeat every</value></data>
+  <data name="RecurringIntervalFormat" xml:space="preserve"><value>Enter a positive whole number</value></data>
+  <data name="RecurringIntervalInvalid" xml:space="preserve"><value>Repeat interval must be a positive whole number.</value></data>
+  <data name="RecurringIntervalUnit" xml:space="preserve"><value>Interval unit</value></data>
+  <data name="RecurringDaily" xml:space="preserve"><value>Day(s)</value></data>
+  <data name="RecurringWeekly" xml:space="preserve"><value>Week(s)</value></data>
+  <data name="RecurringMonthly" xml:space="preserve"><value>Month(s)</value></data>
+  <data name="RecurringYearly" xml:space="preserve"><value>Year(s)</value></data>
+  <data name="RecurringPause" xml:space="preserve"><value>Pause schedule</value></data>
+  <data name="RecurringResume" xml:space="preserve"><value>Resume schedule</value></data>
+  <data name="RecurringOccurrences" xml:space="preserve"><value>Occurrences</value></data>
+  <data name="RecurringPrepareDue" xml:space="preserve"><value>Prepare due occurrences</value></data>
+  <data name="RecurringPreparedCount" xml:space="preserve"><value>{0} pending occurrence(s) prepared.</value></data>
+  <data name="RecurringNoOccurrences" xml:space="preserve"><value>No occurrences have been prepared yet.</value></data>
+  <data name="RecurringPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="RecurringGenerated" xml:space="preserve"><value>Transaction generated</value></data>
+  <data name="RecurringAlreadyGenerated" xml:space="preserve"><value>This occurrence has already been generated.</value></data>
+  <data name="RecurringGenerate" xml:space="preserve"><value>Generate transaction</value></data>
+  <data name="RecurringGenerateConfirm" xml:space="preserve"><value>Create a confirmed ledger transaction dated {0}?</value></data>
+  <data name="RecurringActionFailed" xml:space="preserve"><value>The recurring transaction action could not be completed.</value></data>
+  <data name="RecurringInvalid" xml:space="preserve"><value>Check the schedule details and try again.</value></data>
+  <data name="RecurringNoAccount" xml:space="preserve"><value>No eligible account is available for this transaction type.</value></data>
+  <data name="RecurringNoCategory" xml:space="preserve"><value>No matching category is available for the selected currency.</value></data>
+
 </root>
