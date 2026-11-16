@@ -40,8 +40,12 @@ public partial class CategoriesPage : ContentPage
             _ => (AccountType?)null
         };
         if (type is null) return;
+        var currencyCode = await DisplayPromptAsync(AppStrings.CurrencyCodePrompt, AppStrings.CurrencyCodePrompt,
+            AppStrings.Save, AppStrings.Skip, initialValue: "IRR", maxLength: 3);
+        if (currencyCode is null) return;
+        currencyCode = string.IsNullOrWhiteSpace(currencyCode) ? "IRR" : currencyCode.Trim().ToUpperInvariant();
 
-        if (!await _viewModel.CreateAsync(name.Trim(), type.Value))
+        if (!await _viewModel.CreateAsync(name.Trim(), type.Value, currencyCode))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
     }
 

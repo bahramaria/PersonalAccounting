@@ -59,7 +59,7 @@ public sealed class AccountsViewModel : ObservableObject
                     item.Account.Id,
                     item.Account.Name,
                     GetKindName(item.Account.Kind),
-                    FormatBalance(item.BalanceMinor)));
+                    FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode));
             }
 
             StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
@@ -78,6 +78,7 @@ public sealed class AccountsViewModel : ObservableObject
         string name,
         AccountKind kind,
         long openingBalanceMinor,
+        string currencyCode = "IRR",
         CancellationToken cancellationToken = default)
     {
         if (IsBusy)
@@ -92,7 +93,7 @@ public sealed class AccountsViewModel : ObservableObject
                 name,
                 kind == AccountKind.CreditCard ? AccountType.Liability : AccountType.Asset,
                 kind,
-                CurrencyCode: "IRR",
+                CurrencyCode: currencyCode,
                 OpeningBalanceMinor: openingBalanceMinor,
                 OpeningDate: openingBalanceMinor > 0 ? DateOnly.FromDateTime(DateTime.Today) : null);
 
@@ -231,7 +232,7 @@ public sealed class AccountsViewModel : ObservableObject
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
     }
 
-    private static string FormatBalance(long balanceMinor)
+    private static string FormatBalance(long balanceMinor, string currencyCode)
     {
         var formattedAmount = balanceMinor.ToString(
             "N0",
@@ -251,4 +252,4 @@ public sealed class AccountsViewModel : ObservableObject
     };
 }
 
-public sealed record AccountListItem(Guid Id, string Name, string KindName, string BalanceText);
+public sealed record AccountListItem(Guid Id, string Name, string KindName, string BalanceText, string CurrencyCode);

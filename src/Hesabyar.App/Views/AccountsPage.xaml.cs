@@ -60,6 +60,11 @@ public partial class AccountsPage : ContentPage
         if (kind is null)
             return;
 
+        var currencyCode = await DisplayPromptAsync(AppStrings.CurrencyCodePrompt, AppStrings.CurrencyCodePrompt,
+            AppStrings.Save, AppStrings.Skip, initialValue: "IRR", maxLength: 3);
+        if (currencyCode is null) return;
+        currencyCode = string.IsNullOrWhiteSpace(currencyCode) ? "IRR" : currencyCode.Trim().ToUpperInvariant();
+
         var openingText = await DisplayPromptAsync(
             AppStrings.OpeningBalance,
             AppStrings.OpeningBalancePrompt,
@@ -81,7 +86,7 @@ public partial class AccountsPage : ContentPage
             return;
         }
 
-        var created = await _viewModel.CreateAsync(name.Trim(), kind.Value, openingBalance);
+        var created = await _viewModel.CreateAsync(name.Trim(), kind.Value, openingBalance, currencyCode);
         if (!created)
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
     }

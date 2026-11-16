@@ -27,10 +27,10 @@ public sealed class CategoriesViewModel : ObservableObject
         finally { IsBusy = false; }
     }
 
-    public Task<bool> CreateAsync(string name, AccountType type, CancellationToken cancellationToken = default) =>
+    public Task<bool> CreateAsync(string name, AccountType type, string currencyCode = "IRR", CancellationToken cancellationToken = default) =>
         ExecuteAsync(async service =>
         {
-            var result = await service.CreateAsync(new CreateAccountRequest(name, type, AccountKind.Category, CurrencyCode: "IRR"), cancellationToken);
+            var result = await service.CreateAsync(new CreateAccountRequest(name, type, AccountKind.Category, CurrencyCode: currencyCode), cancellationToken);
             if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.CategoryCreateFailed; return false; }
             await ReloadAsync(cancellationToken);
             return true;
@@ -93,10 +93,10 @@ public sealed class CategoriesViewModel : ObservableObject
                      .ThenBy(x => x.Account.Name))
         {
             Categories.Add(new CategoryListItem(item.Account.Id, item.Account.Name,
-                item.Account.Type == AccountType.Expense ? AppStrings.ExpenseCategory : AppStrings.IncomeCategory));
+                item.Account.Type == AccountType.Expense ? AppStrings.ExpenseCategory : AppStrings.IncomeCategory, item.Account.CurrencyCode));
         }
         StatusMessage = Categories.Count == 0 ? AppStrings.CategoriesEmpty : string.Empty;
     }
 }
 
-public sealed record CategoryListItem(Guid Id, string Name, string TypeName);
+public sealed record CategoryListItem(Guid Id, string Name, string TypeName, string CurrencyCode);
