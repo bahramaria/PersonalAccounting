@@ -65,8 +65,8 @@ public sealed class ReportsExportService
                 new[] { new object?[] { "Account", "Type", "Balance (IRR)" } }
                 .Concat(report.Accounts.Select(x => (object?[])[x.Name, x.Type, x.BalanceMinor])).ToArray()),
             new("People",
-                new[] { new object?[] { "Person", "Balance (IRR)" } }
-                .Concat(report.People.Select(x => (object?[])[x.Name, x.BalanceMinor])).ToArray())
+                new[] { new object?[] { "Person", "Current balance (IRR)", "Period change (IRR)", "Activities" } }
+                .Concat(report.People.Select(x => new object?[] { x.Name, x.BalanceMinor, x.PeriodChangeMinor, x.ActivityCount })).ToArray())
         ];
     }
 
@@ -98,8 +98,8 @@ public sealed class ReportsExportService
         rows.Add(["Accounts", "Type", "Balance (IRR)"]);
         rows.AddRange(report.Accounts.Select(x => new[] { x.Name, x.Type, x.BalanceMinor.ToString() }));
         rows.Add([]);
-        rows.Add(["People", "Balance (IRR)"]);
-        rows.AddRange(report.People.Select(x => new[] { x.Name, x.BalanceMinor.ToString() }));
+        rows.Add(["People", "Current balance (IRR)", "Period change (IRR)", "Activities"]);
+        rows.AddRange(report.People.Select(x => new[] { x.Name, x.BalanceMinor.ToString(), x.PeriodChangeMinor.ToString(), x.ActivityCount.ToString() }));
         return rows;
     }
 
