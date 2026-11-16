@@ -55,10 +55,7 @@ public sealed class AppShell : Shell
         tabs.Items.Add(CreateTab(
             AppStrings.ReportsTab,
             "reports",
-            () => new FeaturePlaceholderPage(
-                AppStrings.ReportsTab,
-                AppStrings.ReportsPlaceholder,
-                localization)));
+            () => services.GetRequiredService<ReportsPage>()));
         tabs.Items.Add(CreateTab(
             AppStrings.SettingsTab,
             "settings",
