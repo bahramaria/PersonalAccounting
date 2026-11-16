@@ -179,13 +179,13 @@ public sealed class ReportsPage : ContentPage
             });
 
         AddSection(AppStrings.ReportsPeople);
-        var people = report.People.Where(x => x.BalanceMinor != 0).ToArray();
+        var people = report.People.Where(x => x.BalanceMinor != 0 || x.PeriodChangeMinor != 0 || x.ActivityCount > 0).ToArray();
         if (people.Length == 0)
             _body.Children.Add(new Label { Text = AppStrings.ReportsEmpty });
         foreach (var person in people)
             _body.Children.Add(new Label
             {
-                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : AppStrings.ReportsIOweThem)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {person.ActivityCount}",
+                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : person.BalanceMinor < 0 ? AppStrings.ReportsIOweThem : AppStrings.PersonSettled)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {person.ActivityCount}",
                 FontSize = 13
             });
     }
