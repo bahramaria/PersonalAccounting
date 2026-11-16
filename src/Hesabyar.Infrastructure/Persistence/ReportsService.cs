@@ -66,7 +66,7 @@ public sealed class ReportsService(
             .ThenBy(x => x.Name)
             .ToArray();
 
-        var monthly = BuildMonthlyRows(fromDate, toDate, incomePostings, expensePostings);
+        var monthly = BuildMonthlyRows(fromDate, toDate, transactions);
 
         var accounts = await db.Accounts.AsNoTracking()
             .Where(x => !x.IsArchived && x.Kind != AccountKind.System)
@@ -139,8 +139,7 @@ public sealed class ReportsService(
     private IReadOnlyList<ReportMonthRow> BuildMonthlyRows(
         DateOnly fromDate,
         DateOnly toDate,
-        IReadOnlyCollection<DbPosting> incomePostings,
-        IReadOnlyCollection<DbPosting> expensePostings)
+        IReadOnlyCollection<DbLedgerTransaction> transactions)
     {
         var first = calendar.ToPersian(fromDate);
         var last = calendar.ToPersian(toDate);
@@ -152,11 +151,14 @@ public sealed class ReportsService(
             var start = calendar.ToGregorian(month);
             var next = calendar.AddMonths(month, 1);
             var end = calendar.ToGregorian(next).AddDays(-1);
-            var monthIncome = incomePostings.Where(x => x.Transaction.BusinessDate >= start &&
-                    x.Transaction.BusinessDate <= end)
+            var monthTransactions = transactions.Where(x => x.BusinessDate >= start && x.BusinessDate <= end);
+            var monthIncome = monthTransactions.Where(x => x.Kind == TransactionKind.Income)
+                .SelectMany(x => x.Postings)
+                .Where(x => x.Account.Type == AccountType.Income && x.AmountMinor < 0)
                 .Sum(x => Math.Abs((decimal)x.AmountMinor));
-            var monthExpense = expensePostings.Where(x => x.Transaction.BusinessDate >= start &&
-                    x.Transaction.BusinessDate <= end)
+            var monthExpense = monthTransactions.Where(x => x.Kind == TransactionKind.Expense)
+                .SelectMany(x => x.Postings)
+                .Where(x => x.Account.Type == AccountType.Expense && x.AmountMinor > 0)
                 .Sum(x => (decimal)x.AmountMinor);
             result.Add(new ReportMonthRow(start, $"{month.Year:0000}/{month.Month:00}",
                 decimal.ToInt64(monthIncome), decimal.ToInt64(monthExpense)));
@@ -165,4 +167,4 @@ public sealed class ReportsService(
 
         return result;
     }
-}
+}}
