@@ -67,6 +67,7 @@
   <data name="TransactionCategoryPrompt" xml:space="preserve"><value>Select category</value></data>
   <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>Description (optional)</value></data>
   <data name="TransactionDatePrompt" xml:space="preserve"><value>Date (selected calendar, YYYY/MM/DD)</value></data>
+  <data name="TransactionDateFormat" xml:space="preserve"><value>YYYY/MM/DD</value></data>
   <data name="TransactionsEmpty" xml:space="preserve"><value>No transactions have been recorded.</value></data>
   <data name="TransactionLoadFailed" xml:space="preserve"><value>Could not load transactions.</value></data>
   <data name="TransactionCreateFailed" xml:space="preserve"><value>Could not save the transaction.</value></data>

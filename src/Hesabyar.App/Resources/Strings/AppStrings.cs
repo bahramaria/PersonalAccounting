@@ -125,6 +125,7 @@ public static class AppStrings
     public static string TransactionCategoryPrompt => Get(nameof(TransactionCategoryPrompt));
     public static string TransactionDescriptionPrompt => Get(nameof(TransactionDescriptionPrompt));
     public static string TransactionDatePrompt => Get(nameof(TransactionDatePrompt));
+    public static string TransactionDateFormat => Get(nameof(TransactionDateFormat));
     public static string TransactionsEmpty => Get(nameof(TransactionsEmpty));
     public static string TransactionLoadFailed => Get(nameof(TransactionLoadFailed));
     public static string TransactionCreateFailed => Get(nameof(TransactionCreateFailed));

@@ -309,7 +309,7 @@ public sealed class BankSmsPage : ContentPage
             _calendar.TryParse(smsDateText, out var parsedSmsDate)
                 ? _calendar.Format(parsedSmsDate)
                 : null;
-        var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD",
+        var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, AppStrings.TransactionDateFormat,
             AppStrings.Save, AppStrings.Cancel, initialValue: initialBusinessDate);
         if (dateText is null || !_calendar.TryParse(dateText, out var date))
         {
@@ -421,7 +421,7 @@ public sealed class BankSmsPage : ContentPage
         {
             var initialDate = item.DateText is { } rawDate && rawDate.Count(c => c == '/') == 2 &&
                 _calendar.TryParse(rawDate, out var parsedDate) ? _calendar.Format(parsedDate) : null;
-            var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD",
+            var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, AppStrings.TransactionDateFormat,
                 AppStrings.Save, AppStrings.Cancel, initialValue: initialDate);
             if (dateText is null || !_calendar.TryParse(dateText, out var date)) return;
             if (await _inbox.HasPossibleManualDuplicateAsync(account.Value.Id, category.Value.Id,
