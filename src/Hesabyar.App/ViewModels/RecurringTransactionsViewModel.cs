@@ -91,10 +91,19 @@ public sealed class RecurringTransactionsViewModel(
     public async Task<bool> SetPausedAsync(Guid id, bool paused)
     {
         using var scope = scopeFactory.CreateScope();
-        var result = await scope.ServiceProvider.GetRequiredService<RecurringTransactionService>()
-            .SetPausedAsync(id, paused);
-        if (result) await LoadAsync();
-        return result;
+        try
+        {
+            var result = await scope.ServiceProvider.GetRequiredService<RecurringTransactionService>()
+                .SetPausedAsync(id, paused);
+            if (result) await LoadAsync();
+            else StatusMessage = AppStrings.RecurringActionFailed;
+            return result;
+        }
+        catch
+        {
+            StatusMessage = AppStrings.RecurringActionFailed;
+            return false;
+        }
     }
 
     public async Task<int> PrepareDueOccurrencesAsync(DateOnly throughDate)
@@ -118,9 +127,19 @@ public sealed class RecurringTransactionsViewModel(
     public async Task<bool> GenerateTransactionAsync(Guid occurrenceId)
     {
         using var scope = scopeFactory.CreateScope();
-        var id = await scope.ServiceProvider.GetRequiredService<RecurringTransactionService>()
-            .GenerateTransactionAsync(occurrenceId);
-        return id is not null;
+        try
+        {
+            var id = await scope.ServiceProvider.GetRequiredService<RecurringTransactionService>()
+                .GenerateTransactionAsync(occurrenceId);
+            if (id is null)
+                StatusMessage = AppStrings.RecurringActionFailed;
+            return id is not null;
+        }
+        catch
+        {
+            StatusMessage = AppStrings.RecurringActionFailed;
+            return false;
+        }
     }
 }
 
