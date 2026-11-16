@@ -331,4 +331,32 @@
   <data name="SmsImportHistory" xml:space="preserve"><value>ورود پیامک‌های قبلی</value></data>
   <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>دسترسی به تاریخچه پیامک</value></data>
   <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>با اجازه صریح شما، حسابیار حداکثر ۵۰۰ پیام ۹۰ روز اخیر را بررسی می‌کند. فقط پیام‌هایی که احتمالاً مالی باشند در صف بررسی ذخیره می‌شوند و سایر پیام‌ها کنار گذاشته می‌شوند. این مجوز فقط برای همین ورود دستی استفاده می‌شود.</value></data>
-  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>بررسی‌شده: {0}\nافزوده‌شده به صف: {1}\nتکراری: {2}\nنادیده‌گرفته‌شده: {3}</value></data>\n</root>
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>بررسی‌شده: {0}\nافزوده‌شده به صف: {1}\nتکراری: {2}\nنادیده‌گرفته‌شده: {3}</value></data>\n
+  <data name="RemindersTab" xml:space="preserve"><value>یادآورها</value></data>
+  <data name="RemindersHeading" xml:space="preserve"><value>مدیریت یادآورها</value></data>
+  <data name="RemindersEmpty" xml:space="preserve"><value>هنوز یادآوری ثبت نشده است.</value></data>
+  <data name="RemindersLoadFailed" xml:space="preserve"><value>بارگذاری یادآورها انجام نشد.</value></data>
+  <data name="ReminderAdd" xml:space="preserve"><value>افزودن یادآور</value></data>
+  <data name="ReminderEdit" xml:space="preserve"><value>ویرایش یادآور</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>عنوان</value></data>
+  <data name="ReminderKind" xml:space="preserve"><value>نوع یادآور</value></data>
+  <data name="ReminderKindGeneral" xml:space="preserve"><value>عمومی</value></data>
+  <data name="ReminderKindBill" xml:space="preserve"><value>قبض</value></data>
+  <data name="ReminderKindDebt" xml:space="preserve"><value>بدهی یا طلب</value></data>
+  <data name="ReminderKindCheque" xml:space="preserve"><value>چک</value></data>
+  <data name="ReminderKindInstallment" xml:space="preserve"><value>قسط</value></data>
+  <data name="ReminderDueDate" xml:space="preserve"><value>تاریخ سررسید</value></data>
+  <data name="ReminderDateFormat" xml:space="preserve"><value>تاریخ را مطابق تقویم انتخاب‌شده و به‌شکل سال/ماه/روز وارد کنید.</value></data>
+  <data name="ReminderDateInvalid" xml:space="preserve"><value>تاریخ معتبر را مطابق تقویم انتخاب‌شده وارد کنید.</value></data>
+  <data name="ReminderNotifyTime" xml:space="preserve"><value>زمان اعلان (اختیاری)</value></data>
+  <data name="ReminderNotifyTimeFormat" xml:space="preserve"><value>ساعت ۲۴ ساعته به‌شکل ساعت:دقیقه</value></data>
+  <data name="ReminderTimeInvalid" xml:space="preserve"><value>زمان اعلان را به‌شکل ساعت:دقیقه وارد کنید.</value></data>
+  <data name="ReminderNote" xml:space="preserve"><value>توضیحات (اختیاری)</value></data>
+  <data name="ReminderComplete" xml:space="preserve"><value>علامت‌گذاری به‌عنوان انجام‌شده</value></data>
+  <data name="ReminderReopen" xml:space="preserve"><value>بازگشایی</value></data>
+  <data name="ReminderArchive" xml:space="preserve"><value>بایگانی</value></data>
+  <data name="ReminderArchiveConfirm" xml:space="preserve"><value>این یادآور از فهرست فعال خارج می‌شود. ادامه می‌دهید؟</value></data>
+  <data name="ReminderActionFailed" xml:space="preserve"><value>به‌روزرسانی یادآور انجام نشد.</value></data>
+  <data name="ReminderInvalid" xml:space="preserve"><value>اطلاعات یادآور را بررسی و دوباره تلاش کنید.</value></data>
+
+</root>
