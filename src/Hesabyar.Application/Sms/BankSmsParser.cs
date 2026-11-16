@@ -83,7 +83,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
         if (!hasFinancialSignal)
             return Unsupported(normalizedSender, normalizedBody, dedupeHash);
 
-        if (amount is null || amount <= 0)
+        if (amount is null || amount <= 0 || transactionType == BankSmsTransactionType.Unknown)
             return new ParsedBankSms(
                 BankSmsParseStatus.NeedsReview,
                 matchedRule?.BankKey,
