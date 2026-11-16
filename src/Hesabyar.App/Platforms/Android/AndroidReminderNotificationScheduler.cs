@@ -148,7 +148,11 @@ public sealed class ReminderBootReceiver : BroadcastReceiver
         if (preferences is null)
             return;
 
-        foreach (var entry in preferences.All)
+        var entries = preferences.All;
+        if (entries is null)
+            return;
+
+        foreach (var entry in entries)
         {
             var key = entry.Key ?? string.Empty;
             if (!key.EndsWith(":at", StringComparison.Ordinal) ||
