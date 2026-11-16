@@ -22,7 +22,6 @@ public sealed class ReminderService(
         return await query
             .OrderBy(x => x.IsCompleted)
             .ThenBy(x => x.DueDate)
-            .ThenBy(x => x.NotifyAtUtc)
             .ThenBy(x => x.Title)
             .Select(x => new ReminderListItem(
                 x.Id, x.Title, x.Kind, x.DueDate, x.NotifyAtUtc,
