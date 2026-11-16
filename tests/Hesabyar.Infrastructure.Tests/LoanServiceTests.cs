@@ -34,7 +34,7 @@ public sealed class LoanServiceTests
             initializedSnapshot.GetRelationalModel(), currentDesignTimeModel.GetRelationalModel());
 
         Assert.True(differences.Count == 0,
-            string.Join(Environment.NewLine, differences.Select(x => x is AddColumnOperation add ? $"AddColumn {add.Table}.{add.Name} ({add.ColumnType})" : x.GetType().Name + ": " + x)));
+            string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + string.Join(", ", x.GetType().GetProperties().Select(p => p.Name + "=" + p.GetValue(x))))));
     }
 
     [Theory]
