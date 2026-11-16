@@ -200,7 +200,7 @@ public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
             var groups = value.Split(separators[0]);
             if (groups.Length < 2 ||
                 groups[0].Length is < 1 or > 3 ||
-                groups.Any(group => group.Length != 3) ||
+                groups.Skip(1).Any(group => group.Length != 3) ||
                 groups.Any(group => group.Any(character => !char.IsAsciiDigit(character))))
                 return null;
 
