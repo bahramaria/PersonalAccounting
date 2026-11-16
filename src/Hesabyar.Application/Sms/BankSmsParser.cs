@@ -92,8 +92,14 @@ public sealed class BankSmsParser
                 normalizedSender,
                 normalizedBody);
 
+        var hasConflictingCurrencyUnits =
+            normalizedBody.Contains("تومان", StringComparison.Ordinal) &&
+            normalizedBody.Contains("ریال", StringComparison.Ordinal);
+
         return new ParsedBankSms(
-            matchedRule is null ? BankSmsParseStatus.NeedsReview : BankSmsParseStatus.Parsed,
+            matchedRule is null || hasConflictingCurrencyUnits
+                ? BankSmsParseStatus.NeedsReview
+                : BankSmsParseStatus.Parsed,
             matchedRule?.BankKey,
             transactionType,
             amount,
