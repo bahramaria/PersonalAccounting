@@ -184,7 +184,7 @@ public sealed class ReportsPage : ContentPage
         foreach (var person in people)
             _body.Children.Add(new Label
             {
-                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : AppStrings.ReportsIOweThem)} · {MoneyDisplayService.Format(person.BalanceMinor)}",
+                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : AppStrings.ReportsIOweThem)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {person.ActivityCount}",
                 FontSize = 13
             });
     }
