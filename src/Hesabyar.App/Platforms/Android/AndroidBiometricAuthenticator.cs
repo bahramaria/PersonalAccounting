@@ -16,6 +16,9 @@ public sealed class AndroidBiometricAuthenticator : IBiometricAuthenticator
         if (!OperatingSystem.IsAndroidVersionAtLeast(28) || activity is null)
             return Task.FromResult(false);
 
+        var executor = activity.MainExecutor;
+        if (executor is null) return Task.FromResult(false);
+
         var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
@@ -23,9 +26,9 @@ public sealed class AndroidBiometricAuthenticator : IBiometricAuthenticator
             var prompt = new BiometricPrompt.Builder(activity)
                 .SetTitle(title)
                 .SetSubtitle(reason)
-                .SetNegativeButton(cancelText, activity.MainExecutor, new CancelListener(completion))
+                .SetNegativeButton(cancelText, executor, new CancelListener(completion))
                 .Build();
-            prompt.Authenticate(new CancellationSignal(), activity.MainExecutor, callback);
+            prompt.Authenticate(new CancellationSignal(), executor, callback);
         }
         catch (Exception)
         {
