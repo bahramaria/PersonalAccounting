@@ -417,4 +417,6 @@
   <data name="ReportsEmpty" xml:space="preserve"><value>در بازه انتخاب‌شده داده‌ای برای این بخش وجود ندارد.</value></data>
   <data name="ReportsLoadFailed" xml:space="preserve"><value>بارگذاری گزارش‌های مالی انجام نشد.</value></data>
   <data name="ReportsExportFailed" xml:space="preserve"><value>تهیه خروجی گزارش انجام نشد.</value></data>
+  <data name="ReportsTheyOweMe" xml:space="preserve"><value>طلب من</value></data>
+  <data name="ReportsIOweThem" xml:space="preserve"><value>بدهی من</value></data>
 </root>
