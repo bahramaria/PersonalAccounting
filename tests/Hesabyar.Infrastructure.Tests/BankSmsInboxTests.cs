@@ -80,6 +80,37 @@ public sealed class BankSmsInboxTests
     }
 
     [Fact]
+    public async Task ImportDeduplicatesSameSmsAcrossTimestampedAndManualChannels()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using (var db = new AppDbContext(options))
+            await db.Database.MigrateAsync();
+
+        var service = new BankSmsInboxService(
+            new TestDbContextFactory(options), new BankSmsParser(), TimeProvider.System);
+        var receivedAt = new DateTimeOffset(2026, 11, 16, 10, 0, 0, TimeSpan.Zero);
+        const string body = "برداشت مبلغ: ۱۰۰۰ ریال";
+
+        Assert.Equal(SmsImportOutcome.Added,
+            await service.ImportAsync("bank", body, receivedAtUtc: receivedAt));
+        Assert.Equal(SmsImportOutcome.Duplicate, await service.ImportAsync("bank", body));
+
+        await using var secondConnection = new SqliteConnection("Data Source=:memory:");
+        await secondConnection.OpenAsync();
+        var secondOptions = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(secondConnection).Options;
+        await using (var db = new AppDbContext(secondOptions))
+            await db.Database.MigrateAsync();
+        var secondService = new BankSmsInboxService(
+            new TestDbContextFactory(secondOptions), new BankSmsParser(), TimeProvider.System);
+
+        Assert.Equal(SmsImportOutcome.Added, await secondService.ImportAsync("bank", body));
+        Assert.Equal(SmsImportOutcome.Duplicate,
+            await secondService.ImportAsync("bank", body, receivedAtUtc: receivedAt));
+    }
+
+    [Fact]
     public async Task Ignore_RemovesItemFromReviewQueue_AndPreventsReimport()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

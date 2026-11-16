@@ -35,13 +35,20 @@ public sealed class BankSmsInboxService(
 
         var safeSender = BankSmsParser.Normalize(sender ?? string.Empty);
         var safeBody = BankSmsParser.Normalize(body);
+        var contentHash = parser.Parse(safeSender, safeBody).DedupeHash;
         var parsed = parser.Parse(safeSender, safeBody, receivedAtUtc);
         if (parsed.Status == BankSmsParseStatus.Unsupported)
             return SmsImportOutcome.Ignored;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        if (await db.SmsInboxItems.AnyAsync(x => x.DedupeHash == parsed.DedupeHash, cancellationToken) ||
-            await db.Transactions.AnyAsync(x => x.SmsMessageId == parsed.DedupeHash, cancellationToken))
+        var isDuplicate = receivedAtUtc is null
+            ? await db.SmsInboxItems.AnyAsync(
+                x => x.Sender == safeSender && x.Body == safeBody, cancellationToken)
+            : await db.SmsInboxItems.AnyAsync(
+                x => x.DedupeHash == parsed.DedupeHash || x.DedupeHash == contentHash, cancellationToken);
+        var isAlreadyImported = await db.Transactions.AnyAsync(
+            x => x.SmsMessageId == parsed.DedupeHash || x.SmsMessageId == contentHash, cancellationToken);
+        if (isDuplicate || isAlreadyImported)
             return SmsImportOutcome.Duplicate;
 
         db.SmsInboxItems.Add(new DbSmsInboxItem
