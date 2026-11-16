@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Hesabyar.Application.Sms;
 
-public sealed class BankSmsParser(IEnumerable<BankSmsRule>? rules = null)
+public sealed class BankSmsParser
 {
     private static readonly Regex AmountRegex = new(
         @"(?:مبلغ|برداشت|واریز|خرید|پرداخت|انتقال)\s*(?:از\s+حساب\s*)?[:：]?\s*([0-9][0-9,٬،.٫ \t]*)([+-]?)",
