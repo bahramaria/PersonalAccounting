@@ -381,5 +381,41 @@ public static class AppStrings
     public static string ReminderActionFailed => Get(nameof(ReminderActionFailed));
     public static string ReminderInvalid => Get(nameof(ReminderInvalid));
 
+
+    public static string RecurringTab => Get(nameof(RecurringTab));
+    public static string RecurringHeading => Get(nameof(RecurringHeading));
+    public static string RecurringEmpty => Get(nameof(RecurringEmpty));
+    public static string RecurringLoadFailed => Get(nameof(RecurringLoadFailed));
+    public static string RecurringAdd => Get(nameof(RecurringAdd));
+    public static string RecurringTitle => Get(nameof(RecurringTitle));
+    public static string RecurringKind => Get(nameof(RecurringKind));
+    public static string RecurringStartDate => Get(nameof(RecurringStartDate));
+    public static string RecurringEndDate => Get(nameof(RecurringEndDate));
+    public static string RecurringEndDateOptional => Get(nameof(RecurringEndDateOptional));
+    public static string RecurringEndDateInvalid => Get(nameof(RecurringEndDateInvalid));
+    public static string RecurringInterval => Get(nameof(RecurringInterval));
+    public static string RecurringIntervalFormat => Get(nameof(RecurringIntervalFormat));
+    public static string RecurringIntervalInvalid => Get(nameof(RecurringIntervalInvalid));
+    public static string RecurringIntervalUnit => Get(nameof(RecurringIntervalUnit));
+    public static string RecurringDaily => Get(nameof(RecurringDaily));
+    public static string RecurringWeekly => Get(nameof(RecurringWeekly));
+    public static string RecurringMonthly => Get(nameof(RecurringMonthly));
+    public static string RecurringYearly => Get(nameof(RecurringYearly));
+    public static string RecurringPause => Get(nameof(RecurringPause));
+    public static string RecurringResume => Get(nameof(RecurringResume));
+    public static string RecurringOccurrences => Get(nameof(RecurringOccurrences));
+    public static string RecurringPrepareDue => Get(nameof(RecurringPrepareDue));
+    public static string RecurringPreparedCount => Get(nameof(RecurringPreparedCount));
+    public static string RecurringNoOccurrences => Get(nameof(RecurringNoOccurrences));
+    public static string RecurringPending => Get(nameof(RecurringPending));
+    public static string RecurringGenerated => Get(nameof(RecurringGenerated));
+    public static string RecurringAlreadyGenerated => Get(nameof(RecurringAlreadyGenerated));
+    public static string RecurringGenerate => Get(nameof(RecurringGenerate));
+    public static string RecurringGenerateConfirm => Get(nameof(RecurringGenerateConfirm));
+    public static string RecurringActionFailed => Get(nameof(RecurringActionFailed));
+    public static string RecurringInvalid => Get(nameof(RecurringInvalid));
+    public static string RecurringNoAccount => Get(nameof(RecurringNoAccount));
+    public static string RecurringNoCategory => Get(nameof(RecurringNoCategory));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
