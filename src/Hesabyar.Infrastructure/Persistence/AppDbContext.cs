@@ -231,10 +231,12 @@ public sealed class AppDbContext(
         occurrence.HasKey(x => x.Id);
         occurrence.Property(x => x.OccurrenceDate).HasColumnType("TEXT");
         occurrence.Property(x => x.Status).HasMaxLength(20).IsRequired();
-        occurrence.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique();
+        occurrence.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique()
+            .HasDatabaseName("IX_RecurringTransactionOccurrences_RecurringTransactionId_OccurrenceDate");
         occurrence.HasIndex(x => x.TransactionId).IsUnique().HasFilter("\"TransactionId\" IS NOT NULL");
         occurrence.HasOne<DbRecurringTransaction>().WithMany()
-            .HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_RecurringTransactionOccurrences_RecurringTransactions_RecurringTransactionId");
         occurrence.HasOne<DbLedgerTransaction>().WithMany()
             .HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
         occurrence.HasQueryFilter(x => !x.IsDeleted);
