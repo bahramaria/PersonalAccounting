@@ -80,6 +80,8 @@ public static class MauiProgram
         builder.Services.AddTransient<TransactionService>();
         builder.Services.AddTransient<AccountsViewModel>();
         builder.Services.AddTransient<DashboardPage>();
+        builder.Services.AddSingleton<ReportsExportService>();
+        builder.Services.AddTransient<ReportsPage>();
         builder.Services.AddTransient<AccountsPage>();
         builder.Services.AddTransient<TransactionsViewModel>();
         builder.Services.AddTransient<TransactionsPage>();
