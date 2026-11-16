@@ -34,7 +34,7 @@ public sealed class LoanServiceTests
             initializedSnapshot.GetRelationalModel(), currentDesignTimeModel.GetRelationalModel());
 
         Assert.True(differences.Count == 0,
-            string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + string.Join(", ", x.GetType().GetProperties().Select(p => p.Name + "=" + p.GetValue(x))))));
+            string.Join(Environment.NewLine, differences.Select(x => x.GetType().Name + ": " + string.Join(", ", x.GetType().GetProperties().Where(p => p.GetIndexParameters().Length == 0).Select(p => p.Name + "=" + p.GetValue(x))))));
     }
 
     [Theory]
