@@ -4,7 +4,7 @@ using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.Services;
 
-public sealed class AppLockService
+public sealed class AppLockService(TimeProvider timeProvider)
 {
     private const string CredentialKey = "security.pin.credential.v1";
     private const string LockoutKey = "security.pin.lockout.v1";
@@ -29,8 +29,8 @@ public sealed class AppLockService
         if (string.IsNullOrWhiteSpace(json)) return new PinVerificationResult(false, null, false);
 
         var state = await ReadLockoutAsync();
-        if (state.LockoutUntilUtc is { } until && until > DateTimeOffset.UtcNow)
-            return new PinVerificationResult(false, until - DateTimeOffset.UtcNow, true);
+        if (state.LockoutUntilUtc is { } until && until > timeProvider.GetUtcNow())
+            return new PinVerificationResult(false, until - timeProvider.GetUtcNow(), true);
 
         if (PinHasher.IsValidPin(pin))
         {
@@ -46,7 +46,7 @@ public sealed class AppLockService
         }
 
         var attempts = state.FailedAttempts + 1;
-        DateTimeOffset? lockoutUntil = attempts < 5 ? null : DateTimeOffset.UtcNow.Add(attempts switch
+        DateTimeOffset? lockoutUntil = attempts < 5 ? null : timeProvider.GetUtcNow().Add(attempts switch
         {
             5 => TimeSpan.FromSeconds(30),
             6 => TimeSpan.FromMinutes(1),
@@ -56,7 +56,7 @@ public sealed class AppLockService
         await SecureStorage.Default.SetAsync(LockoutKey,
             JsonSerializer.Serialize(new LockoutState(attempts, lockoutUntil)));
         return new PinVerificationResult(false,
-            lockoutUntil is null ? null : lockoutUntil - DateTimeOffset.UtcNow, false);
+            lockoutUntil is null ? null : lockoutUntil - timeProvider.GetUtcNow(), false);
     }
 
     public async Task<bool> DisablePinAsync(string currentPin)
