@@ -397,4 +397,24 @@
 
   <data name="ReminderNotificationBody" xml:space="preserve"><value>زمان یادآوری فرا رسیده است.</value></data>
   <data name="ReminderNotificationChannel" xml:space="preserve"><value>یادآورهای حسابیار</value></data>
+  <data name="ReportsHeading" xml:space="preserve"><value>گزارش‌های مالی</value></data>
+  <data name="ReportsRange" xml:space="preserve"><value>بازه گزارش</value></data>
+  <data name="ReportsFromDate" xml:space="preserve"><value>از تاریخ</value></data>
+  <data name="ReportsToDate" xml:space="preserve"><value>تا تاریخ</value></data>
+  <data name="ReportsDateInvalid" xml:space="preserve"><value>بازه تاریخ معتبر نیست. تاریخ شروع نباید بعد از تاریخ پایان باشد.</value></data>
+  <data name="ReportsIncome" xml:space="preserve"><value>درآمد</value></data>
+  <data name="ReportsExpenses" xml:space="preserve"><value>هزینه</value></data>
+  <data name="ReportsNetCashFlow" xml:space="preserve"><value>خالص جریان نقدی</value></data>
+  <data name="ReportsAssets" xml:space="preserve"><value>دارایی‌ها</value></data>
+  <data name="ReportsLiabilities" xml:space="preserve"><value>بدهی‌ها</value></data>
+  <data name="ReportsNetWorth" xml:space="preserve"><value>ارزش خالص دارایی</value></data>
+  <data name="ReportsByCategory" xml:space="preserve"><value>هزینه‌ها بر اساس دسته</value></data>
+  <data name="ReportsMonthlyTrend" xml:space="preserve"><value>روند ماهانه درآمد و هزینه</value></data>
+  <data name="ReportsAccounts" xml:space="preserve"><value>مانده حساب‌ها</value></data>
+  <data name="ReportsPeople" xml:space="preserve"><value>مانده اشخاص</value></data>
+  <data name="ReportsExportCsv" xml:space="preserve"><value>خروجی CSV</value></data>
+  <data name="ReportsExportExcel" xml:space="preserve"><value>خروجی Excel</value></data>
+  <data name="ReportsEmpty" xml:space="preserve"><value>در بازه انتخاب‌شده داده‌ای برای این بخش وجود ندارد.</value></data>
+  <data name="ReportsLoadFailed" xml:space="preserve"><value>بارگذاری گزارش‌های مالی انجام نشد.</value></data>
+  <data name="ReportsExportFailed" xml:space="preserve"><value>تهیه خروجی گزارش انجام نشد.</value></data>
 </root>
