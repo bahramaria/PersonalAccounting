@@ -181,6 +181,82 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+
+        modelBuilder.Entity<DbReminder>(entity =>
+        {
+            entity.ToTable("Reminders");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Title).IsRequired().HasMaxLength(160);
+            entity.Property(x => x.Kind).IsRequired().HasMaxLength(24);
+            entity.Property(x => x.DueDate).HasColumnType("TEXT");
+            entity.Property(x => x.NotifyAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsCompleted);
+            entity.Property(x => x.CompletedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.RelatedEntityId).HasColumnType("TEXT");
+            entity.Property(x => x.Note).HasMaxLength(500);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.IsCompleted, x.DueDate });
+            entity.HasIndex(x => x.NotifyAtUtc);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbRecurringTransaction>(entity =>
+        {
+            entity.ToTable("RecurringTransactions", table =>
+            {
+                table.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "AmountMinor > 0");
+                table.HasCheckConstraint("CK_RecurringTransactions_Interval_Positive", "IntervalCount > 0");
+                table.HasCheckConstraint("CK_RecurringTransactions_CurrencyCode_Length", "length(CurrencyCode) = 3");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Title).IsRequired().HasMaxLength(160);
+            entity.Property(x => x.Kind).IsRequired().HasMaxLength(20);
+            entity.Property(x => x.CurrencyCode).IsRequired().HasMaxLength(3);
+            entity.Property(x => x.AmountMinor);
+            entity.Property(x => x.AccountId).HasColumnType("TEXT");
+            entity.Property(x => x.CategoryAccountId).HasColumnType("TEXT");
+            entity.Property(x => x.StartDate).HasColumnType("TEXT");
+            entity.Property(x => x.NextOccurrenceDate).HasColumnType("TEXT");
+            entity.Property(x => x.EndDate).HasColumnType("TEXT");
+            entity.Property(x => x.IntervalCount);
+            entity.Property(x => x.IntervalUnit).IsRequired().HasMaxLength(12);
+            entity.Property(x => x.IsPaused);
+            entity.Property(x => x.LastGeneratedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.AccountId);
+            entity.HasIndex(x => x.CategoryAccountId);
+            entity.HasIndex(x => new { x.IsPaused, x.NextOccurrenceDate });
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryAccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbRecurringTransactionOccurrence>(entity =>
+        {
+            entity.ToTable("RecurringTransactionOccurrences");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.RecurringTransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.OccurrenceDate).HasColumnType("TEXT");
+            entity.Property(x => x.TransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.Status).IsRequired().HasMaxLength(20);
+            entity.Property(x => x.GeneratedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.RecurringTransactionId, x.OccurrenceDate }).IsUnique();
+            entity.HasIndex(x => x.TransactionId).IsUnique().HasFilter("\"TransactionId\" IS NOT NULL");
+            entity.HasOne<DbRecurringTransaction>().WithMany().HasForeignKey(x => x.RecurringTransactionId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbLedgerTransaction>(entity =>
         {
             entity.ToTable("Transactions");
