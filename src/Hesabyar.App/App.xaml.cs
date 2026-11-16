@@ -27,13 +27,6 @@ public partial class App : Microsoft.Maui.Controls.Application
         };
     }
 
-    protected override async void OnStart()
-    {
-        base.OnStart();
-        await PrepareRecurringOccurrencesAsync();
-        await SyncReminderNotificationsAsync();
-    }
-
     protected override Window CreateWindow(IActivationState? activationState)
     {
         var window = new Window(_services.GetRequiredService<StartupPage>());
