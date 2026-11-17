@@ -12,7 +12,7 @@ public sealed class LoanRepository(AppDbContext db) : ILoanRepository
         DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var cashAccount = await db.Accounts.SingleOrDefaultAsync(x => x.Id == request.AccountId &&
-            !x.IsArchived && x.Kind != AccountKind.System && x.Type == AccountType.Asset &&
+            !x.IsArchived && x.Kind != AccountKind.System && x.Type == AccountType.Asset,
             cancellationToken);
         if (cashAccount is null) return null;
         if (request.PersonId is Guid personId &&
