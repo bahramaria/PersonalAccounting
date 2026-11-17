@@ -462,4 +462,6 @@
   <data name="DashboardCurrency" xml:space="preserve"><value>ارز مانده‌ها</value></data>
   <data name="EditTag" xml:space="preserve"><value>ویرایش برچسب</value></data>
   <data name="TagColorPrompt" xml:space="preserve"><value>رنگ (اختیاری، مانند #336699؛ برای بدون رنگ خالی بگذارید)</value></data>
+  <data name="ArchiveTag" xml:space="preserve"><value>بایگانی برچسب</value></data>
+  <data name="ArchiveTagConfirm" xml:space="preserve"><value>این برچسب بایگانی شود؟ ارتباط آن با تراکنش‌های قبلی حفظ می‌شود.</value></data>
 </root>

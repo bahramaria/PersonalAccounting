@@ -21,6 +21,15 @@ public sealed class TagService(IPlanningRepository repository, IClock clock)
             Result<Guid>.Failure("tag.duplicate_or_missing", "The tag already exists or could not be found.");
     }
 
+    public async Task<Result<bool>> ArchiveAsync(Guid tagId, CancellationToken cancellationToken = default)
+    {
+        if (tagId == Guid.Empty)
+            return Result<bool>.Failure("tag.not_found", "Tag was not found.");
+        var archived = await repository.ArchiveTagAsync(tagId, clock.UtcNow, cancellationToken);
+        return archived ? Result<bool>.Success(true) :
+            Result<bool>.Failure("tag.not_found", "Tag was not found.");
+    }
+
     public async Task<Result<bool>> SetTransactionTagsAsync(Guid transactionId, IReadOnlyCollection<Guid> tagIds,
         CancellationToken cancellationToken = default)
     {

@@ -82,6 +82,14 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
         await LoadAsync(); return true;
     }
 
+    public async Task<bool> ArchiveTagAsync(Guid id)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<TagService>().ArchiveAsync(id);
+        if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.TagSaveFailed; return false; }
+        await LoadAsync(); return true;
+    }
+
     public async Task<bool> CreateFiscalPeriodAsync(string name, DateOnly start, DateOnly end)
     {
         using var scope = scopeFactory.CreateScope();

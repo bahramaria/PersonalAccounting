@@ -35,6 +35,8 @@ public static class AppStrings
     public static string TagsHeading => Get(nameof(TagsHeading));
     public static string AddTag => Get(nameof(AddTag));
     public static string EditTag => Get(nameof(EditTag));
+    public static string ArchiveTag => Get(nameof(ArchiveTag));
+    public static string ArchiveTagConfirm => Get(nameof(ArchiveTagConfirm));
     public static string TagColorPrompt => Get(nameof(TagColorPrompt));
     public static string TagNamePrompt => Get(nameof(TagNamePrompt));
     public static string TagSaveFailed => Get(nameof(TagSaveFailed));

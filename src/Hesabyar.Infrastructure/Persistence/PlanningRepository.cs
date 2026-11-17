@@ -75,7 +75,7 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
     }
 
     public async Task<IReadOnlyList<TagSnapshot>> GetTagsAsync(CancellationToken cancellationToken) =>
-        await db.Tags.AsNoTracking().OrderBy(x => x.Name)
+        await db.Tags.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.Name)
             .Select(x => new TagSnapshot(x.Id, x.Name, x.Color)).ToArrayAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Guid>> GetTransactionTagIdsAsync(Guid transactionId, CancellationToken cancellationToken) =>
@@ -101,6 +101,16 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
         db.Tags.Add(entity);
         try { await db.SaveChangesAsync(cancellationToken); return entity.Id; }
         catch (DbUpdateException) { db.Entry(entity).State = EntityState.Detached; return null; }
+    }
+
+    public async Task<bool> ArchiveTagAsync(Guid tagId, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
+        var tag = await db.Tags.SingleOrDefaultAsync(x => x.Id == tagId, cancellationToken);
+        if (tag is null) return false;
+        tag.IsDeleted = true;
+        tag.UpdatedAtUtc = nowUtc;
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     public async Task<bool> SetTransactionTagsAsync(Guid transactionId, IReadOnlyCollection<Guid> tagIds,

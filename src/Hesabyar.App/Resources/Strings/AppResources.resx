@@ -462,4 +462,6 @@
   <data name="DashboardCurrency" xml:space="preserve"><value>Balance currency</value></data>
   <data name="EditTag" xml:space="preserve"><value>Edit tag</value></data>
   <data name="TagColorPrompt" xml:space="preserve"><value>Color (optional, e.g. #336699; blank for none)</value></data>
+  <data name="ArchiveTag" xml:space="preserve"><value>Archive tag</value></data>
+  <data name="ArchiveTagConfirm" xml:space="preserve"><value>Archive this tag? Existing transaction links will be preserved.</value></data>
 </root>

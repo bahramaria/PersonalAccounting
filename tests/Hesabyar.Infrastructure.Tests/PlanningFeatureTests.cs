@@ -89,6 +89,9 @@ public sealed class PlanningFeatureTests
         Assert.Equal("Business travel", tag.Name);
         Assert.Equal("#112233", tag.Color);
         Assert.Contains(created.Value, await tags.GetForTransactionAsync(transaction.Value));
+        Assert.True((await tags.ArchiveAsync(created.Value)).IsSuccess);
+        Assert.Empty(await tags.GetAsync());
+        Assert.Contains(created.Value, await tags.GetForTransactionAsync(transaction.Value));
     }
 
     [Fact]

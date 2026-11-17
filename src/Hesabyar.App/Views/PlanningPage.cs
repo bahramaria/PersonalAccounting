@@ -75,7 +75,10 @@ public sealed class PlanningPage : ContentPage
             });
             var edit = new Button { Text = AppStrings.EditTag, CommandParameter = tag.Id, FontSize = 12 };
             edit.Clicked += OnEditTagClicked;
+            var archive = new Button { Text = AppStrings.ArchiveTag, CommandParameter = tag.Id, FontSize = 12 };
+            archive.Clicked += OnArchiveTagClicked;
             row.Children.Add(edit);
+            row.Children.Add(archive);
             _content.Children.Add(row);
         }
         AddSection(AppStrings.FiscalPeriodsHeading, AppStrings.AddFiscalPeriod, OnAddFiscalPeriodClicked);
@@ -215,6 +218,17 @@ public sealed class PlanningPage : ContentPage
             AppStrings.Save, AppStrings.Cancel, initialValue: tag.Color, maxLength: 16);
         if (color is null) return;
         if (!await _viewModel.SaveTagAsync(name, id, color))
+            await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        Render();
+    }
+
+    private async void OnArchiveTagClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: Guid id }) return;
+        var confirmed = await DisplayAlertAsync(AppStrings.ArchiveTag, AppStrings.ArchiveTagConfirm,
+            AppStrings.ArchiveTag, AppStrings.Cancel);
+        if (!confirmed) return;
+        if (!await _viewModel.ArchiveTagAsync(id))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         Render();
     }
