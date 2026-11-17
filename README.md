@@ -40,7 +40,7 @@
 | `docs/07-testing-cicd.md` | تست و CI |
 | `docs/08-roadmap.md` | فازها و Spikeها |
 | `docs/09-decision-log.md` | تصمیم‌ها و ریسک‌ها |
-| `docs/10-market-insights.md` | یافته‌های بازار اپ‌های فارسی و منابع |
+| `docs/10-market-insights.md` | یافته‌های بازار اپ‌های فارسی و منابع |\n| `docs/11-ui-design-system.md` | Design System، نقشه صفحات و برنامه بازطراحی UI |
 
 ## ۴. فرض‌های ثبت‌شده (در صورت اشتباه اصلاح شود)
 1. نسخه هدف: .NET 10؛ SDK در `global.json` قفل شده و با roll-forward محدود به Feature Band به‌روز می‌شود.
