@@ -280,7 +280,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.IsDeleted);
             entity.HasIndex(x => x.BusinessDate).IsDescending();
-            entity.HasIndex(x => x.DocumentNumber).IsUnique().HasFilter("\\\"DocumentNumber\\\" IS NOT NULL");
+            entity.HasIndex(x => x.DocumentNumber).IsUnique().HasFilter("\"DocumentNumber\" IS NOT NULL");
             entity.HasIndex(x => x.PartyId);
             entity.HasIndex(x => x.LoanId);
             entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);
