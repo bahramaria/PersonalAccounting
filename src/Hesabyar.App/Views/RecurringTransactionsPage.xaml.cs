@@ -150,7 +150,7 @@ public partial class RecurringTransactionsPage : ContentPage
         var category = categoryChoices[categoryIndex];
 
         var amountText = await DisplayPromptAsync(
-            AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
+            AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!TryParseAmount(amountText, out var amount))
         {

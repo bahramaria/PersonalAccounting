@@ -41,7 +41,7 @@ public sealed class RecurringTransactionsViewModel(
                     _ => item.IntervalUnit
                 };
                 Schedules.Add(new RecurringScheduleItemViewModel(
-                    item.Id, item.Title, item.Kind, MoneyDisplayService.Format(item.AmountMinor),
+                    item.Id, item.Title, item.Kind, MoneyDisplayService.Format(item.AmountMinor, item.CurrencyCode),
                     item.CurrencyCode, calendar.Format(item.NextOccurrenceDate),
                     $"{item.IntervalCount} {unit}", item.IsPaused));
             }
