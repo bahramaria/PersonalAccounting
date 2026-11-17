@@ -209,10 +209,10 @@ public sealed class SyncServiceIntegrationTests
 
         public async ValueTask DisposeAsync()
         {
-            foreach (var context in _serviceContexts)
-                await context.DisposeAsync();
-            await using var context = CreateContext();
-            await context.Database.EnsureDeletedAsync();
+            foreach (var serviceContext in _serviceContexts)
+                await serviceContext.DisposeAsync();
+            await using var cleanupContext = CreateContext();
+            await cleanupContext.Database.EnsureDeletedAsync();
         }
     }
 }
