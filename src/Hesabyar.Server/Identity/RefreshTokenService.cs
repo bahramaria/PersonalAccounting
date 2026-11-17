@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Server.Identity;
 
-public sealed record IssuedRefreshToken(string Value, DateTimeOffset ExpiresAtUtc);
+public sealed record IssuedRefreshToken(string Value, DateTimeOffset ExpiresAtUtc);\npublic sealed record RefreshTokenUser(Guid Id, string PhoneNumber);
 public enum RefreshTokenStatus { Rotated, Invalid, ReuseDetected }
 public sealed record RefreshTokenRotation(RefreshTokenStatus Status, Guid UserId, IssuedRefreshToken? Token);
 
@@ -91,6 +91,12 @@ public sealed class RefreshTokenService(IdentityDbContext database, TimeProvider
             current.UserId,
             new IssuedRefreshToken(Base64UrlEncode(raw), next.ExpiresAtUtc));
     }
+
+    public Task<RefreshTokenUser?> GetUserIdentityAsync(Guid userId, CancellationToken cancellationToken) =>
+        database.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => new RefreshTokenUser(x.Id, x.PhoneNumber))
+            .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<bool> RevokeAsync(
         string? token, Guid deviceId, CancellationToken cancellationToken)
