@@ -17,12 +17,16 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
     public Task<Result<Guid>> CreateTransferAsync(TransferRequest request, CancellationToken cancellationToken = default) =>
         CreateAsync(BuildTransferAsync(request, cancellationToken), cancellationToken);
 
+    public Task<Result<Guid>> CreateCurrencyExchangeAsync(CurrencyExchangeRequest request, CancellationToken cancellationToken = default) =>
+        CreateAsync(BuildCurrencyExchangeAsync(request, cancellationToken), cancellationToken);
+
     public async Task<Result<Guid>> UpdateAsync(
         Guid transactionId,
         ExpenseRequest? expense = null,
         IncomeRequest? income = null,
         TransferRequest? transfer = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        CurrencyExchangeRequest? currencyExchange = null)
     {
         var existing = await repository.GetTransactionAsync(transactionId, cancellationToken);
         if (existing is null)
@@ -33,6 +37,7 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
             TransactionKind.Expense when expense is not null => await BuildExpenseAsync(expense, cancellationToken),
             TransactionKind.Income when income is not null => await BuildIncomeAsync(income, cancellationToken),
             TransactionKind.Transfer when transfer is not null => await BuildTransferAsync(transfer, cancellationToken),
+            TransactionKind.CurrencyExchange when currencyExchange is not null => await BuildCurrencyExchangeAsync(currencyExchange, cancellationToken),
             _ => Result<LedgerTransaction>.Failure("transaction.update.invalid", "The replacement does not match the transaction type.")
         };
 
@@ -97,6 +102,9 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
                 await CreateIncomeAsync(new IncomeRequest(businessDate, item.AmountMinor, item.AccountId, categoryId, item.Description), cancellationToken),
             TransactionKind.Transfer when item.CounterpartyAccountId is Guid destinationId =>
                 await CreateTransferAsync(new TransferRequest(businessDate, item.AmountMinor, item.AccountId, destinationId, item.Description), cancellationToken),
+            TransactionKind.CurrencyExchange when item.CounterpartyAccountId is Guid destinationId && item.CounterAmountMinor is long destinationAmount =>
+                await CreateCurrencyExchangeAsync(new CurrencyExchangeRequest(businessDate, item.AmountMinor, destinationAmount,
+                    item.AccountId, destinationId, item.Description), cancellationToken),
             _ => Result<Guid>.Failure("transaction.duplicate.unsupported", "This transaction cannot be duplicated.")
         };
     }
@@ -170,6 +178,44 @@ public sealed class TransactionService(IAccountingRepository repository, IClock 
         var amount = new Money(request.AmountMinor, new CurrencyCode(source.CurrencyCode));
         return Result<LedgerTransaction>.Success(LedgerTransaction.Create(request.BusinessDate, TransactionKind.Transfer,
             [new Posting(destination.Id, amount), new Posting(source.Id, amount.Negate())], clock.UtcNow, request.Description));
+    }
+
+    private async Task<Result<LedgerTransaction>> BuildCurrencyExchangeAsync(
+        CurrencyExchangeRequest request, CancellationToken cancellationToken)
+    {
+        if (request.SourceAmountMinor <= 0 || request.DestinationAmountMinor <= 0)
+            return Result<LedgerTransaction>.Failure("transaction.exchange.amount.invalid", "Both exchange amounts must be greater than zero.");
+        if (request.SourceAccountId == request.DestinationAccountId)
+            return Result<LedgerTransaction>.Failure("transaction.transfer.same_account", "Source and destination accounts must be different.");
+
+        var source = await repository.GetAccountAsync(request.SourceAccountId, cancellationToken);
+        var destination = await repository.GetAccountAsync(request.DestinationAccountId, cancellationToken);
+        if (!IsActive(source) || !IsActive(destination))
+            return Result<LedgerTransaction>.Failure("transaction.account.invalid", "Both exchange accounts must exist and be active.");
+        if (source!.Type != AccountType.Asset || destination!.Type != AccountType.Asset)
+            return Result<LedgerTransaction>.Failure("transaction.transfer.account_type", "Currency exchange requires two asset accounts.");
+        if (string.Equals(source.CurrencyCode, destination.CurrencyCode, StringComparison.Ordinal))
+            return Result<LedgerTransaction>.Failure("transaction.exchange.same_currency", "Currency exchange requires different currencies.");
+
+        var sourceCurrency = new CurrencyCode(source.CurrencyCode);
+        var destinationCurrency = new CurrencyCode(destination.CurrencyCode);
+        var sourceClearingId = await repository.GetOrCreateCurrencyExchangeAccountAsync(sourceCurrency, clock.UtcNow, cancellationToken);
+        var destinationClearingId = await repository.GetOrCreateCurrencyExchangeAccountAsync(destinationCurrency, clock.UtcNow, cancellationToken);
+        var sourceAmount = new Money(request.SourceAmountMinor, sourceCurrency);
+        var destinationAmount = new Money(request.DestinationAmountMinor, destinationCurrency);
+
+        return Result<LedgerTransaction>.Success(LedgerTransaction.Create(
+            request.BusinessDate,
+            TransactionKind.CurrencyExchange,
+            [
+                new Posting(source.Id, sourceAmount.Negate()),
+                new Posting(sourceClearingId, sourceAmount),
+                new Posting(destination.Id, destinationAmount),
+                new Posting(destinationClearingId, destinationAmount.Negate())
+            ],
+            clock.UtcNow,
+            request.Description,
+            counterAmountMinor: request.DestinationAmountMinor));
     }
 
     private static bool IsActive(AccountSnapshot? account) => account is not null && !account.IsArchived;

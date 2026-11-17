@@ -11,4 +11,7 @@ public sealed record TransactionSnapshot(
     Guid? CounterpartyAccountId,
     string? Description,
     bool IsConfirmed,
-    string? DocumentNumber = null);
+    string? DocumentNumber = null,
+    long? CounterAmountMinor = null,
+    string? CurrencyCode = null,
+    string? CounterCurrencyCode = null);

@@ -274,6 +274,7 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.SmsMessageId).HasMaxLength(160);
             entity.Property(x => x.FiscalPeriodId).HasColumnType("TEXT");
             entity.Property(x => x.DocumentNumber).HasMaxLength(32);
+            entity.Property(x => x.CounterAmountMinor);
             entity.Property(x => x.IsConfirmed);
             entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");

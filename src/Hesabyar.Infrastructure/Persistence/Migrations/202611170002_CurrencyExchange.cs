@@ -1,0 +1,30 @@
+using Hesabyar.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Hesabyar.Infrastructure.Persistence.Migrations;
+
+[DbContext(typeof(AppDbContext))]
+[Migration("202611170002_CurrencyExchange")]
+public sealed class CurrencyExchange : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<long>(
+            name: "CounterAmountMinor",
+            table: "Transactions",
+            type: "INTEGER",
+            nullable: true);
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(name: "CounterAmountMinor", table: "Transactions");
+    }
+
+    protected override void BuildTargetModel(ModelBuilder modelBuilder) =>
+        new AppDbContextModelSnapshot().BuildTargetModelForMigration(modelBuilder);
+}

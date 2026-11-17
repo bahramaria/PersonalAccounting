@@ -429,6 +429,81 @@ public sealed class AccountingServiceTests
             transactions.GetTransactionsAsync(take: 3, skip: -1));
     }
 
+    [Fact]
+    public async Task CurrencyExchange_UsesBalancedClearingPostingsAndUpdatesBothCurrencyBalances()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var usd = await accounts.CreateAsync(new CreateAccountRequest(
+            "USD wallet", AccountType.Asset, AccountKind.Wallet, CurrencyCode: "USD",
+            OpeningBalanceMinor: 100_000, OpeningDate: BusinessDate));
+        var eur = await accounts.CreateAsync(new CreateAccountRequest(
+            "EUR wallet", AccountType.Asset, AccountKind.Wallet, CurrencyCode: "EUR"));
+
+        Assert.True(usd.IsSuccess);
+        Assert.True(eur.IsSuccess);
+
+        var result = await transactions.CreateCurrencyExchangeAsync(new CurrencyExchangeRequest(
+            BusinessDate, 25_000, 22_750, usd.Value, eur.Value, "USD to EUR"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(75_000, await repository.GetBalanceMinorAsync(usd.Value, default));
+        Assert.Equal(22_750, await repository.GetBalanceMinorAsync(eur.Value, default));
+
+        var saved = await db.Transactions.Include(x => x.Postings).ThenInclude(x => x.Account)
+            .SingleAsync(x => x.Id == result.Value);
+        Assert.Equal(TransactionKind.CurrencyExchange, saved.Kind);
+        Assert.Equal(22_750, saved.CounterAmountMinor);
+        Assert.Equal(4, saved.Postings.Count);
+        Assert.All(saved.Postings.GroupBy(x => x.CurrencyCode), group =>
+            Assert.Equal(0L, group.Sum(x => x.AmountMinor)));
+        Assert.DoesNotContain(await repository.GetAccountsAsync(false, default),
+            x => x.Kind == AccountKind.System);
+
+        var snapshot = Assert.Single(await transactions.GetTransactionsAsync());
+        Assert.Equal(25_000, snapshot.AmountMinor);
+        Assert.Equal(22_750, snapshot.CounterAmountMinor);
+        Assert.Equal("USD", snapshot.CurrencyCode);
+        Assert.Equal("EUR", snapshot.CounterCurrencyCode);
+        Assert.Equal(usd.Value, snapshot.AccountId);
+        Assert.Equal(eur.Value, snapshot.CounterpartyAccountId);
+    }
+
+    [Fact]
+    public async Task CurrencyExchange_RejectsSameCurrencyAndNonPositiveDestinationAmount()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+        var usd1 = await accounts.CreateAsync(new CreateAccountRequest("USD 1", AccountType.Asset, AccountKind.Bank, CurrencyCode: "USD"));
+        var usd2 = await accounts.CreateAsync(new CreateAccountRequest("USD 2", AccountType.Asset, AccountKind.Bank, CurrencyCode: "USD"));
+        var eur = await accounts.CreateAsync(new CreateAccountRequest("EUR", AccountType.Asset, AccountKind.Bank, CurrencyCode: "EUR"));
+
+        var sameCurrency = await transactions.CreateCurrencyExchangeAsync(new CurrencyExchangeRequest(
+            BusinessDate, 100, 90, usd1.Value, usd2.Value));
+        var invalidAmount = await transactions.CreateCurrencyExchangeAsync(new CurrencyExchangeRequest(
+            BusinessDate, 100, 0, usd1.Value, eur.Value));
+
+        Assert.True(sameCurrency.IsFailure);
+        Assert.Equal("transaction.exchange.same_currency", sameCurrency.Error.Code);
+        Assert.True(invalidAmount.IsFailure);
+        Assert.Equal("transaction.exchange.amount.invalid", invalidAmount.Error.Code);
+        Assert.Empty(await db.Transactions.ToListAsync());
+    }
+
     private static AppDbContext CreateDatabase(SqliteConnection connection)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;

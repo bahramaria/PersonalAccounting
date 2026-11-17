@@ -213,12 +213,13 @@ public partial class TransactionsPage : ContentPage
         if (kind is null)
         {
             var selected = await DisplayActionSheetAsync(AppStrings.AddTransaction, AppStrings.Cancel, null,
-                AppStrings.Expense, AppStrings.Income, AppStrings.Transfer);
+                AppStrings.Expense, AppStrings.Income, AppStrings.Transfer, AppStrings.CurrencyExchange);
             kind = selected switch
             {
                 var x when x == AppStrings.Expense => TransactionKind.Expense,
                 var x when x == AppStrings.Income => TransactionKind.Income,
                 var x when x == AppStrings.Transfer => TransactionKind.Transfer,
+                var x when x == AppStrings.CurrencyExchange => TransactionKind.CurrencyExchange,
                 _ => null
             };
         }
@@ -238,19 +239,44 @@ public partial class TransactionsPage : ContentPage
         }
 
         var accountChoices = _viewModel.Accounts.Where(x =>
-            kind == TransactionKind.Transfer ? x.Type == AccountType.Asset :
+            kind is TransactionKind.Transfer or TransactionKind.CurrencyExchange ? x.Type == AccountType.Asset :
             x.Type == AccountType.Asset || kind == TransactionKind.Expense && x.Type == AccountType.Liability).ToArray();
         var accountId = await SelectAsync(AppStrings.TransactionAccountPrompt, accountChoices, existing?.AccountId);
         if (accountId is null) return;
 
         var currencyCode = _viewModel.Accounts.First(x => x.Id == accountId).CurrencyCode;
-        var secondChoices = kind == TransactionKind.Transfer
-            ? _viewModel.Accounts.Where(x => x.Type == AccountType.Asset && x.Id != accountId && x.CurrencyCode == currencyCode).ToArray()
-            : (kind == TransactionKind.Expense ? _viewModel.ExpenseCategories : _viewModel.IncomeCategories)
-                .Where(x => x.CurrencyCode == currencyCode).ToArray();
+        var secondChoices = kind switch
+        {
+            TransactionKind.Transfer => _viewModel.Accounts
+                .Where(x => x.Type == AccountType.Asset && x.Id != accountId && x.CurrencyCode == currencyCode).ToArray(),
+            TransactionKind.CurrencyExchange => _viewModel.Accounts
+                .Where(x => x.Type == AccountType.Asset && x.Id != accountId && x.CurrencyCode != currencyCode).ToArray(),
+            TransactionKind.Expense => _viewModel.ExpenseCategories.Where(x => x.CurrencyCode == currencyCode).ToArray(),
+            _ => _viewModel.IncomeCategories.Where(x => x.CurrencyCode == currencyCode).ToArray()
+        };
         var secondId = await SelectAsync(kind == TransactionKind.Transfer ? AppStrings.TransactionDestinationPrompt : AppStrings.TransactionCategoryPrompt,
             secondChoices, existing?.SecondaryId);
         if (secondId is null) return;
+
+        long? counterAmountMinor = null;
+        if (kind == TransactionKind.CurrencyExchange)
+        {
+            var destinationAmountText = await DisplayPromptAsync(
+                AppStrings.TransactionExchangeDestinationAmountPrompt,
+                AppStrings.TransactionExchangeDestinationAmountPrompt,
+                AppStrings.Save, AppStrings.Cancel,
+                initialValue: existing?.CounterAmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                keyboard: Keyboard.Numeric);
+            if (destinationAmountText is null) return;
+            var destinationNormalized = NormalizeDigits(destinationAmountText).Replace(",", "").Replace("٬", "").Replace(" ", "");
+            if (!long.TryParse(destinationNormalized, System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture, out var destinationAmount) || destinationAmount <= 0)
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionAmountInvalid, AppStrings.Ok);
+                return;
+            }
+            counterAmountMinor = destinationAmount;
+        }
 
         var defaultGregorian = existing?.BusinessDate ?? DateOnly.FromDateTime(DateTime.Today);
         var defaultDate = _calendar.Format(defaultGregorian);
@@ -263,7 +289,8 @@ public partial class TransactionsPage : ContentPage
 
         var description = await DisplayPromptAsync(AppStrings.TransactionDescriptionPrompt, AppStrings.TransactionDescriptionPrompt,
             AppStrings.Save, AppStrings.Skip, initialValue: existing?.Description, maxLength: 500);
-        if (!await _viewModel.SaveAsync(existing?.Id, kind.Value, date, amount, accountId.Value, secondId, description))
+        if (!await _viewModel.SaveAsync(existing?.Id, kind.Value, date, amount, accountId.Value, secondId, description,
+                counterAmountMinor: counterAmountMinor))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         else await ReloadAsync();
     }

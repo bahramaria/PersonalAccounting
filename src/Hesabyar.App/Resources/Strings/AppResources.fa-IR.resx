@@ -451,4 +451,6 @@
   <data name="CurrencyCodePrompt" xml:space="preserve"><value>کد ارز سه‌حرفی را وارد کنید (IRR، USD، EUR)</value></data>
   <data name="TransactionManageTags" xml:space="preserve"><value>مدیریت برچسب‌ها</value></data>
   <data name="TransactionTagsPrompt" xml:space="preserve"><value>نام برچسب‌ها را با ویرگول جدا کنید (برای پاک‌کردن خالی بگذارید)</value></data>
+  <data name="CurrencyExchange" xml:space="preserve"><value>تبدیل ارز</value></data>
+  <data name="TransactionExchangeDestinationAmountPrompt" xml:space="preserve"><value>مبلغ دریافتی به ارز مقصد</value></data>
 </root>

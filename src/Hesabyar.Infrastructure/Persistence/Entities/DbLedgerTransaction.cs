@@ -15,5 +15,6 @@ public sealed class DbLedgerTransaction : DbEntity
     public bool IsConfirmed { get; set; }
     public Guid? FiscalPeriodId { get; set; }
     public string? DocumentNumber { get; set; }
+    public long? CounterAmountMinor { get; set; }
     public ICollection<DbPosting> Postings { get; set; } = new List<DbPosting>();
 }

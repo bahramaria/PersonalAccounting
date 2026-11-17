@@ -80,9 +80,9 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
             Accounts = active.Where(x => x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet or AccountKind.CreditCard)
                 .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type, x.Account.CurrencyCode)).ToArray();
             ExpenseCategories = active.Where(x => x.Account.Kind == AccountKind.Category && x.Account.Type == AccountType.Expense)
-                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
+                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type, x.Account.CurrencyCode)).ToArray();
             IncomeCategories = active.Where(x => x.Account.Kind == AccountKind.Category && x.Account.Type == AccountType.Income)
-                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type)).ToArray();
+                .Select(x => new TransactionChoice(x.Account.Id, x.Account.Name, x.Account.Type, x.Account.CurrencyCode)).ToArray();
 
             Transactions.Clear();
             var snapshots = await scope.ServiceProvider.GetRequiredService<TransactionService>()
@@ -124,14 +124,18 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                 ? _accountNames.GetValueOrDefault(secondId, AppStrings.UnknownAccount)
                 : string.Empty;
             var dateText = calendar.Format(item.BusinessDate);
+            var amountText = item.Kind == TransactionKind.CurrencyExchange && item.CounterAmountMinor is long destinationAmount
+                ? $"{item.AmountMinor:N0} {item.CurrencyCode} → {destinationAmount:N0} {item.CounterCurrencyCode}"
+                : $"{item.AmountMinor:N0} {item.CurrencyCode}";
             Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                 item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
-                item.AmountMinor.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), dateText, item.DocumentNumber));
+                amountText, dateText, item.DocumentNumber, item.CounterAmountMinor));
         }
     }
 
     public async Task<bool> SaveAsync(Guid? id, TransactionKind kind, DateOnly date, long amount,
-        Guid accountId, Guid? secondaryId, string? description, CancellationToken cancellationToken = default)
+        Guid accountId, Guid? secondaryId, string? description, CancellationToken cancellationToken = default,
+        long? counterAmountMinor = null)
     {
         if (IsBusy) return false;
         IsBusy = true;
@@ -145,13 +149,16 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                 ? new IncomeRequest(date, amount, accountId, secondaryId.Value, description) : null;
             var transfer = kind == TransactionKind.Transfer && secondaryId.HasValue
                 ? new TransferRequest(date, amount, accountId, secondaryId.Value, description) : null;
+            var currencyExchange = kind == TransactionKind.CurrencyExchange && secondaryId.HasValue && counterAmountMinor is > 0
+                ? new CurrencyExchangeRequest(date, amount, counterAmountMinor.Value, accountId, secondaryId.Value, description) : null;
             var result = id is Guid existingId
-                ? await service.UpdateAsync(existingId, expense, income, transfer, cancellationToken)
+                ? await service.UpdateAsync(existingId, expense, income, transfer, cancellationToken, currencyExchange)
                 : kind switch
                 {
                     TransactionKind.Expense when expense is not null => await service.CreateExpenseAsync(expense, cancellationToken),
                     TransactionKind.Income when income is not null => await service.CreateIncomeAsync(income, cancellationToken),
                     TransactionKind.Transfer when transfer is not null => await service.CreateTransferAsync(transfer, cancellationToken),
+                    TransactionKind.CurrencyExchange when currencyExchange is not null => await service.CreateCurrencyExchangeAsync(currencyExchange, cancellationToken),
                     _ => Hesabyar.Application.Common.Result<Guid>.Failure("transaction.input.invalid", "Transaction details are incomplete.")
                 };
             if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.TransactionCreateFailed; return false; }
@@ -214,13 +221,14 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
 
 public sealed record TransactionChoice(Guid Id, string Name, AccountType Type, string CurrencyCode = "IRR");
 public sealed record TransactionListItem(Guid Id, TransactionKind Kind, DateOnly BusinessDate, long AmountMinor,
-    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText, string DateText, string? DocumentNumber = null)
+    Guid AccountId, Guid? SecondaryId, string? Description, string AccountName, string SecondaryName, string AmountText, string DateText, string? DocumentNumber = null, long? CounterAmountMinor = null)
 {
     public string KindName => Kind switch
     {
         TransactionKind.Expense => AppStrings.Expense,
         TransactionKind.Income => AppStrings.Income,
         TransactionKind.Transfer => AppStrings.Transfer,
+        TransactionKind.CurrencyExchange => AppStrings.CurrencyExchange,
         TransactionKind.LoanOpening => AppStrings.LoanOpeningTransaction,
         TransactionKind.LoanPayment => AppStrings.LoanPaymentTransaction,
         _ => string.Empty

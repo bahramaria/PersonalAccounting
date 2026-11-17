@@ -13,6 +13,7 @@ public interface IAccountingRepository
     Task<IReadOnlyDictionary<Guid, long>> GetBalancesMinorAsync(IReadOnlyCollection<Guid> accountIds, CancellationToken cancellationToken);
     Task<bool> HasTransactionsAsync(Guid accountId, CancellationToken cancellationToken);
     Task<Guid> GetOrCreateOpeningAccountAsync(CurrencyCode currency, DateTimeOffset nowUtc, CancellationToken cancellationToken);
+    Task<Guid> GetOrCreateCurrencyExchangeAccountAsync(CurrencyCode currency, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task<Guid> CreateAccountAsync(Account account, LedgerTransaction? openingTransaction, CancellationToken cancellationToken);
     Task RenameAccountAsync(Guid accountId, string name, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     Task ArchiveAccountAsync(Guid accountId, DateTimeOffset nowUtc, CancellationToken cancellationToken);

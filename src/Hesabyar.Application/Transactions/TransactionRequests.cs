@@ -20,3 +20,11 @@ public sealed record TransferRequest(
     Guid SourceAccountId,
     Guid DestinationAccountId,
     string? Description = null);
+
+public sealed record CurrencyExchangeRequest(
+    DateOnly BusinessDate,
+    long SourceAmountMinor,
+    long DestinationAmountMinor,
+    Guid SourceAccountId,
+    Guid DestinationAccountId,
+    string? Description = null);

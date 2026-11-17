@@ -96,6 +96,40 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         }
     }
 
+    public async Task<Guid> GetOrCreateCurrencyExchangeAccountAsync(CurrencyCode currency, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
+        var existing = await db.Accounts.SingleOrDefaultAsync(
+            x => x.SystemKey == "currency-exchange" && x.CurrencyCode == currency.Value, cancellationToken);
+        if (existing is not null)
+            return existing.Id;
+
+        var account = new DbAccount
+        {
+            Name = $"Currency exchange ({currency.Value})",
+            Type = AccountType.Equity,
+            Kind = AccountKind.System,
+            CurrencyCode = currency.Value,
+            SystemKey = "currency-exchange",
+            CreatedAtUtc = nowUtc,
+            UpdatedAtUtc = nowUtc,
+            IncludeInTotal = false
+        };
+        db.Accounts.Add(account);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            return account.Id;
+        }
+        catch (DbUpdateException)
+        {
+            db.Entry(account).State = EntityState.Detached;
+            return await db.Accounts
+                .Where(x => x.SystemKey == "currency-exchange" && x.CurrencyCode == currency.Value)
+                .Select(x => x.Id)
+                .SingleAsync(cancellationToken);
+        }
+    }
+
     public async Task<Guid> CreateAccountAsync(Account account, LedgerTransaction? openingTransaction, CancellationToken cancellationToken)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -164,8 +198,8 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         int take,
         CancellationToken cancellationToken)
     {
-        var query = db.Transactions.AsNoTracking().Include(x => x.Postings)
-            .Where(x => x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer)
+        var query = db.Transactions.AsNoTracking().Include(x => x.Postings).ThenInclude(x => x.Account)
+            .Where(x => x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer || x.Kind == TransactionKind.CurrencyExchange)
             .AsQueryable();
         if (fromDate is not null)
             query = query.Where(x => x.BusinessDate >= fromDate.Value);
@@ -201,15 +235,25 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
 
     public async Task<TransactionSnapshot?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken)
     {
-        var transaction = await db.Transactions.AsNoTracking().Include(x => x.Postings)
+        var transaction = await db.Transactions.AsNoTracking().Include(x => x.Postings).ThenInclude(x => x.Account)
             .SingleOrDefaultAsync(x => x.Id == transactionId && !x.IsDeleted &&
-                (x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer),
+                (x.Kind == TransactionKind.Expense || x.Kind == TransactionKind.Income || x.Kind == TransactionKind.Transfer || x.Kind == TransactionKind.CurrencyExchange),
                 cancellationToken);
         return transaction is null ? null : ToTransactionSnapshot(transaction);
     }
 
     private static TransactionSnapshot ToTransactionSnapshot(DbLedgerTransaction transaction)
     {
+        if (transaction.Kind == TransactionKind.CurrencyExchange)
+        {
+            var source = transaction.Postings.First(p => p.AmountMinor < 0 && p.Account.Kind != AccountKind.System);
+            var destination = transaction.Postings.First(p => p.AmountMinor > 0 && p.Account.Kind != AccountKind.System);
+            return new TransactionSnapshot(
+                transaction.Id, transaction.BusinessDate, transaction.Kind, checked(-source.AmountMinor),
+                source.AccountId, destination.AccountId, transaction.Description, transaction.IsConfirmed,
+                transaction.DocumentNumber, destination.AmountMinor, source.CurrencyCode, destination.CurrencyCode);
+        }
+
         var positive = transaction.Postings.FirstOrDefault(p => p.AmountMinor > 0);
         var negative = transaction.Postings.FirstOrDefault(p => p.AmountMinor < 0);
         var amount = transaction.Postings.Where(p => p.AmountMinor > 0).Sum(p => p.AmountMinor);
@@ -222,7 +266,10 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             transaction.Kind == TransactionKind.Transfer || transaction.Kind == TransactionKind.Expense ? positive?.AccountId : negative?.AccountId,
             transaction.Description,
             transaction.IsConfirmed,
-            transaction.DocumentNumber);
+            transaction.DocumentNumber,
+            null,
+            positive?.CurrencyCode,
+            negative?.CurrencyCode);
     }
 
     public async Task<bool> ReplaceTransactionAsync(Guid transactionId, LedgerTransaction replacement, DateTimeOffset nowUtc, CancellationToken cancellationToken)
@@ -274,6 +321,7 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
             Description = transaction.Description,
             Source = transaction.Source,
             IsConfirmed = transaction.IsConfirmed,
+            CounterAmountMinor = transaction.CounterAmountMinor,
             CreatedAtUtc = transaction.CreatedAtUtc,
             UpdatedAtUtc = transaction.UpdatedAtUtc
         };

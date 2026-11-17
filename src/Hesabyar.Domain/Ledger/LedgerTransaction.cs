@@ -3,7 +3,7 @@ using Hesabyar.Domain.ValueObjects;
 
 namespace Hesabyar.Domain.Ledger;
 
-public enum TransactionKind { Expense, Income, Transfer, Opening, Adjustment, PersonDebt, PersonRepay, LoanOpening, LoanPayment, ChequeEvent }
+public enum TransactionKind { Expense, Income, Transfer, CurrencyExchange, Opening, Adjustment, PersonDebt, PersonRepay, LoanOpening, LoanPayment, ChequeEvent }
 public enum TransactionSource { Manual, Sms, Import }
 
 public sealed class LedgerTransaction : EntityBase
@@ -15,13 +15,15 @@ public sealed class LedgerTransaction : EntityBase
         TransactionKind kind,
         string? description,
         TransactionSource source,
-        DateTimeOffset nowUtc) : base(nowUtc)
+        DateTimeOffset nowUtc,
+        long? counterAmountMinor) : base(nowUtc)
     {
         BusinessDate = businessDate;
         Kind = kind;
         Description = description?.Trim();
         Source = source;
         IsConfirmed = source == TransactionSource.Manual;
+        CounterAmountMinor = counterAmountMinor;
     }
 
     public DateOnly BusinessDate { get; }
@@ -29,6 +31,7 @@ public sealed class LedgerTransaction : EntityBase
     public string? Description { get; }
     public TransactionSource Source { get; }
     public bool IsConfirmed { get; private set; }
+    public long? CounterAmountMinor { get; }
     public IReadOnlyCollection<Posting> Postings => _postings.AsReadOnly();
 
     public static LedgerTransaction Create(
@@ -37,7 +40,8 @@ public sealed class LedgerTransaction : EntityBase
         IEnumerable<Posting> postings,
         DateTimeOffset nowUtc,
         string? description = null,
-        TransactionSource source = TransactionSource.Manual)
+        TransactionSource source = TransactionSource.Manual,
+        long? counterAmountMinor = null)
     {
         ArgumentNullException.ThrowIfNull(postings);
         var items = postings.ToArray();
@@ -54,10 +58,15 @@ public sealed class LedgerTransaction : EntityBase
                 throw new InvalidOperationException($"Ledger transaction is not balanced for currency {group.Key}.");
         }
 
+        if (kind == TransactionKind.CurrencyExchange && counterAmountMinor is not > 0)
+            throw new ArgumentOutOfRangeException(nameof(counterAmountMinor), "Currency exchange destination amount must be positive.");
+        if (kind != TransactionKind.CurrencyExchange && counterAmountMinor is not null)
+            throw new ArgumentException("A counter amount is only valid for currency exchange transactions.", nameof(counterAmountMinor));
+
         if (items.Any(x => x.AccountId == Guid.Empty))
             throw new ArgumentException("Posting account identifiers cannot be empty.", nameof(postings));
 
-        var transaction = new LedgerTransaction(businessDate, kind, description, source, nowUtc);
+        var transaction = new LedgerTransaction(businessDate, kind, description, source, nowUtc, counterAmountMinor);
         transaction._postings.AddRange(items);
         return transaction;
     }
