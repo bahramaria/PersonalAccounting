@@ -89,6 +89,34 @@ public sealed class RefreshTokenServiceIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task RotateAsync_RejectsReplayFromAnotherDeviceWithoutRevokingTheFamily()
+    {
+        var database = await TestDatabase.CreateAsync();
+        try
+        {
+            var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-17T12:00:00Z"));
+            var userId = await database.AddActiveUserAsync();
+            var deviceId = Guid.NewGuid();
+            var initial = await database.CreateTokenAsync(clock, userId, deviceId, "Replay protection test");
+
+            var rotated = await database.RotateAsync(clock, initial.Value, deviceId);
+            Assert.Equal(RefreshTokenStatus.Rotated, rotated.Status);
+            Assert.NotNull(rotated.Token);
+
+            var unauthorizedReplay = await database.RotateAsync(clock, initial.Value, Guid.NewGuid());
+            Assert.Equal(RefreshTokenStatus.Invalid, unauthorizedReplay.Status);
+
+            var validRotation = await database.RotateAsync(clock, rotated.Token!.Value, deviceId);
+            Assert.Equal(RefreshTokenStatus.Rotated, validRotation.Status);
+            Assert.NotNull(validRotation.Token);
+        }
+        finally
+        {
+            await database.DisposeAsync();
+        }
+    }
+
     private sealed class TestDatabase(string databaseName) : IAsyncDisposable
     {
         private const string ConnectionPrefix =
