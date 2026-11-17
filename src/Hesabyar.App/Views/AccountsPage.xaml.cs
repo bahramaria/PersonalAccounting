@@ -1,5 +1,6 @@
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
+using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Localization;
 
@@ -67,20 +68,13 @@ public partial class AccountsPage : ContentPage
 
         var openingText = await DisplayPromptAsync(
             AppStrings.OpeningBalance,
-            AppStrings.OpeningBalancePrompt,
+            $"{AppStrings.OpeningBalancePrompt} ({currencyCode})",
             AppStrings.Save,
             AppStrings.Skip,
             initialValue: "0",
             keyboard: Keyboard.Numeric);
 
-        var normalized = NormalizeDigits(openingText ?? "0")
-            .Replace(",", string.Empty, StringComparison.Ordinal)
-            .Replace("٬", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal);
-
-        if (!long.TryParse(normalized, System.Globalization.NumberStyles.None,
-                System.Globalization.CultureInfo.InvariantCulture, out var openingBalance) ||
-            openingBalance < 0)
+        if (!MoneyDisplayService.TryParse(openingText ?? "0", currencyCode, out var openingBalance, allowZero: true))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.OpeningBalanceInvalid, AppStrings.Ok);
             return;

@@ -20,16 +20,17 @@ public static class MoneyDisplayService
     public static string FormatNumber(long amountMinor, string currencyCode)
     {
         var digits = CurrencyPrecision.GetMinorUnitDigits(currencyCode);
-        var majorAmount = amountMinor / (decimal)CurrencyPrecision.GetMinorUnitFactor(currencyCode);
-        return majorAmount.ToString($"N{digits}", CultureInfo.CurrentCulture);
+        return ToMajorAmount(amountMinor, currencyCode).ToString($"N{digits}", CultureInfo.CurrentCulture);
     }
 
     public static string FormatInput(long amountMinor, string currencyCode)
     {
         var digits = CurrencyPrecision.GetMinorUnitDigits(currencyCode);
-        var majorAmount = amountMinor / (decimal)CurrencyPrecision.GetMinorUnitFactor(currencyCode);
-        return majorAmount.ToString($"F{digits}", CultureInfo.InvariantCulture);
+        return ToMajorAmount(amountMinor, currencyCode).ToString($"F{digits}", CultureInfo.InvariantCulture);
     }
+
+    public static decimal ToMajorAmount(long amountMinor, string currencyCode) =>
+        amountMinor / (decimal)CurrencyPrecision.GetMinorUnitFactor(currencyCode);
 
     public static bool TryParse(string? value, string currencyCode, out long amountMinor, bool allowZero = false)
     {
@@ -42,7 +43,7 @@ public static class MoneyDisplayService
             {
                 >= '۰' and <= '۹' => (char)('0' + character - '۰'),
                 >= '٠' and <= '٩' => (char)('0' + character - '٠'),
-                '٫' => '.',
+                '٫' or '/' => '.',
                 '٬' or ',' or ' ' or '\u00A0' or '\u202F' => '\0',
                 _ => character
             });

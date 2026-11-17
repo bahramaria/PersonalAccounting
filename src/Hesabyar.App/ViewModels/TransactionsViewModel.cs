@@ -4,6 +4,7 @@ using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Transactions;
 using Hesabyar.Application.Planning;
 using Hesabyar.App.Resources.Strings;
+using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
 using Hesabyar.Localization.Calendar;
@@ -125,8 +126,8 @@ public sealed class TransactionsViewModel(IServiceScopeFactory scopeFactory, IDa
                 : string.Empty;
             var dateText = calendar.Format(item.BusinessDate);
             var amountText = item.Kind == TransactionKind.CurrencyExchange && item.CounterAmountMinor is long destinationAmount
-                ? $"{item.AmountMinor:N0} {item.CurrencyCode} → {destinationAmount:N0} {item.CounterCurrencyCode}"
-                : $"{item.AmountMinor:N0} {item.CurrencyCode}";
+                ? $"{MoneyDisplayService.Format(item.AmountMinor, item.CurrencyCode ?? "IRR")} → {MoneyDisplayService.Format(destinationAmount, item.CounterCurrencyCode ?? "IRR")}"
+                : MoneyDisplayService.Format(item.AmountMinor, item.CurrencyCode ?? "IRR");
             Transactions.Add(new TransactionListItem(item.Id, item.Kind, item.BusinessDate, item.AmountMinor,
                 item.AccountId, item.CounterpartyAccountId, item.Description, accountName, secondName,
                 amountText, dateText, item.DocumentNumber, item.CounterAmountMinor));
