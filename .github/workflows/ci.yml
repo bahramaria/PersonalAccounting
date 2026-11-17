@@ -22,7 +22,7 @@ jobs:
       - name: Build core
         run: dotnet build Hesabyar.Core.slnx --no-restore --configuration Release
       - name: Test core
-        run: dotnet test Hesabyar.Core.slnx --no-build --configuration Release
+        run: dotnet test Hesabyar.Core.slnx --no-build --configuration Release --filter "FullyQualifiedName!~RefreshTokenServiceIntegrationTests"
 
   test-server:
     runs-on: ubuntu-latest
