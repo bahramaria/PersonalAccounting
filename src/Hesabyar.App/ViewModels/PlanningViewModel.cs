@@ -29,8 +29,8 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
                 .GetAsync(today.AddYears(-1), today.AddYears(2), cancellationToken);
             Budgets.Clear();
             foreach (var item in budgets)
-                Budgets.Add(new BudgetListItem(item.CategoryName, item.LimitMinor.ToString("N0"),
-                    item.SpentMinor.ToString("N0"), item.CurrencyCode, item.UsageRatio,
+                Budgets.Add(new BudgetListItem(item.Id, item.CategoryName, item.LimitMinor.ToString("N0"),
+                    item.SpentMinor.ToString("N0"), item.CurrencyCode, item.UsageRatio, item.IsActive,
                     $"{calendar.Format(item.PeriodStart)} — {calendar.Format(item.PeriodEnd)}"));
             Tags.Clear();
             foreach (var tag in await provider.GetRequiredService<TagService>().GetAsync(cancellationToken))
@@ -54,6 +54,22 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
         using var scope = scopeFactory.CreateScope();
         var result = await scope.ServiceProvider.GetRequiredService<BudgetService>()
             .CreateAsync(new CreateBudgetRequest(categoryId, start, end, limit, currency));
+        if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.BudgetSaveFailed; return false; }
+        await LoadAsync(); return true;
+    }
+
+    public async Task<bool> UpdateBudgetLimitAsync(Guid id, long limit)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<BudgetService>().UpdateLimitAsync(id, limit);
+        if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.BudgetSaveFailed; return false; }
+        await LoadAsync(); return true;
+    }
+
+    public async Task<bool> SetBudgetActiveAsync(Guid id, bool isActive)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<BudgetService>().SetActiveAsync(id, isActive);
         if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.BudgetSaveFailed; return false; }
         await LoadAsync(); return true;
     }
@@ -85,5 +101,5 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
 }
 
 public sealed record PlanningCategory(Guid Id, string Name, string CurrencyCode);
-public sealed record BudgetListItem(string CategoryName, string LimitText, string SpentText,
-    string CurrencyCode, decimal UsageRatio, string PeriodText);
+public sealed record BudgetListItem(Guid Id, string CategoryName, string LimitText, string SpentText,
+    string CurrencyCode, decimal UsageRatio, bool IsActive, string PeriodText);

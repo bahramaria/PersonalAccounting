@@ -210,9 +210,15 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         if (categoryId is Guid selectedCategoryId)
             query = query.Where(x => x.Postings.Any(p => p.AccountId == selectedCategoryId));
         if (minimumAmountMinor is long minimum)
-            query = query.Where(x => x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor) >= minimum);
+            query = query.Where(x => (x.Kind == TransactionKind.CurrencyExchange
+                ? x.Postings.Where(p => p.AmountMinor < 0 && p.Account.Kind != AccountKind.System)
+                    .Sum(p => (long?)-p.AmountMinor)
+                : x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor)) >= minimum);
         if (maximumAmountMinor is long maximum)
-            query = query.Where(x => x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor) <= maximum);
+            query = query.Where(x => (x.Kind == TransactionKind.CurrencyExchange
+                ? x.Postings.Where(p => p.AmountMinor < 0 && p.Account.Kind != AccountKind.System)
+                    .Sum(p => (long?)-p.AmountMinor)
+                : x.Postings.Where(p => p.AmountMinor > 0).Sum(p => (long?)p.AmountMinor)) <= maximum);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().Replace("ي", "ی", StringComparison.Ordinal)

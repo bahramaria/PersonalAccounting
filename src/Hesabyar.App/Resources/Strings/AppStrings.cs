@@ -27,6 +27,11 @@ public static class AppStrings
     public static string BudgetLimitPrompt => Get(nameof(BudgetLimitPrompt));
     public static string BudgetEmpty => Get(nameof(BudgetEmpty));
     public static string BudgetSaveFailed => Get(nameof(BudgetSaveFailed));
+    public static string BudgetEdit => Get(nameof(BudgetEdit));
+    public static string BudgetDeactivate => Get(nameof(BudgetDeactivate));
+    public static string BudgetActivate => Get(nameof(BudgetActivate));
+    public static string BudgetDeactivateConfirm => Get(nameof(BudgetDeactivateConfirm));
+    public static string BudgetInactive => Get(nameof(BudgetInactive));
     public static string TagsHeading => Get(nameof(TagsHeading));
     public static string AddTag => Get(nameof(AddTag));
     public static string TagNamePrompt => Get(nameof(TagNamePrompt));

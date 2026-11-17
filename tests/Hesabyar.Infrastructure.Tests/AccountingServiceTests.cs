@@ -474,6 +474,7 @@ public sealed class AccountingServiceTests
         Assert.Equal("EUR", snapshot.CounterCurrencyCode);
         Assert.Equal(usd.Value, snapshot.AccountId);
         Assert.Equal(eur.Value, snapshot.CounterpartyAccountId);
+        Assert.Single(await transactions.GetTransactionsAsync(minimumAmountMinor: 20_000, maximumAmountMinor: 30_000));
     }
 
     [Fact]

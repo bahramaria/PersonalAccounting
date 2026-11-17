@@ -20,6 +20,26 @@ public sealed class BudgetService(IPlanningRepository repository, IClock clock)
             Result<Guid>.Failure("budget.duplicate", "A budget already exists for this category and period.");
     }
 
+    public async Task<Result<bool>> UpdateLimitAsync(Guid budgetId, long limitMinor,
+        CancellationToken cancellationToken = default)
+    {
+        if (budgetId == Guid.Empty || limitMinor <= 0)
+            return Result<bool>.Failure("budget.details.invalid", "Budget limit must be greater than zero.");
+        var updated = await repository.UpdateBudgetLimitAsync(budgetId, limitMinor, clock.UtcNow, cancellationToken);
+        return updated ? Result<bool>.Success(true) :
+            Result<bool>.Failure("budget.not_found", "Budget was not found.");
+    }
+
+    public async Task<Result<bool>> SetActiveAsync(Guid budgetId, bool isActive,
+        CancellationToken cancellationToken = default)
+    {
+        if (budgetId == Guid.Empty)
+            return Result<bool>.Failure("budget.not_found", "Budget was not found.");
+        var updated = await repository.SetBudgetActiveAsync(budgetId, isActive, clock.UtcNow, cancellationToken);
+        return updated ? Result<bool>.Success(true) :
+            Result<bool>.Failure("budget.not_found", "Budget was not found.");
+    }
+
     public Task<IReadOnlyList<BudgetSnapshot>> GetAsync(DateOnly fromDate, DateOnly toDate,
         CancellationToken cancellationToken = default)
     {

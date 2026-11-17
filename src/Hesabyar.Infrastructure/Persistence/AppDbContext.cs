@@ -153,6 +153,7 @@ public sealed class AppDbContext(
         entity.Property(x => x.DocumentNumber).HasMaxLength(32);
         entity.Property(x => x.CounterAmountMinor);
         entity.HasIndex(x => x.BusinessDate).IsDescending();
+        entity.HasIndex(x => x.DocumentNumber).IsUnique().HasFilter("\\\"DocumentNumber\\\" IS NOT NULL");
         entity.HasIndex(x => x.PartyId);
         entity.HasIndex(x => x.LoanId);
         entity.HasOne<DbLoan>().WithMany().HasForeignKey(x => x.LoanId).OnDelete(DeleteBehavior.Restrict);

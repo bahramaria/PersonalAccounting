@@ -13,6 +13,13 @@ public sealed class CurrencyExchange : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.CreateIndex(
+            name: "IX_Transactions_DocumentNumber",
+            table: "Transactions",
+            column: "DocumentNumber",
+            unique: true,
+            filter: "\"DocumentNumber\" IS NOT NULL");
+
         migrationBuilder.AddColumn<long>(
             name: "CounterAmountMinor",
             table: "Transactions",
@@ -23,6 +30,7 @@ public sealed class CurrencyExchange : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropColumn(name: "CounterAmountMinor", table: "Transactions");
+        migrationBuilder.DropIndex(name: "IX_Transactions_DocumentNumber", table: "Transactions");
     }
 
     protected override void BuildTargetModel(ModelBuilder modelBuilder) =>

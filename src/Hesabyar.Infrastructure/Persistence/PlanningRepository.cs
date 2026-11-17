@@ -30,10 +30,32 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
         catch (DbUpdateException) { db.Entry(entity).State = EntityState.Detached; return null; }
     }
 
+    public async Task<bool> UpdateBudgetLimitAsync(Guid budgetId, long limitMinor, DateTimeOffset nowUtc,
+        CancellationToken cancellationToken)
+    {
+        var budget = await db.Budgets.SingleOrDefaultAsync(x => x.Id == budgetId, cancellationToken);
+        if (budget is null) return false;
+        budget.LimitMinor = limitMinor;
+        budget.UpdatedAtUtc = nowUtc;
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> SetBudgetActiveAsync(Guid budgetId, bool isActive, DateTimeOffset nowUtc,
+        CancellationToken cancellationToken)
+    {
+        var budget = await db.Budgets.SingleOrDefaultAsync(x => x.Id == budgetId, cancellationToken);
+        if (budget is null) return false;
+        budget.IsActive = isActive;
+        budget.UpdatedAtUtc = nowUtc;
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<IReadOnlyList<BudgetSnapshot>> GetBudgetsAsync(DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
     {
         var budgets = await db.Budgets.AsNoTracking().Include(x => x.CategoryAccount)
-            .Where(x => x.IsActive && x.PeriodStart <= toDate && x.PeriodEnd >= fromDate)
+            .Where(x => x.PeriodStart <= toDate && x.PeriodEnd >= fromDate)
             .OrderBy(x => x.PeriodStart).ThenBy(x => x.CategoryAccount.Name)
             .ToListAsync(cancellationToken);
         var result = new List<BudgetSnapshot>(budgets.Count);

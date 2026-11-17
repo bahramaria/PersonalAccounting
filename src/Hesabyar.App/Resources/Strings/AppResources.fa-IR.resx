@@ -453,4 +453,9 @@
   <data name="TransactionTagsPrompt" xml:space="preserve"><value>نام برچسب‌ها را با ویرگول جدا کنید (برای پاک‌کردن خالی بگذارید)</value></data>
   <data name="CurrencyExchange" xml:space="preserve"><value>تبدیل ارز</value></data>
   <data name="TransactionExchangeDestinationAmountPrompt" xml:space="preserve"><value>مبلغ دریافتی به ارز مقصد</value></data>
+  <data name="BudgetEdit" xml:space="preserve"><value>ویرایش سقف</value></data>
+  <data name="BudgetDeactivate" xml:space="preserve"><value>غیرفعال‌سازی</value></data>
+  <data name="BudgetActivate" xml:space="preserve"><value>فعال‌سازی</value></data>
+  <data name="BudgetDeactivateConfirm" xml:space="preserve"><value>این بودجه غیرفعال شود؟ در فهرست باقی می‌ماند و بعداً قابل فعال‌سازی است.</value></data>
+  <data name="BudgetInactive" xml:space="preserve"><value>غیرفعال</value></data>
 </root>

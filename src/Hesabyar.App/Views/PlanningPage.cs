@@ -36,16 +36,33 @@ public sealed class PlanningPage : ContentPage
         AddSection(AppStrings.BudgetsHeading, AppStrings.AddBudget, OnAddBudgetClicked);
         if (_viewModel.Budgets.Count == 0) _content.Children.Add(new Label { Text = AppStrings.BudgetEmpty });
         foreach (var item in _viewModel.Budgets)
-            _content.Children.Add(new Border { Padding = 12, Stroke = Colors.LightGray, Content = new VerticalStackLayout
+        {
+            var cardContent = new VerticalStackLayout
             {
+                Spacing = 7,
                 Children =
                 {
                     new Label { Text = item.CategoryName, FontAttributes = FontAttributes.Bold },
                     new Label { Text = $"{item.SpentText} / {item.LimitText} {item.CurrencyCode}" },
                     new ProgressBar { Progress = (double)Math.Clamp(item.UsageRatio, 0m, 1m) },
-                    new Label { Text = item.PeriodText, FontSize = 12, Opacity = 0.7 }
+                    new Label { Text = item.PeriodText + (item.IsActive ? string.Empty : $" · {AppStrings.BudgetInactive}"), FontSize = 12, Opacity = 0.7 }
                 }
-            }});
+            };
+            var actions = new HorizontalStackLayout { Spacing = 6 };
+            var edit = new Button { Text = AppStrings.BudgetEdit, CommandParameter = item.Id, FontSize = 12 };
+            edit.Clicked += OnEditBudgetClicked;
+            var toggle = new Button
+            {
+                Text = item.IsActive ? AppStrings.BudgetDeactivate : AppStrings.BudgetActivate,
+                CommandParameter = item.Id,
+                FontSize = 12
+            };
+            toggle.Clicked += OnToggleBudgetClicked;
+            actions.Children.Add(edit);
+            actions.Children.Add(toggle);
+            cardContent.Children.Add(actions);
+            _content.Children.Add(new Border { Padding = 12, Stroke = Colors.LightGray, Content = cardContent });
+        }
         AddSection(AppStrings.TagsHeading, AppStrings.AddTag, OnAddTagClicked);
         foreach (var tag in _viewModel.Tags)
             _content.Children.Add(new Label { Text = $"• {tag.Name}", FontSize = 15 });
@@ -117,6 +134,38 @@ public sealed class PlanningPage : ContentPage
             return;
         }
         if (!await _viewModel.CreateBudgetAsync(category.Id, start, end, limit, category.CurrencyCode))
+            await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        Render();
+    }
+
+    private async void OnEditBudgetClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: Guid id }) return;
+        var item = _viewModel.Budgets.FirstOrDefault(x => x.Id == id);
+        if (item is null) return;
+        var text = await DisplayPromptAsync(AppStrings.BudgetEdit, AppStrings.BudgetLimitPrompt,
+            AppStrings.Save, AppStrings.Cancel, initialValue: item.LimitText, keyboard: Keyboard.Numeric);
+        if (text is null) return;
+        if (!TryParseAmount(text, out var limit) || limit <= 0 ||
+            !await _viewModel.UpdateBudgetLimitAsync(id, limit))
+            await DisplayAlertAsync(AppStrings.ValidationError,
+                string.IsNullOrWhiteSpace(_viewModel.StatusMessage) ? AppStrings.BudgetSaveFailed : _viewModel.StatusMessage,
+                AppStrings.Ok);
+        Render();
+    }
+
+    private async void OnToggleBudgetClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: Guid id }) return;
+        var item = _viewModel.Budgets.FirstOrDefault(x => x.Id == id);
+        if (item is null) return;
+        if (item.IsActive)
+        {
+            var confirmed = await DisplayAlertAsync(AppStrings.BudgetDeactivate,
+                AppStrings.BudgetDeactivateConfirm, AppStrings.BudgetDeactivate, AppStrings.Cancel);
+            if (!confirmed) return;
+        }
+        if (!await _viewModel.SetBudgetActiveAsync(id, !item.IsActive))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         Render();
     }
