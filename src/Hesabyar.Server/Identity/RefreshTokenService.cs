@@ -47,8 +47,12 @@ public sealed class RefreshTokenService(IdentityDbContext database, TimeProvider
 
         await using var transaction = await database.Database.BeginTransactionAsync(
             System.Data.IsolationLevel.Serializable, cancellationToken);
-        var current = await database.RefreshTokenSessions.SingleOrDefaultAsync(
-            x => x.TokenHash == hash, cancellationToken);
+        var current = await database.RefreshTokenSessions
+            .FromSqlInterpolated($"""
+                SELECT * FROM [RefreshTokenSessions] WITH (UPDLOCK, ROWLOCK)
+                WHERE [TokenHash] = {hash}
+                """)
+            .SingleOrDefaultAsync(cancellationToken);
         if (current is null)
             return new RefreshTokenRotation(RefreshTokenStatus.Invalid, Guid.Empty, null);
 
