@@ -23,6 +23,7 @@ builder.Services.AddSingleton<IPhoneOtpSender, UnconfiguredPhoneOtpSender>();
 builder.Services.AddScoped<IPhoneOtpStore, EfPhoneOtpStore>();
 builder.Services.AddScoped<PhoneOtpService>();
 builder.Services.AddScoped<PhoneOtpAccountService>();
+builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddSingleton(new PhoneOtpTokenIssuer(tokenSecret, TimeSpan.FromMinutes(15)));
 
 builder.Services.AddRateLimiter(options =>
@@ -76,6 +77,7 @@ app.MapPost("/api/v1/auth/otp/verify", async (
     PhoneOtpVerifyRequest request,
     PhoneOtpService otpService,
     PhoneOtpAccountService accounts,
+    RefreshTokenService refreshTokens,
     PhoneOtpTokenIssuer tokens,
     CancellationToken cancellationToken) =>
 {
@@ -91,17 +93,66 @@ app.MapPost("/api/v1/auth/otp/verify", async (
     var phone = PhoneNumberNormalizer.TryNormalizeE164(request.PhoneNumber, out var normalized)
         ? normalized
         : throw new InvalidOperationException("The verified phone number could not be normalized.");
+    if (request.DeviceId == Guid.Empty)
+        return Results.BadRequest(new { error = "invalid_device_id" });
+
     var userId = await accounts.GetOrCreateAsync(phone, cancellationToken);
     var token = tokens.Issue(userId, phone);
+    var refreshToken = await refreshTokens.CreateAsync(
+        userId, request.DeviceId, request.DeviceName, cancellationToken);
     return Results.Ok(new
     {
         token_type = "Bearer",
         access_token = token.Value,
         expires_at_utc = token.ExpiresAtUtc,
+        refresh_token = refreshToken.Value,
+        refresh_expires_at_utc = refreshToken.ExpiresAtUtc,
         user_id = userId,
         phone_number = phone
     });
 }).RequireRateLimiting("otp-ip");
+
+app.MapPost("/api/v1/auth/refresh", async (
+    RefreshTokenRequest request,
+    RefreshTokenService refreshTokens,
+    PhoneOtpTokenIssuer tokens,
+    CancellationToken cancellationToken) =>
+{
+    var rotation = await refreshTokens.RotateAsync(
+        request.RefreshToken, request.DeviceId, cancellationToken);
+    if (rotation.Status != RefreshTokenStatus.Rotated || rotation.Token is null)
+    {
+        return Results.Problem(
+            statusCode: StatusCodes.Status401Unauthorized,
+            title: rotation.Status == RefreshTokenStatus.ReuseDetected
+                ? "refresh_token_reuse_detected"
+                : "refresh_token_invalid");
+    }
+
+    var user = await refreshTokens.GetUserIdentityAsync(rotation.UserId, cancellationToken);
+    if (user is null)
+        return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "account_unavailable");
+
+    var accessToken = tokens.Issue(user.Id, user.PhoneNumber);
+    return Results.Ok(new
+    {
+        token_type = "Bearer",
+        access_token = accessToken.Value,
+        expires_at_utc = accessToken.ExpiresAtUtc,
+        refresh_token = rotation.Token.Value,
+        refresh_expires_at_utc = rotation.Token.ExpiresAtUtc
+    });
+}).RequireRateLimiting("otp-ip");
+
+app.MapPost("/api/v1/auth/logout", async (
+    RefreshTokenRequest request,
+    RefreshTokenService refreshTokens,
+    CancellationToken cancellationToken) =>
+{
+    var revoked = await refreshTokens.RevokeAsync(
+        request.RefreshToken, request.DeviceId, cancellationToken);
+    return revoked ? Results.NoContent() : Results.NotFound();
+});
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.Run();
@@ -125,4 +176,6 @@ static byte[] ReadSecret(string? value, string key)
 }
 
 public sealed record PhoneOtpRequest(string? PhoneNumber);
-public sealed record PhoneOtpVerifyRequest(Guid ChallengeId, string? PhoneNumber, string? Code);
+public sealed record PhoneOtpVerifyRequest(
+    Guid ChallengeId, string? PhoneNumber, string? Code, Guid DeviceId, string? DeviceName);
+public sealed record RefreshTokenRequest(string? RefreshToken, Guid DeviceId);
