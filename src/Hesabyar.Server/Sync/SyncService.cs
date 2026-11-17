@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 using Hesabyar.Server.Persistence;
 using Hesabyar.Sync.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +16,27 @@ public sealed class SyncSequenceConflictException()
 public sealed class SyncCursorException()
     : Exception("The sync cursor is invalid or belongs to another account.");
 
-public sealed class SyncService(IdentityDbContext database, TimeProvider timeProvider)
+public sealed class SyncService
 {
+    private readonly IdentityDbContext database;
+    private readonly TimeProvider timeProvider;
+    private readonly byte[] cursorSigningKey;
+
+    public SyncService(IdentityDbContext database, TimeProvider timeProvider, byte[] tokenSecret)
+    {
+        ArgumentNullException.ThrowIfNull(database);
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        ArgumentNullException.ThrowIfNull(tokenSecret);
+        if (tokenSecret.Length < 32)
+            throw new ArgumentException("The sync cursor signing secret must contain at least 32 bytes.", nameof(tokenSecret));
+
+        this.database = database;
+        this.timeProvider = timeProvider;
+        cursorSigningKey = HMACSHA256.HashData(
+            tokenSecret,
+            Encoding.UTF8.GetBytes("Hesabyar.Sync.Cursor.v1"));
+    }
+
     private const int CurrentSchemaVersion = 1;
     private const int MaximumPayloadBytes = 256 * 1024;
     private const int MaximumBatchBytes = 1024 * 1024;
@@ -133,27 +153,57 @@ public sealed class SyncService(IdentityDbContext database, TimeProvider timePro
         return new SyncPullResponse(nextCursor, hasMore, changes);
     }
 
-    private static string EncodeCursor(Guid userId, long lastId)
+    private string EncodeCursor(Guid userId, long lastId)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(new CursorPayload(userId, lastId), JsonOptions);
-        return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        var payloadBytes = JsonSerializer.SerializeToUtf8Bytes(new CursorPayload(userId, lastId), JsonOptions);
+        var payload = EncodeBase64Url(payloadBytes);
+        var signature = HMACSHA256.HashData(cursorSigningKey, Encoding.UTF8.GetBytes(payload));
+        return $"{payload}.{EncodeBase64Url(signature)}";
     }
 
-    private static long DecodeCursor(string? cursor, Guid userId)
+    private long DecodeCursor(string? cursor, Guid userId)
     {
         if (string.IsNullOrWhiteSpace(cursor))
             return 0;
+
         try
         {
-            var normalized = cursor.Replace('-', '+').Replace('_', '/');
-            normalized = normalized.PadRight(normalized.Length + (4 - normalized.Length % 4) % 4, '=');
-            var payload = JsonSerializer.Deserialize<CursorPayload>(Convert.FromBase64String(normalized), JsonOptions);
+            var parts = cursor.Split('.');
+            if (parts.Length != 2)
+                throw new SyncCursorException();
+
+            var suppliedSignature = DecodeBase64Url(parts[1]);
+            var expectedSignature = HMACSHA256.HashData(cursorSigningKey, Encoding.UTF8.GetBytes(parts[0]));
+            if (!CryptographicOperations.FixedTimeEquals(suppliedSignature, expectedSignature))
+                throw new SyncCursorException();
+
+            var payload = JsonSerializer.Deserialize<CursorPayload>(DecodeBase64Url(parts[0]), JsonOptions);
             if (payload is null || payload.UserId != userId || payload.LastId < 0)
                 throw new SyncCursorException();
             return payload.LastId;
         }
-        catch (FormatException) { throw new SyncCursorException(); }
-        catch (JsonException) { throw new SyncCursorException(); }
+        catch (SyncCursorException)
+        {
+            throw;
+        }
+        catch (FormatException)
+        {
+            throw new SyncCursorException();
+        }
+        catch (JsonException)
+        {
+            throw new SyncCursorException();
+        }
+    }
+
+    private static string EncodeBase64Url(byte[] value) =>
+        Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private static byte[] DecodeBase64Url(string value)
+    {
+        var normalized = value.Replace('-', '+').Replace('_', '/');
+        normalized = normalized.PadRight(normalized.Length + (4 - normalized.Length % 4) % 4, '=');
+        return Convert.FromBase64String(normalized);
     }
 
     private sealed record CursorPayload(Guid UserId, long LastId);
