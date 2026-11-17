@@ -83,9 +83,9 @@ public sealed class LoansViewModel(IServiceScopeFactory scopeFactory, IDateCalen
     }
 }
 
-public sealed record LoanChoice(Guid Id, string Name, string CurrencyCode)
+public sealed record LoanChoice(Guid Id, string Name, string? CurrencyCode = null)
 {
-    public string DisplayName => $"{Name} ({CurrencyCode})";
+    public string DisplayName => string.IsNullOrWhiteSpace(CurrencyCode) ? Name : $"{Name} ({CurrencyCode})";
 }
 public sealed record LoanListItem(Guid Id, string Name, string DirectionText, string AccountName, string PersonName,
     string PrincipalText, string RemainingText, long RemainingMinor, long PrincipalMinor,
