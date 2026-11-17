@@ -39,7 +39,7 @@ public partial class LoansPage : ContentPage
             _viewModel.Accounts.Select(x => x.DisplayName).ToArray());
         var account = _viewModel.Accounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
-        var currencyCode = string.IsNullOrWhiteSpace(currencyCode) ? "IRR" : currencyCode;
+        var currencyCode = string.IsNullOrWhiteSpace(account.CurrencyCode) ? "IRR" : account.CurrencyCode;
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({currencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!MoneyDisplayService.TryParse(amountText, currencyCode, out var principal))
