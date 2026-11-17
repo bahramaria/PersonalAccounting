@@ -39,7 +39,9 @@ public sealed class AccessTokenAuthenticationHandlerTests
         var secret = RandomNumberGenerator.GetBytes(32);
         var token = CreateToken(secret, Guid.NewGuid(), FixedNow, FixedNow.AddMinutes(10));
         var parts = token.Split('.');
-        parts[2] = parts[2][..^1] + (parts[2][^1] == 'A' ? 'B' : 'A');
+        var signature = Decode(parts[2]);
+        signature[0] ^= 0x01;
+        parts[2] = Encode(signature);
 
         var result = await AuthenticateAsync(secret, string.Join('.', parts));
 
@@ -172,6 +174,13 @@ public sealed class AccessTokenAuthenticationHandlerTests
         var unsigned = $"{header}.{payload}";
         var signature = HMACSHA256.HashData(secret, Encoding.ASCII.GetBytes(unsigned));
         return $"{unsigned}.{Encode(signature)}";
+    }
+
+    private static byte[] Decode(string value)
+    {
+        var normalized = value.Replace('-', '+').Replace('_', '/');
+        normalized = normalized.PadRight(normalized.Length + (4 - normalized.Length % 4) % 4, '=');
+        return Convert.FromBase64String(normalized);
     }
 
     private static string Encode(byte[] value) =>
