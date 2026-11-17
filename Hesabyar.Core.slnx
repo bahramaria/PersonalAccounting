@@ -5,6 +5,7 @@
     <Project Path="src/Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
     <Project Path="src/Hesabyar.Localization/Hesabyar.Localization.csproj" />
     <Project Path="src/Hesabyar.Sync.Contracts/Hesabyar.Sync.Contracts.csproj" />
+    <Project Path="src/Hesabyar.Server/Hesabyar.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hesabyar.Domain.Tests/Hesabyar.Domain.Tests.csproj" />
@@ -12,5 +13,6 @@
     <Project Path="tests/Hesabyar.Infrastructure.Tests/Hesabyar.Infrastructure.Tests.csproj" />
     <Project Path="tests/Hesabyar.Localization.Tests/Hesabyar.Localization.Tests.csproj" />
     <Project Path="tests/Hesabyar.Sync.Contracts.Tests/Hesabyar.Sync.Contracts.Tests.csproj" />
+    <Project Path="tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj" />
   </Folder>
 </Solution>
