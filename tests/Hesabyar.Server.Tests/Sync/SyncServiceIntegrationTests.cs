@@ -107,6 +107,14 @@ public sealed class SyncServiceIntegrationTests
             Assert.Single(second.Changes);
             Assert.Equal(changes[2].ChangeId, second.Changes[0].ChangeId);
 
+            var cursorParts = first.NextCursor!.Split('.');
+            Assert.Equal(2, cursorParts.Length);
+            var alteredSignature = (cursorParts[1][0] == 'A' ? "B" : "A") + cursorParts[1][1..];
+            var tamperedCursor = $"{cursorParts[0]}.{alteredSignature}";
+            await Assert.ThrowsAsync<SyncCursorException>(() =>
+                service.PullAsync(userId,
+                    new SyncPullRequest(tamperedCursor, 2, deviceId), CancellationToken.None));
+
             var (anotherUser, anotherDevice) = await database.AddAnotherUserAndDeviceAsync();
             await Assert.ThrowsAsync<SyncCursorException>(() =>
                 service.PullAsync(anotherUser,
@@ -149,7 +157,11 @@ public sealed class SyncServiceIntegrationTests
         {
             var context = CreateContext();
             _serviceContexts.Add(context);
-            return new SyncService(context, TimeProvider.System);
+            return new SyncService(
+                context,
+                TimeProvider.System,
+                System.Security.Cryptography.SHA256.HashData(
+                    System.Text.Encoding.UTF8.GetBytes("Hesabyar.Sync.IntegrationTests.Secret.v1")));
         }
 
         public async Task<(Guid UserId, Guid DeviceId)> AddAnotherUserAndDeviceAsync()
