@@ -126,6 +126,46 @@ public sealed class SyncServiceIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task PushAndPull_RejectRevokedDeviceSession()
+    {
+        var database = await TestDatabase.CreateAsync();
+        try
+        {
+            var userId = await database.AddUserAndDeviceAsync();
+            var deviceId = database.DeviceId;
+            var service = database.CreateService();
+            await service.PushAsync(
+                userId,
+                new SyncPushRequest(deviceId, [CreateChange(deviceId, 1)]),
+                CancellationToken.None);
+
+            await using (var context = database.CreateContext())
+            {
+                var session = await context.RefreshTokenSessions
+                    .SingleAsync(x => x.UserId == userId && x.DeviceId == deviceId);
+                session.RevokedAtUtc = DateTimeOffset.UtcNow;
+                await context.SaveChangesAsync();
+            }
+
+            await Assert.ThrowsAsync<SyncDeviceNotRegisteredException>(() =>
+                service.PushAsync(
+                    userId,
+                    new SyncPushRequest(deviceId, [CreateChange(deviceId, 2)]),
+                    CancellationToken.None));
+
+            await Assert.ThrowsAsync<SyncDeviceNotRegisteredException>(() =>
+                service.PullAsync(
+                    userId,
+                    new SyncPullRequest(null, 100, deviceId),
+                    CancellationToken.None));
+        }
+        finally
+        {
+            await database.DisposeAsync();
+        }
+    }
+
     private static SyncChange CreateChange(Guid deviceId, long sequence) =>
         new(Guid.NewGuid(), Guid.NewGuid(), "Account", SyncOperation.Upsert, 1,
             new SyncVersionStamp(DateTimeOffset.Parse("2026-11-17T10:00:00Z").AddSeconds(sequence), deviceId, sequence),
