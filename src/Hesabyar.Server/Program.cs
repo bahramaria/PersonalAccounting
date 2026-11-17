@@ -4,6 +4,8 @@ using Hesabyar.Server.Persistence;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("Identity");
@@ -24,7 +26,11 @@ builder.Services.AddScoped<IPhoneOtpStore, EfPhoneOtpStore>();
 builder.Services.AddScoped<PhoneOtpService>();
 builder.Services.AddScoped<PhoneOtpAccountService>();
 builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddSingleton(tokenSecret);
 builder.Services.AddSingleton(new PhoneOtpTokenIssuer(tokenSecret, TimeSpan.FromMinutes(15)));
+builder.Services.AddAuthentication("Bearer")
+    .AddScheme<AuthenticationSchemeOptions, AccessTokenAuthenticationHandler>("Bearer", _ => { });
+builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -47,6 +53,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 app.UseHttpsRedirection();
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
@@ -154,8 +162,34 @@ app.MapPost("/api/v1/auth/logout", async (
     return revoked ? Results.NoContent() : Results.NotFound();
 });
 
+app.MapGet("/api/v1/auth/sessions", async (
+    ClaimsPrincipal principal,
+    RefreshTokenService refreshTokens,
+    CancellationToken cancellationToken) =>
+{
+    if (!TryGetUserId(principal, out var userId))
+        return Results.Unauthorized();
+    var sessions = await refreshTokens.GetActiveSessionsAsync(userId, cancellationToken);
+    return Results.Ok(sessions);
+}).RequireAuthorization();
+
+app.MapDelete("/api/v1/auth/sessions/{deviceId:guid}", async (
+    Guid deviceId,
+    ClaimsPrincipal principal,
+    RefreshTokenService refreshTokens,
+    CancellationToken cancellationToken) =>
+{
+    if (!TryGetUserId(principal, out var userId))
+        return Results.Unauthorized();
+    await refreshTokens.RevokeDeviceAsync(userId, deviceId, cancellationToken);
+    return Results.NoContent();
+}).RequireAuthorization();
+
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.Run();
+
+static bool TryGetUserId(ClaimsPrincipal principal, out Guid userId) =>
+    Guid.TryParseExact(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, "N", out userId);
 
 static byte[] ReadSecret(string? value, string key)
 {
