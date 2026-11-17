@@ -1,3 +1,4 @@
+using Hesabyar.App.Services;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
 using Hesabyar.Localization;
@@ -152,7 +153,7 @@ public partial class RecurringTransactionsPage : ContentPage
         var amountText = await DisplayPromptAsync(
             AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (!TryParseAmount(amountText, out var amount))
+        if (!MoneyDisplayService.TryParse(amountText, account.CurrencyCode, out var amount))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionAmountInvalid, AppStrings.Ok);
             return;

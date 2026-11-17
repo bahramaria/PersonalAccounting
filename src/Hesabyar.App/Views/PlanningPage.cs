@@ -1,3 +1,4 @@
+using Hesabyar.App.Services;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
 using Hesabyar.Localization;
@@ -143,7 +144,7 @@ public sealed class PlanningPage : ContentPage
         if (endText is null || !_calendar.TryParse(endText, out var end)) return;
         var limitText = await DisplayPromptAsync(AppStrings.BudgetLimitPrompt, $"{AppStrings.BudgetLimitPrompt} ({category.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (limitText is null || !TryParseAmount(limitText, out var limit) || limit <= 0)
+        if (limitText is null || !MoneyDisplayService.TryParse(limitText, category.CurrencyCode, out var limit) || limit <= 0)
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.BudgetSaveFailed, AppStrings.Ok);
             return;
@@ -159,9 +160,9 @@ public sealed class PlanningPage : ContentPage
         var item = _viewModel.Budgets.FirstOrDefault(x => x.Id == id);
         if (item is null) return;
         var text = await DisplayPromptAsync(AppStrings.BudgetEdit, $"{AppStrings.BudgetLimitPrompt} ({item.CurrencyCode})",
-            AppStrings.Save, AppStrings.Cancel, initialValue: item.LimitText, keyboard: Keyboard.Numeric);
+            AppStrings.Save, AppStrings.Cancel, initialValue: MoneyDisplayService.FormatInput(item.LimitMinor, item.CurrencyCode), keyboard: Keyboard.Numeric);
         if (text is null) return;
-        if (!TryParseAmount(text, out var limit) || limit <= 0 ||
+        if (!MoneyDisplayService.TryParse(text, item.CurrencyCode, out var limit) || limit <= 0 ||
             !await _viewModel.UpdateBudgetLimitAsync(id, limit))
             await DisplayAlertAsync(AppStrings.ValidationError,
                 string.IsNullOrWhiteSpace(_viewModel.StatusMessage) ? AppStrings.BudgetSaveFailed : _viewModel.StatusMessage,

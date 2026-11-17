@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.Application.Planning;
 using Hesabyar.App.Resources.Strings;
+using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,8 +30,10 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
                 .GetAsync(today.AddYears(-1), today.AddYears(2), cancellationToken);
             Budgets.Clear();
             foreach (var item in budgets)
-                Budgets.Add(new BudgetListItem(item.Id, item.CategoryName, item.LimitMinor.ToString("N0"),
-                    item.SpentMinor.ToString("N0"), item.CurrencyCode, item.UsageRatio, item.IsActive,
+                Budgets.Add(new BudgetListItem(item.Id, item.CategoryName,
+                    MoneyDisplayService.FormatNumber(item.LimitMinor, item.CurrencyCode),
+                    MoneyDisplayService.FormatNumber(item.SpentMinor, item.CurrencyCode),
+                    item.LimitMinor, item.CurrencyCode, item.UsageRatio, item.IsActive,
                     $"{calendar.Format(item.PeriodStart)} — {calendar.Format(item.PeriodEnd)}"));
             Tags.Clear();
             foreach (var tag in await provider.GetRequiredService<TagService>().GetAsync(cancellationToken))
@@ -110,4 +113,4 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
 
 public sealed record PlanningCategory(Guid Id, string Name, string CurrencyCode);
 public sealed record BudgetListItem(Guid Id, string CategoryName, string LimitText, string SpentText,
-    string CurrencyCode, decimal UsageRatio, bool IsActive, string PeriodText);
+    long LimitMinor, string CurrencyCode, decimal UsageRatio, bool IsActive, string PeriodText);

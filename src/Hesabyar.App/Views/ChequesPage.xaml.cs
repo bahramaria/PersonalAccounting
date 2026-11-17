@@ -1,3 +1,4 @@
+using Hesabyar.App.Services;
 using Hesabyar.Application.Cheques;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
@@ -43,7 +44,7 @@ public partial class ChequesPage : ContentPage
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ChequeInvalid, AppStrings.Ok); return; }
         var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount,
             $"{AppStrings.ChequeAmount} ({currencyCode})", AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (!TryParseAmount(amountText, out var amount))
+        if (!MoneyDisplayService.TryParse(amountText, currencyCode, out var amount))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ChequeInvalid, AppStrings.Ok); return; }
         var personText = await DisplayActionSheetAsync(AppStrings.ChequePerson, AppStrings.Skip, null,
             _viewModel.People.Select(x => x.Name).ToArray());
@@ -71,7 +72,7 @@ public partial class ChequesPage : ContentPage
             var dueText = await DisplayPromptAsync(AppStrings.ChequeDueDate, AppStrings.ChequeDueDate, AppStrings.Save, AppStrings.Cancel, initialValue: cheque.DueDateText);
             if (!_calendar.TryParse(dueText, out var dueDate)) return;
             var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount, $"{AppStrings.ChequeAmount} ({cheque.CurrencyCode})",
-                AppStrings.Save, AppStrings.Cancel, initialValue: cheque.AmountMinor.ToString(), keyboard: Keyboard.Numeric);
+                AppStrings.Save, AppStrings.Cancel, initialValue: MoneyDisplayService.FormatInput(cheque.AmountMinor, cheque.CurrencyCode), keyboard: Keyboard.Numeric);
             if (!TryParseAmount(amountText, out var amount)) return;
             var personText = await DisplayActionSheetAsync(AppStrings.ChequePerson, AppStrings.Skip, null, _viewModel.People.Select(x => x.Name).ToArray());
             var person = _viewModel.People.FirstOrDefault(x => x.Name == personText);

@@ -1,3 +1,4 @@
+using Hesabyar.App.Services;
 using Hesabyar.Application.Loans;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.ViewModels;
@@ -40,7 +41,7 @@ public partial class LoansPage : ContentPage
         if (account is null) return;
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (!TryParseAmount(amountText, out var principal))
+        if (!MoneyDisplayService.TryParse(amountText, account.CurrencyCode, out var principal))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanInvalid, AppStrings.Ok); return; }
         var startText = await DisplayPromptAsync(AppStrings.LoanStartDate, AppStrings.LoanStartDate, AppStrings.Save, AppStrings.Cancel);
         if (!_calendar.TryParse(startText, out var startDate))
@@ -72,10 +73,12 @@ public partial class LoansPage : ContentPage
                 if (!_calendar.TryParse(dueText, out var due) || due <= startDate) return;
                 var principalText = await DisplayPromptAsync(AppStrings.LoanInstallmentPrincipal, $"{AppStrings.LoanInstallmentPrincipal} ({account.CurrencyCode})",
                     AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-                if (!TryParseAmount(principalText, out var part)) return;
+                if (!MoneyDisplayService.TryParse(principalText, account.CurrencyCode, out var part)) return;
                 var interestText = await DisplayPromptAsync(AppStrings.LoanInstallmentInterest, $"{AppStrings.LoanInstallmentInterest} ({account.CurrencyCode})",
                     AppStrings.Save, AppStrings.Skip, keyboard: Keyboard.Numeric, initialValue: "0");
-                if (!TryParseOptionalAmount(interestText, out var interest)) return;
+                var interest = 0L;
+                if (!string.IsNullOrWhiteSpace(interestText) &&
+                    !MoneyDisplayService.TryParse(interestText, account.CurrencyCode, out interest, allowZero: true)) return;
                 rows.Add(new ManualInstallmentRequest(due, part, interest));
             }
             manual = rows;
@@ -113,7 +116,7 @@ public partial class LoansPage : ContentPage
         if (account is null) return;
         var amountText = await DisplayPromptAsync(AppStrings.LoanPaymentAmount, $"{AppStrings.LoanPaymentAmount} ({loan.Loan.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (!TryParseAmount(amountText, out var amount) || amount > loan.RemainingMinor)
+        if (!MoneyDisplayService.TryParse(amountText, loan.Loan.CurrencyCode, out var amount) || amount > loan.RemainingMinor)
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanInvalid, AppStrings.Ok); return; }
         if (!await _viewModel.PayAsync(loan.Id, account.Id, amount, DateOnly.FromDateTime(DateTime.Today)))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);

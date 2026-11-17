@@ -1,3 +1,4 @@
+using Hesabyar.App.Services;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Application.Transactions;
 using Hesabyar.App.ViewModels;
@@ -234,12 +235,10 @@ public partial class TransactionsPage : ContentPage
         var currencyCode = _viewModel.Accounts.First(x => x.Id == accountId).CurrencyCode;
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt,
             $"{AppStrings.TransactionAmountPrompt} ({currencyCode})", AppStrings.Save, AppStrings.Cancel,
-            initialValue: existing?.AmountMinor.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            initialValue: existing is null ? null : MoneyDisplayService.FormatInput(existing.AmountMinor, currencyCode),
             keyboard: Keyboard.Numeric);
         if (amountText is null) return;
-        var normalized = NormalizeDigits(amountText).Replace(",", "").Replace("٬", "").Replace(" ", "");
-        if (!long.TryParse(normalized, System.Globalization.NumberStyles.None,
-                System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+        if (!MoneyDisplayService.TryParse(amountText, currencyCode, out var amount))
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionAmountInvalid, AppStrings.Ok);
             return;
@@ -265,12 +264,13 @@ public partial class TransactionsPage : ContentPage
                 AppStrings.TransactionExchangeDestinationAmountPrompt,
                 $"{AppStrings.TransactionExchangeDestinationAmountPrompt} ({_viewModel.Accounts.First(x => x.Id == secondId).CurrencyCode})",
                 AppStrings.Save, AppStrings.Cancel,
-                initialValue: existing?.CounterAmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                initialValue: existing?.CounterAmountMinor is long counterMinor
+                    ? MoneyDisplayService.FormatInput(counterMinor, _viewModel.Accounts.First(x => x.Id == secondId).CurrencyCode)
+                    : null,
                 keyboard: Keyboard.Numeric);
             if (destinationAmountText is null) return;
-            var destinationNormalized = NormalizeDigits(destinationAmountText).Replace(",", "").Replace("٬", "").Replace(" ", "");
-            if (!long.TryParse(destinationNormalized, System.Globalization.NumberStyles.None,
-                    System.Globalization.CultureInfo.InvariantCulture, out var destinationAmount) || destinationAmount <= 0)
+            if (!MoneyDisplayService.TryParse(destinationAmountText,
+                    _viewModel.Accounts.First(x => x.Id == secondId).CurrencyCode, out var destinationAmount))
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.TransactionAmountInvalid, AppStrings.Ok);
                 return;
