@@ -44,6 +44,47 @@ public sealed class ChequeRepositoryTests
     }
 
     [Fact]
+    public async Task ChequeClearing_UsesChequeCurrencyAndRejectsOtherCurrencyAccounts()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.MigrateAsync();
+
+        var usdBank = new DbAccount
+        {
+            Name = "USD bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "USD"
+        };
+        var irrBank = new DbAccount
+        {
+            Name = "IRR bank", Type = AccountType.Asset, Kind = AccountKind.Bank, CurrencyCode = "IRR"
+        };
+        db.Accounts.AddRange(usdBank, irrBank);
+        await db.SaveChangesAsync();
+
+        var repository = new ChequesRepository(db);
+        var id = await repository.CreateAsync(new CreateChequeRequest(
+            ChequeDirection.Received, "Foreign bank", "USD-1", null,
+            new DateOnly(2026, 12, 1), null, 750, "USD cheque", "USD"),
+            DateTimeOffset.UtcNow, CancellationToken.None);
+        Assert.NotNull(id);
+
+        Assert.False(await repository.ChangeStatusAsync(id.Value, ChequeStatus.Cleared, irrBank.Id,
+            new DateOnly(2026, 12, 1), DateTimeOffset.UtcNow, CancellationToken.None));
+        Assert.True(await repository.ChangeStatusAsync(id.Value, ChequeStatus.Cleared, usdBank.Id,
+            new DateOnly(2026, 12, 1), DateTimeOffset.UtcNow, CancellationToken.None));
+        Assert.Equal(750, await db.Postings.Where(x => x.AccountId == usdBank.Id).SumAsync(x => x.AmountMinor));
+        var eventPostings = await db.Transactions.Where(x => x.Kind == TransactionKind.ChequeEvent)
+            .SelectMany(x => x.Postings).ToListAsync();
+        Assert.All(eventPostings, x => Assert.Equal("USD", x.CurrencyCode));
+
+        Assert.True(await repository.ChangeStatusAsync(id.Value, ChequeStatus.Returned, null,
+            new DateOnly(2026, 12, 2), DateTimeOffset.UtcNow.AddMinutes(1), CancellationToken.None));
+        Assert.Equal(0L, await db.Postings.Where(x => x.AccountId == usdBank.Id).SumAsync(x => x.AmountMinor));
+    }
+
+    [Fact]
     public async Task DuplicateBankSerialOrSayadId_IsRejected()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

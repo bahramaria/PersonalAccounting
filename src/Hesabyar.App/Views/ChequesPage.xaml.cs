@@ -30,6 +30,9 @@ public partial class ChequesPage : ContentPage
         var directionText = await DisplayActionSheetAsync(AppStrings.ChequeAdd, AppStrings.Cancel, null,
             AppStrings.ChequeReceived, AppStrings.ChequeIssued);
         if (directionText != AppStrings.ChequeReceived && directionText != AppStrings.ChequeIssued) return;
+        var currencyCode = await DisplayActionSheetAsync(AppStrings.ChequeCurrency, AppStrings.Cancel, null,
+            _viewModel.CurrencyCodes.ToArray());
+        if (string.IsNullOrWhiteSpace(currencyCode) || currencyCode == AppStrings.Cancel) return;
         var bank = await DisplayPromptAsync(AppStrings.ChequeBank, AppStrings.ChequeBank, AppStrings.Save, AppStrings.Cancel, maxLength: 80);
         if (string.IsNullOrWhiteSpace(bank)) return;
         var serial = await DisplayPromptAsync(AppStrings.ChequeSerial, AppStrings.ChequeSerial, AppStrings.Save, AppStrings.Cancel, maxLength: 40);
@@ -38,7 +41,8 @@ public partial class ChequesPage : ContentPage
         var dueText = await DisplayPromptAsync(AppStrings.ChequeDueDate, AppStrings.ChequeDueDate, AppStrings.Save, AppStrings.Cancel);
         if (!_calendar.TryParse(dueText, out var dueDate))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ChequeInvalid, AppStrings.Ok); return; }
-        var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount, AppStrings.ChequeAmount, AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
+        var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount,
+            $"{AppStrings.ChequeAmount} ({currencyCode})", AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!TryParseAmount(amountText, out var amount))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ChequeInvalid, AppStrings.Ok); return; }
         var personText = await DisplayActionSheetAsync(AppStrings.ChequePerson, AppStrings.Skip, null,
@@ -46,7 +50,7 @@ public partial class ChequesPage : ContentPage
         var person = _viewModel.People.FirstOrDefault(x => x.Name == personText);
         var note = await DisplayPromptAsync(AppStrings.ChequeNote, AppStrings.ChequeNote, AppStrings.Save, AppStrings.Skip, maxLength: 500);
         var request = new CreateChequeRequest(directionText == AppStrings.ChequeReceived ? ChequeDirection.Received : ChequeDirection.Issued,
-            bank, serial, sayad, dueDate, person?.Id, amount, note);
+            bank, serial, sayad, dueDate, person?.Id, amount, note, currencyCode);
         if (!await _viewModel.CreateAsync(request))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
     }
@@ -56,7 +60,7 @@ public partial class ChequesPage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not ChequeListItem cheque) return;
         if (sender is CollectionView list) list.SelectedItem = null;
         var actions = new List<string> { AppStrings.ChequeEdit, AppStrings.ChequeChangeStatus, AppStrings.ChequeDelete };
-        var action = await DisplayActionSheetAsync($"{cheque.BankName} · {cheque.SerialNumber}", AppStrings.Cancel, null, actions.ToArray());
+        var action = await DisplayActionSheetAsync($"{cheque.BankName} · {cheque.SerialNumber} · {cheque.CurrencyCode}", AppStrings.Cancel, null, actions.ToArray());
         if (action == AppStrings.ChequeEdit)
         {
             var bank = await DisplayPromptAsync(AppStrings.ChequeBank, AppStrings.ChequeBank, AppStrings.Save, AppStrings.Cancel, initialValue: cheque.BankName);
@@ -66,12 +70,13 @@ public partial class ChequesPage : ContentPage
             var sayad = await DisplayPromptAsync(AppStrings.ChequeSayad, AppStrings.ChequeSayad, AppStrings.Save, AppStrings.Skip, initialValue: cheque.SayadNumber);
             var dueText = await DisplayPromptAsync(AppStrings.ChequeDueDate, AppStrings.ChequeDueDate, AppStrings.Save, AppStrings.Cancel, initialValue: cheque.DueDateText);
             if (!_calendar.TryParse(dueText, out var dueDate)) return;
-            var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount, AppStrings.ChequeAmount, AppStrings.Save, AppStrings.Cancel, initialValue: cheque.AmountMinor.ToString(), keyboard: Keyboard.Numeric);
+            var amountText = await DisplayPromptAsync(AppStrings.ChequeAmount, $"{AppStrings.ChequeAmount} ({cheque.CurrencyCode})",
+                AppStrings.Save, AppStrings.Cancel, initialValue: cheque.AmountMinor.ToString(), keyboard: Keyboard.Numeric);
             if (!TryParseAmount(amountText, out var amount)) return;
             var personText = await DisplayActionSheetAsync(AppStrings.ChequePerson, AppStrings.Skip, null, _viewModel.People.Select(x => x.Name).ToArray());
             var person = _viewModel.People.FirstOrDefault(x => x.Name == personText);
             var note = await DisplayPromptAsync(AppStrings.ChequeNote, AppStrings.ChequeNote, AppStrings.Save, AppStrings.Skip, initialValue: cheque.Note);
-            if (!await _viewModel.UpdateAsync(cheque.Id, new UpdateChequeRequest(bank, serial, sayad, dueDate, person?.Id, amount, note)))
+            if (!await _viewModel.UpdateAsync(cheque.Id, new UpdateChequeRequest(bank, serial, sayad, dueDate, person?.Id, amount, note, cheque.CurrencyCode)))
                 await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
             return;
         }
@@ -104,11 +109,12 @@ public partial class ChequesPage : ContentPage
         Guid? accountId = null;
         if (next == ChequeStatus.Cleared)
         {
-            if (_viewModel.Accounts.Count == 0)
+            var matchingAccounts = _viewModel.Accounts.Where(x => x.CurrencyCode == cheque.CurrencyCode).ToArray();
+            if (matchingAccounts.Length == 0)
             { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.ChequeAccountRequired, AppStrings.Ok); return; }
             var accountName = await DisplayActionSheetAsync(AppStrings.TransactionAccountPrompt, AppStrings.Cancel, null,
-                _viewModel.Accounts.Select(x => x.Name).ToArray());
-            accountId = _viewModel.Accounts.FirstOrDefault(x => x.Name == accountName)?.Id;
+                matchingAccounts.Select(x => x.DisplayName).ToArray());
+            accountId = matchingAccounts.FirstOrDefault(x => x.DisplayName == accountName)?.Id;
             if (accountId is null) return;
         }
         if (!await _viewModel.ChangeStatusAsync(cheque.Id, next.Value, accountId))

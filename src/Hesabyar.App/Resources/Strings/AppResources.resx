@@ -219,7 +219,8 @@
   <data name="ChequeSayad" xml:space="preserve"><value>Sayad ID (optional)</value></data>
   <data name="ChequeDueDate" xml:space="preserve"><value>Due date (year/month/day)</value></data>
   <data name="ChequePerson" xml:space="preserve"><value>Person (optional)</value></data>
-  <data name="ChequeAmount" xml:space="preserve"><value>Amount in IRR</value></data>
+  <data name="ChequeAmount" xml:space="preserve"><value>Amount</value></data>
+   <data name="ChequeCurrency" xml:space="preserve"><value>Cheque currency</value></data>
   <data name="ChequeNote" xml:space="preserve"><value>Note</value></data>
   <data name="ChequePending" xml:space="preserve"><value>Pending</value></data>
   <data name="ChequeCleared" xml:space="preserve"><value>Cleared / paid</value></data>

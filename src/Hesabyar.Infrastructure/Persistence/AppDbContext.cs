@@ -204,6 +204,7 @@ public sealed class AppDbContext(
         entity.Property(x => x.SayadNumber).HasMaxLength(24);
         entity.Property(x => x.DueDate).HasColumnType("TEXT");
         entity.Property(x => x.Note).HasMaxLength(500);
+        entity.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
         entity.HasIndex(x => new { x.Direction, x.BankName, x.SerialNumber }).IsUnique().HasFilter("\"IsDeleted\" = 0");
         entity.HasIndex(x => x.SayadNumber).IsUnique().HasFilter("\"SayadNumber\" IS NOT NULL AND \"IsDeleted\" = 0");
         entity.HasIndex(x => new { x.IsArchived, x.DueDate });

@@ -11,6 +11,7 @@ public sealed class DbCheque : DbEntity
     public DateOnly DueDate { get; set; }
     public Guid? PersonId { get; set; }
     public long AmountMinor { get; set; }
+    public string CurrencyCode { get; set; } = "IRR";
     public string? Note { get; set; }
     public ChequeStatus Status { get; set; }
     public bool IsArchived { get; set; }

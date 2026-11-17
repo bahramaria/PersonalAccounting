@@ -14,9 +14,11 @@ namespace Hesabyar.App.ViewModels;
 public sealed class ChequesViewModel(IServiceScopeFactory scopeFactory, IDateCalendarService calendar) : ObservableObject
 {
     private string _statusMessage = string.Empty;
+    private IReadOnlyList<string> _currencyCodes = ["IRR"];
     public ObservableCollection<ChequeListItem> Cheques { get; } = [];
     public ObservableCollection<ChequeChoice> People { get; } = [];
     public ObservableCollection<ChequeChoice> Accounts { get; } = [];
+    public IReadOnlyList<string> CurrencyCodes => _currencyCodes;
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
@@ -36,17 +38,21 @@ public sealed class ChequesViewModel(IServiceScopeFactory scopeFactory, IDateCal
             foreach (var cheque in result.Value)
                 Cheques.Add(new ChequeListItem(cheque.Id, cheque.Direction, cheque.BankName, cheque.SerialNumber,
                     cheque.SayadNumber, calendar.Format(cheque.DueDate), cheque.DueDate,
-                    MoneyDisplayService.Format(cheque.AmountMinor), cheque.AmountMinor, cheque.PersonName ?? string.Empty,
-                    StatusText(cheque.Status), cheque.Status, cheque.Note, cheque.PersonId, cheque.IsArchived, ReminderText(cheque.DueDate, cheque.Status)));
+                    MoneyDisplayService.Format(cheque.AmountMinor, cheque.CurrencyCode), cheque.AmountMinor, cheque.PersonName ?? string.Empty,
+                    StatusText(cheque.Status), cheque.Status, cheque.Note, cheque.PersonId, cheque.IsArchived,
+                    ReminderText(cheque.DueDate, cheque.Status), cheque.CurrencyCode));
             People.Clear();
-            foreach (var person in people.Where(x => !x.IsArchived))
+            foreach (var person in people.Where(x => !x.IsArchived).GroupBy(x => x.Id).Select(x => x.First()))
                 People.Add(new ChequeChoice(person.Id, person.Name));
             Accounts.Clear();
             if (accounts.IsSuccess && accounts.Value is not null)
                 foreach (var account in accounts.Value.Where(x => !x.Account.IsArchived &&
-                    x.Account.Type == AccountType.Asset && x.Account.CurrencyCode == "IRR" &&
+                    x.Account.Type == AccountType.Asset &&
                     x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet))
-                    Accounts.Add(new ChequeChoice(account.Account.Id, account.Account.Name));
+                    Accounts.Add(new ChequeChoice(account.Account.Id, account.Account.Name, account.Account.CurrencyCode));
+            _currencyCodes = Accounts.Select(x => x.CurrencyCode).Where(x => x is not null)
+                .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).Cast<string>().ToArray();
+            if (_currencyCodes.Count == 0) _currencyCodes = ["IRR"];
             StatusMessage = string.Empty;
         }
         catch { StatusMessage = AppStrings.ChequeLoadFailed; }
@@ -117,10 +123,14 @@ public sealed class ChequesViewModel(IServiceScopeFactory scopeFactory, IDateCal
     };
 }
 
-public sealed record ChequeChoice(Guid Id, string Name);
+public sealed record ChequeChoice(Guid Id, string Name, string? CurrencyCode = null)
+{
+    public string DisplayName => CurrencyCode is null ? Name : $"{Name} ({CurrencyCode})";
+}
 public sealed record ChequeListItem(Guid Id, ChequeDirection Direction, string BankName, string SerialNumber,
     string? SayadNumber, string DueDateText, DateOnly DueDate, string AmountText, long AmountMinor,
-    string PersonName, string StatusText, ChequeStatus Status, string? Note, Guid? PersonId, bool IsArchived, string ReminderText)
+    string PersonName, string StatusText, ChequeStatus Status, string? Note, Guid? PersonId, bool IsArchived, string ReminderText,
+    string CurrencyCode)
 {
     public string DirectionText => Direction == ChequeDirection.Received ? AppStrings.ChequeReceived : AppStrings.ChequeIssued;
 }

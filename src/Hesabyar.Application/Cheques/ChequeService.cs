@@ -10,7 +10,7 @@ public sealed class ChequeService(IChequeRepository repository, IClock clock)
     public async Task<Result<Guid>> CreateAsync(CreateChequeRequest request, CancellationToken cancellationToken = default)
     {
         var validation = Validate(request.Direction, request.BankName, request.SerialNumber, request.SayadNumber,
-            request.DueDate, request.AmountMinor, request.Note);
+            request.DueDate, request.AmountMinor, request.Note, request.CurrencyCode);
         if (validation is not null)
             return Result<Guid>.Failure("cheque.invalid", validation);
         var id = await repository.CreateAsync(request with
@@ -18,7 +18,8 @@ public sealed class ChequeService(IChequeRepository repository, IClock clock)
             BankName = request.BankName.Trim(),
             SerialNumber = request.SerialNumber.Trim(),
             SayadNumber = Normalize(request.SayadNumber),
-            Note = Normalize(request.Note)
+            Note = Normalize(request.Note),
+            CurrencyCode = request.CurrencyCode.Trim().ToUpperInvariant()
         }, clock.UtcNow, cancellationToken);
         return id is Guid value
             ? Result<Guid>.Success(value)
@@ -30,12 +31,13 @@ public sealed class ChequeService(IChequeRepository repository, IClock clock)
         if (string.IsNullOrWhiteSpace(request.BankName) || request.BankName.Trim().Length > 80 ||
             string.IsNullOrWhiteSpace(request.SerialNumber) || request.SerialNumber.Trim().Length > 40 ||
             request.SayadNumber?.Trim().Length > 24 || request.AmountMinor <= 0 ||
-            request.Note?.Length > 500)
+            request.Note?.Length > 500 || !IsValidCurrencyCode(request.CurrencyCode))
             return Result<bool>.Failure("cheque.invalid", "Cheque details are invalid.");
         var updated = await repository.UpdateAsync(id, request with
         {
             BankName = request.BankName.Trim(), SerialNumber = request.SerialNumber.Trim(),
-            SayadNumber = Normalize(request.SayadNumber), Note = Normalize(request.Note)
+            SayadNumber = Normalize(request.SayadNumber), Note = Normalize(request.Note),
+            CurrencyCode = request.CurrencyCode.Trim().ToUpperInvariant()
         }, clock.UtcNow, cancellationToken);
         return updated ? Result<bool>.Success(true) :
             Result<bool>.Failure("cheque.update.failed", "Cheque was not found or its serial number is duplicated.");
@@ -74,15 +76,19 @@ public sealed class ChequeService(IChequeRepository repository, IClock clock)
     }
 
     private static string? Validate(ChequeDirection direction, string bank, string serial, string? sayad,
-        DateOnly dueDate, long amount, string? note)
+        DateOnly dueDate, long amount, string? note, string currencyCode)
     {
         if (!Enum.IsDefined(direction) || string.IsNullOrWhiteSpace(bank) || bank.Trim().Length > 80 ||
             string.IsNullOrWhiteSpace(serial) || serial.Trim().Length > 40 ||
             sayad?.Trim().Length > 24 || amount <= 0 || note?.Length > 500 ||
-            dueDate < new DateOnly(1900, 1, 1) || dueDate > new DateOnly(2200, 12, 31))
+            dueDate < new DateOnly(1900, 1, 1) || dueDate > new DateOnly(2200, 12, 31) ||
+            !IsValidCurrencyCode(currencyCode))
             return "Cheque details are invalid.";
         return null;
     }
+
+    private static bool IsValidCurrencyCode(string? value) =>
+        value is { Length: 3 } && value.All(char.IsAsciiLetter);
 
     private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

@@ -219,7 +219,8 @@
   <data name="ChequeSayad" xml:space="preserve"><value>شناسه صیاد (اختیاری)</value></data>
   <data name="ChequeDueDate" xml:space="preserve"><value>سررسید (سال/ماه/روز)</value></data>
   <data name="ChequePerson" xml:space="preserve"><value>شخص (اختیاری)</value></data>
-  <data name="ChequeAmount" xml:space="preserve"><value>مبلغ به ریال</value></data>
+  <data name="ChequeAmount" xml:space="preserve"><value>مبلغ</value></data>
+   <data name="ChequeCurrency" xml:space="preserve"><value>ارز چک</value></data>
   <data name="ChequeNote" xml:space="preserve"><value>یادداشت</value></data>
   <data name="ChequePending" xml:space="preserve"><value>در انتظار</value></data>
   <data name="ChequeCleared" xml:space="preserve"><value>وصول/پرداخت شد</value></data>

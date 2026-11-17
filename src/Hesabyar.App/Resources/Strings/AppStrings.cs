@@ -271,6 +271,7 @@ public static class AppStrings
     public static string ChequeDueDate => Get(nameof(ChequeDueDate));
     public static string ChequePerson => Get(nameof(ChequePerson));
     public static string ChequeAmount => Get(nameof(ChequeAmount));
+    public static string ChequeCurrency => Get(nameof(ChequeCurrency));
     public static string ChequeNote => Get(nameof(ChequeNote));
     public static string ChequePending => Get(nameof(ChequePending));
     public static string ChequeCleared => Get(nameof(ChequeCleared));
