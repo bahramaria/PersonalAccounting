@@ -20,12 +20,12 @@ public sealed class SyncServiceIntegrationTests
             var change = CreateChange(deviceId, 1);
 
             var first = await service.PushAsync(userId, new SyncPushRequest(deviceId, [change]), CancellationToken.None);
-            Assert.Equal([change.ChangeId], first.AcceptedChangeIds);
+            Assert.Equal(new[] { change.ChangeId }, first.AcceptedChangeIds);
             Assert.Empty(first.DuplicateChangeIds);
 
             var replay = await service.PushAsync(userId, new SyncPushRequest(deviceId, [change]), CancellationToken.None);
             Assert.Empty(replay.AcceptedChangeIds);
-            Assert.Equal([change.ChangeId], replay.DuplicateChangeIds);
+            Assert.Equal(new[] { change.ChangeId }, replay.DuplicateChangeIds);
 
             var altered = change with { Fields = [SyncFieldValue.From("Name", "Altered")] };
             await Assert.ThrowsAsync<ArgumentException>(() =>
@@ -126,6 +126,7 @@ public sealed class SyncServiceIntegrationTests
     {
         private const string ConnectionPrefix =
             "Server=localhost,1433;User Id=sa;Password=Your_password123!;Encrypt=False;TrustServerCertificate=True;";
+        private readonly List<IdentityDbContext> _serviceContexts = [];
         private readonly DbContextOptions<IdentityDbContext> _options =
             new DbContextOptionsBuilder<IdentityDbContext>()
                 .UseSqlServer($"{ConnectionPrefix}Database={databaseName};")
@@ -143,7 +144,12 @@ public sealed class SyncServiceIntegrationTests
 
         public IdentityDbContext CreateContext() => new(_options);
 
-        public SyncService CreateService() => new(CreateContext(), TimeProvider.System);
+        public SyncService CreateService()
+        {
+            var context = CreateContext();
+            _serviceContexts.Add(context);
+            return new SyncService(context, TimeProvider.System);
+        }
 
         public async Task<Guid> AddUserAndDeviceAsync()
         {
@@ -174,6 +180,8 @@ public sealed class SyncServiceIntegrationTests
 
         public async ValueTask DisposeAsync()
         {
+            foreach (var context in _serviceContexts)
+                await context.DisposeAsync();
             await using var context = CreateContext();
             await context.Database.EnsureDeletedAsync();
         }
