@@ -8,6 +8,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<PhoneOtpRateLimitEntity> PhoneOtpRateLimits => Set<PhoneOtpRateLimitEntity>();
     public DbSet<IdentityUserEntity> Users => Set<IdentityUserEntity>();
     public DbSet<RefreshTokenSessionEntity> RefreshTokenSessions => Set<RefreshTokenSessionEntity>();
+    public DbSet<SyncChangeLogEntity> SyncChangeLogs => Set<SyncChangeLogEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +41,20 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         refresh.HasIndex(x => new { x.UserId, x.DeviceId });
         refresh.HasIndex(x => x.FamilyId);
         refresh.HasIndex(x => x.ExpiresAtUtc);
+        var sync = modelBuilder.Entity<SyncChangeLogEntity>();
+        sync.ToTable("SyncChangeLogs");
+        sync.HasKey(x => x.Id);
+        sync.Property(x => x.AggregateType).HasMaxLength(64).IsRequired();
+        sync.Property(x => x.Payload).IsRequired();
+        sync.HasIndex(x => new { x.UserId, x.ChangeId }).IsUnique();
+        sync.HasIndex(x => new { x.UserId, x.DeviceId, x.DeviceSequence }).IsUnique();
+        sync.HasIndex(x => new { x.UserId, x.Id });
+        sync.HasIndex(x => new { x.UserId, x.AggregateId, x.Id });
+        sync.HasOne<IdentityUserEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         refresh.HasOne<IdentityUserEntity>()
             .WithMany()
             .HasForeignKey(x => x.UserId)
