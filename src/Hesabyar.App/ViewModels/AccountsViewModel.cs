@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Hesabyar.Application.Accounts;
 using Hesabyar.App.Resources.Strings;
+using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -232,14 +233,8 @@ public sealed class AccountsViewModel : ObservableObject
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
     }
 
-    private static string FormatBalance(long balanceMinor, string currencyCode)
-    {
-        var formattedAmount = balanceMinor.ToString(
-            "N0",
-            System.Globalization.CultureInfo.CurrentCulture);
-
-        return $"{BidiTextFormatter.IsolateLeftToRight(formattedAmount)} {AppStrings.CurrencyRial}";
-    }
+    private static string FormatBalance(long balanceMinor, string currencyCode) =>
+        MoneyDisplayService.Format(balanceMinor, currencyCode);
 
     private static string GetKindName(AccountKind kind) => kind switch
     {

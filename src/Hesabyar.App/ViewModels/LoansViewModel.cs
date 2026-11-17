@@ -36,18 +36,18 @@ public sealed class LoansViewModel(IServiceScopeFactory scopeFactory, IDateCalen
                 var overdue = next is null || next.DueDate >= today ? 0 : today.DayNumber - next.DueDate.DayNumber;
                 Loans.Add(new LoanListItem(loan.Id, loan.Name,
                     loan.Direction == LoanDirection.Given ? AppStrings.LoanGiven : AppStrings.LoanReceived,
-                    loan.AccountName, loan.PersonName ?? string.Empty, MoneyDisplayService.Format(loan.PrincipalMinor),
-                    MoneyDisplayService.Format(loan.RemainingMinor), loan.RemainingMinor, loan.PrincipalMinor,
+                    loan.AccountName, loan.PersonName ?? string.Empty, MoneyDisplayService.Format(loan.PrincipalMinor, loan.CurrencyCode),
+                    MoneyDisplayService.Format(loan.RemainingMinor, loan.CurrencyCode), loan.RemainingMinor, loan.PrincipalMinor,
                     next is null ? string.Empty : calendar.Format(next.DueDate), next?.DueDate,
-                    next is null ? string.Empty : MoneyDisplayService.Format(next.RemainingMinor),
+                    next is null ? string.Empty : MoneyDisplayService.Format(next.RemainingMinor, loan.CurrencyCode),
                     next?.RemainingMinor ?? 0, overdue, loan.Installments.Count, loan.IsClosed, loan));
             }
             Accounts.Clear();
             if (accounts.IsSuccess && accounts.Value is not null)
                 foreach (var account in accounts.Value.Where(x => !x.Account.IsArchived &&
-                    x.Account.Type == AccountType.Asset && x.Account.CurrencyCode == "IRR" &&
+                    x.Account.Type == AccountType.Asset &&
                     x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet))
-                    Accounts.Add(new LoanChoice(account.Account.Id, account.Account.Name));
+                    Accounts.Add(new LoanChoice(account.Account.Id, account.Account.Name, account.Account.CurrencyCode));
             People.Clear();
             foreach (var person in people.Where(x => !x.IsArchived))
                 People.Add(new LoanChoice(person.Id, person.Name));
@@ -77,13 +77,16 @@ public sealed class LoansViewModel(IServiceScopeFactory scopeFactory, IDateCalen
     public string GetScheduleText(LoanListItem item)
     {
         var rows = item.Loan.Installments.OrderBy(x => x.DueDate).ThenBy(x => x.Sequence)
-            .Select(x => $"{calendar.Format(x.DueDate)}  {MoneyDisplayService.Format(x.RemainingMinor)}  " +
+            .Select(x => $"{calendar.Format(x.DueDate)}  {MoneyDisplayService.Format(x.RemainingMinor, item.Loan.CurrencyCode)}  " +
                 $"{AppStrings.LoanInstallmentNumber} {x.Sequence}");
         return string.Join(Environment.NewLine, rows);
     }
 }
 
-public sealed record LoanChoice(Guid Id, string Name);
+public sealed record LoanChoice(Guid Id, string Name, string CurrencyCode)
+{
+    public string DisplayName => $"{Name} ({CurrencyCode})";
+}
 public sealed record LoanListItem(Guid Id, string Name, string DirectionText, string AccountName, string PersonName,
     string PrincipalText, string RemainingText, long RemainingMinor, long PrincipalMinor,
     string NextDueText, DateOnly? NextDueDate, string NextAmountText, long NextAmountMinor,

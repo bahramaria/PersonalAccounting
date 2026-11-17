@@ -173,6 +173,31 @@ public sealed class LoanServiceTests
         Assert.Null(loan.NextInstallment);
     }
 
+    [Fact]
+    public async Task Loans_UseTheFundingAccountCurrencyAndRejectPaymentsFromOtherCurrencies()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var usdAccount = await fixture.CreateAccountAsync("USD");
+        var eurAccount = await fixture.CreateAccountAsync("EUR");
+        var request = new CreateLoanRequest("USD loan", LoanDirection.Given, usdAccount, null, 10_000,
+            Start, LoanScheduleType.Manual, 1, 0,
+            [new ManualInstallmentRequest(Start.AddMonths(1), 10_000, 500)], null);
+
+        var created = await fixture.Service.CreateAsync(request);
+        Assert.True(created.IsSuccess);
+        var loan = Assert.Single(await fixture.Service.GetLoansAsync());
+        Assert.Equal("USD", loan.CurrencyCode);
+
+        var wrongCurrencyPayment = await fixture.Service.PayAsync(created.Value, eurAccount, 1_000, Start.AddMonths(1));
+        Assert.True(wrongCurrencyPayment.IsFailure);
+
+        var payment = await fixture.Service.PayAsync(created.Value, usdAccount, 1_000, Start.AddMonths(1));
+        Assert.True(payment.IsSuccess);
+        var postings = await fixture.Db.Transactions.Where(x => x.LoanId == created.Value)
+            .SelectMany(x => x.Postings).ToListAsync();
+        Assert.All(postings, x => Assert.Equal("USD", x.CurrencyCode));
+    }
+
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly SqliteConnection _connection;
@@ -196,10 +221,11 @@ public sealed class LoanServiceTests
             return new Fixture(connection, db);
         }
 
-        public async Task<Guid> CreateAccountAsync()
+        public async Task<Guid> CreateAccountAsync(string currencyCode = "IRR")
         {
             var service = new AccountService(new EfAccountingRepository(Db), new FixedClock());
-            var result = await service.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank));
+            var result = await service.CreateAsync(new CreateAccountRequest(
+                "Bank", AccountType.Asset, AccountKind.Bank, CurrencyCode: currencyCode));
             Assert.True(result.IsSuccess);
             return result.Value;
         }

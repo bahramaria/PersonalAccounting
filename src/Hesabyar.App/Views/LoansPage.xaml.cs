@@ -35,8 +35,8 @@ public partial class LoansPage : ContentPage
         var name = await DisplayPromptAsync(AppStrings.LoanName, AppStrings.LoanName, AppStrings.Save, AppStrings.Cancel, maxLength: 120);
         if (string.IsNullOrWhiteSpace(name)) return;
         var accountText = await DisplayActionSheetAsync(AppStrings.TransactionAccountPrompt, AppStrings.Cancel, null,
-            _viewModel.Accounts.Select(x => x.Name).ToArray());
-        var account = _viewModel.Accounts.FirstOrDefault(x => x.Name == accountText);
+            _viewModel.Accounts.Select(x => x.DisplayName).ToArray());
+        var account = _viewModel.Accounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
@@ -104,11 +104,12 @@ public partial class LoansPage : ContentPage
             return;
         }
         if (action != AppStrings.LoanPay) return;
-        if (_viewModel.Accounts.Count == 0)
+        var paymentAccounts = _viewModel.Accounts.Where(x => x.CurrencyCode == loan.Loan.CurrencyCode).ToArray();
+        if (paymentAccounts.Length == 0)
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanNoAccount, AppStrings.Ok); return; }
         var accountText = await DisplayActionSheetAsync(AppStrings.TransactionAccountPrompt, AppStrings.Cancel, null,
-            _viewModel.Accounts.Select(x => x.Name).ToArray());
-        var account = _viewModel.Accounts.FirstOrDefault(x => x.Name == accountText);
+            paymentAccounts.Select(x => x.DisplayName).ToArray());
+        var account = paymentAccounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
         var amountText = await DisplayPromptAsync(AppStrings.LoanPaymentAmount, AppStrings.LoanPaymentAmount,
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);

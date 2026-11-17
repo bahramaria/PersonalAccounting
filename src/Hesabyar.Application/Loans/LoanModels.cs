@@ -20,7 +20,7 @@ public sealed record LoanInstallmentSnapshot(
 
 public sealed record LoanSnapshot(
     Guid Id, string Name, LoanDirection Direction, LoanScheduleType ScheduleType,
-    long PrincipalMinor, int AnnualRateBasisPoints, DateOnly StartDate, string AccountName,
+    long PrincipalMinor, int AnnualRateBasisPoints, DateOnly StartDate, string AccountName, string CurrencyCode,
     string? PersonName, string? Note, bool IsClosed, IReadOnlyList<LoanInstallmentSnapshot> Installments)
 {
     public long RemainingPrincipalMinor => Installments.Sum(x => x.RemainingPrincipalMinor);
