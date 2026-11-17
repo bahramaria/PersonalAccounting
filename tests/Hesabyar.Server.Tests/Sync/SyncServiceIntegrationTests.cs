@@ -107,9 +107,10 @@ public sealed class SyncServiceIntegrationTests
             Assert.Single(second.Changes);
             Assert.Equal(changes[2].ChangeId, second.Changes[0].ChangeId);
 
-            var anotherUser = Guid.NewGuid();
+            var (anotherUser, anotherDevice) = await database.AddAnotherUserAndDeviceAsync();
             await Assert.ThrowsAsync<SyncCursorException>(() =>
-                service.PullAsync(anotherUser, new SyncPullRequest(first.NextCursor, 2, deviceId), CancellationToken.None));
+                service.PullAsync(anotherUser,
+                    new SyncPullRequest(first.NextCursor, 2, anotherDevice), CancellationToken.None));
         }
         finally
         {
@@ -149,6 +150,34 @@ public sealed class SyncServiceIntegrationTests
             var context = CreateContext();
             _serviceContexts.Add(context);
             return new SyncService(context, TimeProvider.System);
+        }
+
+        public async Task<(Guid UserId, Guid DeviceId)> AddAnotherUserAndDeviceAsync()
+        {
+            var user = new IdentityUserEntity
+            {
+                Id = Guid.NewGuid(),
+                PhoneNumber = $"+989{Random.Shared.Next(100000000, 999999999)}",
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                IsActive = true
+            };
+            var deviceId = Guid.NewGuid();
+            var now = DateTimeOffset.UtcNow;
+            await using var context = CreateContext();
+            context.Users.Add(user);
+            context.RefreshTokenSessions.Add(new RefreshTokenSessionEntity
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = Guid.NewGuid(),
+                UserId = user.Id,
+                DeviceId = deviceId,
+                DeviceName = "Second sync integration test",
+                TokenHash = System.Security.Cryptography.SHA256.HashData(Guid.NewGuid().ToByteArray()),
+                CreatedAtUtc = now,
+                ExpiresAtUtc = now.AddDays(30)
+            });
+            await context.SaveChangesAsync();
+            return (user.Id, deviceId);
         }
 
         public async Task<Guid> AddUserAndDeviceAsync()
