@@ -2,6 +2,7 @@ using Hesabyar.Application.Identity;
 using Hesabyar.Server.Identity;
 using Hesabyar.Server.Persistence;
 using Hesabyar.Server.Sync;
+using Hesabyar.Sync.Contracts;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
