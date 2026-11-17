@@ -28,6 +28,7 @@
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Infrastructure/Hesabyar.Infrastructure.csproj" />
     <ProjectReference Include="../Hesabyar.Localization/Hesabyar.Localization.csproj" />
+    <ProjectReference Include="../Hesabyar.Sync.Contracts/Hesabyar.Sync.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android' Or '$(MauiTargetFramework)' == 'net10.0-android'">
     <Compile Remove="Platforms/Windows/**/*.cs" />
