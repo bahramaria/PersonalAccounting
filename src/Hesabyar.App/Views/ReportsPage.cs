@@ -19,6 +19,7 @@ public sealed class ReportsPage : ContentPage
     private FinancialReportSnapshot? _snapshot;
     private DateOnly _fromDate;
     private DateOnly _toDate;
+    private string _currencyCode = "IRR";
 
     public ReportsPage(
         ReportsService reports,
@@ -43,13 +44,15 @@ public sealed class ReportsPage : ContentPage
 
         var rangeButton = new Button { Text = AppStrings.ReportsRange };
         rangeButton.Clicked += OnRangeClicked;
+        var currencyButton = new Button { Text = AppStrings.ReportsCurrency };
+        currencyButton.Clicked += OnCurrencyClicked;
         var csvButton = new Button { Text = AppStrings.ReportsExportCsv };
         csvButton.Clicked += OnExportCsvClicked;
         var excelButton = new Button { Text = AppStrings.ReportsExportExcel };
         excelButton.Clicked += OnExportExcelClicked;
 
         var exportButtons = new HorizontalStackLayout { Spacing = 8, Children = { csvButton, excelButton } };
-        var toolbar = new VerticalStackLayout { Spacing = 6, Children = { rangeButton, exportButtons } };
+        var toolbar = new VerticalStackLayout { Spacing = 6, Children = { rangeButton, currencyButton, exportButtons } };
         _body.Children.Add(new Label { Text = AppStrings.ReportsHeading, FontSize = 26, FontAttributes = FontAttributes.Bold });
         _body.Children.Add(toolbar);
         _body.Children.Add(_rangeLabel);
@@ -82,10 +85,13 @@ public sealed class ReportsPage : ContentPage
         _status.Text = string.Empty;
         while (_body.Children.Count > 4)
             _body.Children.RemoveAt(4);
-        _rangeLabel.Text = $"{_calendar.Format(_fromDate)} — {_calendar.Format(_toDate)}";
         try
         {
-            _snapshot = await _reports.GetAsync(_fromDate, _toDate);
+            var currencies = await _reports.GetCurrenciesAsync();
+            if (!currencies.Contains(_currencyCode, StringComparer.OrdinalIgnoreCase))
+                _currencyCode = currencies.FirstOrDefault() ?? "IRR";
+            _rangeLabel.Text = $"{_calendar.Format(_fromDate)} — {_calendar.Format(_toDate)} · {_currencyCode}";
+            _snapshot = await _reports.GetAsync(_fromDate, _toDate, currencyCode: _currencyCode);
             RenderReport(_snapshot);
         }
         catch (Exception)
@@ -93,6 +99,17 @@ public sealed class ReportsPage : ContentPage
             _snapshot = null;
             _status.Text = AppStrings.ReportsLoadFailed;
         }
+    }
+
+    private async void OnCurrencyClicked(object? sender, EventArgs e)
+    {
+        var currencies = await _reports.GetCurrenciesAsync();
+        if (currencies.Count == 0) return;
+        var selected = await DisplayActionSheetAsync(AppStrings.ReportsCurrency, AppStrings.Cancel, null,
+            currencies.ToArray());
+        if (string.IsNullOrWhiteSpace(selected) || selected == AppStrings.Cancel) return;
+        _currencyCode = selected;
+        await LoadAsync();
     }
 
     private async void OnRangeClicked(object? sender, EventArgs e)
@@ -146,14 +163,14 @@ public sealed class ReportsPage : ContentPage
         while (_body.Children.Count > 4)
             _body.Children.RemoveAt(4);
 
-        _rangeLabel.Text = $"{_calendar.Format(report.FromDate)} — {_calendar.Format(report.ToDate)}";
+        _rangeLabel.Text = $"{_calendar.Format(report.FromDate)} — {_calendar.Format(report.ToDate)} · {report.CurrencyCode}";
 
-        AddMetric(AppStrings.ReportsIncome, report.IncomeMinor);
-        AddMetric(AppStrings.ReportsExpenses, report.ExpenseMinor);
-        AddMetric(AppStrings.ReportsNetCashFlow, checked(report.IncomeMinor - report.ExpenseMinor));
-        AddMetric(AppStrings.ReportsAssets, report.AssetsMinor);
-        AddMetric(AppStrings.ReportsLiabilities, report.LiabilitiesMinor);
-        AddMetric(AppStrings.ReportsNetWorth, report.NetWorthMinor);
+        AddMetric(AppStrings.ReportsIncome, report.IncomeMinor, report.CurrencyCode);
+        AddMetric(AppStrings.ReportsExpenses, report.ExpenseMinor, report.CurrencyCode);
+        AddMetric(AppStrings.ReportsNetCashFlow, checked(report.IncomeMinor - report.ExpenseMinor), report.CurrencyCode);
+        AddMetric(AppStrings.ReportsAssets, report.AssetsMinor, report.CurrencyCode);
+        AddMetric(AppStrings.ReportsLiabilities, report.LiabilitiesMinor, report.CurrencyCode);
+        AddMetric(AppStrings.ReportsNetWorth, report.NetWorthMinor, report.CurrencyCode);
 
         AddSection(AppStrings.ReportsMonthlyTrend);
         if (report.MonthlyTrend.Count == 0)
@@ -165,20 +182,20 @@ public sealed class ReportsPage : ContentPage
             {
                 var item = new VerticalStackLayout { Spacing = 4 };
                 item.Children.Add(new Label { Text = month.Label, FontAttributes = FontAttributes.Bold });
-                item.Children.Add(CreateBar($"{AppStrings.ReportsIncome}: {MoneyDisplayService.Format(month.IncomeMinor)}", month.IncomeMinor, max));
-                item.Children.Add(CreateBar($"{AppStrings.ReportsExpenses}: {MoneyDisplayService.Format(month.ExpenseMinor)}", month.ExpenseMinor, max));
+                item.Children.Add(CreateBar($"{AppStrings.ReportsIncome}: {MoneyDisplayService.Format(month.IncomeMinor, report.CurrencyCode)}", month.IncomeMinor, max));
+                item.Children.Add(CreateBar($"{AppStrings.ReportsExpenses}: {MoneyDisplayService.Format(month.ExpenseMinor, report.CurrencyCode)}", month.ExpenseMinor, max));
                 _body.Children.Add(item);
             }
         }
 
         AddSection(AppStrings.ReportsByCategory);
-        AddBars(report.ExpensesByCategory.Select(x => (x.Name, x.AmountMinor)).ToArray());
+        AddBars(report.ExpensesByCategory.Select(x => (x.Name, x.AmountMinor)).ToArray(), report.CurrencyCode);
 
         AddSection(AppStrings.ReportsAccounts);
         foreach (var account in report.Accounts)
             _body.Children.Add(new Label
             {
-                Text = $"{account.Name} · {MoneyDisplayService.Format(account.BalanceMinor)}",
+                Text = $"{account.Name} · {MoneyDisplayService.Format(account.BalanceMinor, report.CurrencyCode)}",
                 FontSize = 13
             });
 
@@ -189,12 +206,12 @@ public sealed class ReportsPage : ContentPage
         foreach (var person in people)
             _body.Children.Add(new Label
             {
-                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : person.BalanceMinor < 0 ? AppStrings.ReportsIOweThem : AppStrings.PersonSettled)} · {MoneyDisplayService.Format(person.BalanceMinor)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor)} · {AppStrings.ReportsActivityCount}: {person.ActivityCount}",
+                Text = $"{person.Name} · {(person.BalanceMinor > 0 ? AppStrings.ReportsTheyOweMe : person.BalanceMinor < 0 ? AppStrings.ReportsIOweThem : AppStrings.PersonSettled)} · {MoneyDisplayService.Format(person.BalanceMinor, report.CurrencyCode)} · {AppStrings.ReportsPeriodChange}: {MoneyDisplayService.Format(person.PeriodChangeMinor, report.CurrencyCode)} · {AppStrings.ReportsActivityCount}: {person.ActivityCount}",
                 FontSize = 13
             });
     }
 
-    private void AddMetric(string title, long amount)
+    private void AddMetric(string title, long amount, string currencyCode)
     {
         _body.Children.Add(new Border
         {
@@ -207,7 +224,7 @@ public sealed class ReportsPage : ContentPage
                 Children =
                 {
                     new Label { Text = title, FontSize = 13, TextColor = Colors.Gray },
-                    new Label { Text = MoneyDisplayService.Format(amount), FontSize = 20, FontAttributes = FontAttributes.Bold }
+                    new Label { Text = MoneyDisplayService.Format(amount, currencyCode), FontSize = 20, FontAttributes = FontAttributes.Bold }
                 }
             }
         });
@@ -224,7 +241,7 @@ public sealed class ReportsPage : ContentPage
         });
     }
 
-    private void AddBars(IReadOnlyList<(string Name, long Amount)> items)
+    private void AddBars(IReadOnlyList<(string Name, long Amount)> items, string currencyCode)
     {
         if (items.Count == 0)
         {
@@ -233,7 +250,7 @@ public sealed class ReportsPage : ContentPage
         }
         var max = Math.Max(1L, items.Max(x => x.Amount));
         foreach (var item in items)
-            _body.Children.Add(CreateBar($"{item.Name} · {MoneyDisplayService.Format(item.Amount)}", item.Amount, max));
+            _body.Children.Add(CreateBar($"{item.Name} · {MoneyDisplayService.Format(item.Amount, currencyCode)}", item.Amount, max));
     }
 
     private static View CreateBar(string title, long value, long maximum)

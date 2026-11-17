@@ -103,6 +103,71 @@ public sealed class ReportsServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_FiltersAllTotalsAndRowsBySelectedCurrency()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using (var db = new AppDbContext(options))
+        {
+            await db.Database.EnsureCreatedAsync();
+            var usdCash = new DbAccount { Name = "USD wallet", Type = AccountType.Asset, Kind = AccountKind.Wallet, CurrencyCode = "USD" };
+            var usdFood = new DbAccount { Name = "USD food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "USD" };
+            var usdSalary = new DbAccount { Name = "USD salary", Type = AccountType.Income, Kind = AccountKind.Category, CurrencyCode = "USD" };
+            var irrCash = new DbAccount { Name = "IRR wallet", Type = AccountType.Asset, Kind = AccountKind.Wallet, CurrencyCode = "IRR" };
+            var irrFood = new DbAccount { Name = "IRR food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            db.Accounts.AddRange(usdCash, usdFood, usdSalary, irrCash, irrFood);
+            var date = new DateOnly(2026, 11, 17);
+            db.Transactions.AddRange(
+                new DbLedgerTransaction
+                {
+                    BusinessDate = date, Kind = TransactionKind.Expense, Source = TransactionSource.Manual,
+                    IsConfirmed = true, Description = "USD expense",
+                    Postings =
+                    [
+                        new DbPosting { Account = usdFood, AmountMinor = 25, CurrencyCode = "USD" },
+                        new DbPosting { Account = usdCash, AmountMinor = -25, CurrencyCode = "USD" }
+                    ]
+                },
+                new DbLedgerTransaction
+                {
+                    BusinessDate = date, Kind = TransactionKind.Income, Source = TransactionSource.Manual,
+                    IsConfirmed = true, Description = "USD income",
+                    Postings =
+                    [
+                        new DbPosting { Account = usdCash, AmountMinor = 150, CurrencyCode = "USD" },
+                        new DbPosting { Account = usdSalary, AmountMinor = -150, CurrencyCode = "USD" }
+                    ]
+                },
+                new DbLedgerTransaction
+                {
+                    BusinessDate = date, Kind = TransactionKind.Expense, Source = TransactionSource.Manual,
+                    IsConfirmed = true, Description = "IRR expense",
+                    Postings =
+                    [
+                        new DbPosting { Account = irrFood, AmountMinor = 900_000, CurrencyCode = "IRR" },
+                        new DbPosting { Account = irrCash, AmountMinor = -900_000, CurrencyCode = "IRR" }
+                    ]
+                });
+            await db.SaveChangesAsync();
+        }
+
+        var service = new ReportsService(new TestContextFactory(options));
+        var usd = await service.GetAsync(new DateOnly(2026, 11, 17), new DateOnly(2026, 11, 17), currencyCode: "USD");
+        var irr = await service.GetAsync(new DateOnly(2026, 11, 17), new DateOnly(2026, 11, 17));
+
+        Assert.Equal("USD", usd.CurrencyCode);
+        Assert.Equal(150, usd.IncomeMinor);
+        Assert.Equal(25, usd.ExpenseMinor);
+        Assert.Equal(125, usd.AssetsMinor);
+        Assert.DoesNotContain(usd.Accounts, x => x.Name.Contains("IRR", StringComparison.Ordinal));
+        Assert.Equal(900_000, irr.ExpenseMinor);
+        var currencies = await service.GetCurrenciesAsync();
+        Assert.Contains("USD", currencies);
+        Assert.Contains("IRR", currencies);
+    }
+
+    [Fact]
     public async Task GetAsync_RejectsReversedDateRange()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");

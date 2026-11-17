@@ -44,7 +44,7 @@ public sealed class ReportsExportService
         [
             new("Summary",
             [
-                ["Metric", "Amount (IRR)"],
+                ["Metric", $"Amount ({report.CurrencyCode})"],
                 ["From date", report.FromDate.ToString("yyyy-MM-dd")],
                 ["To date", report.ToDate.ToString("yyyy-MM-dd")],
                 ["Income", report.IncomeMinor],
@@ -55,17 +55,17 @@ public sealed class ReportsExportService
                 ["Net worth", report.NetWorthMinor]
             ]),
             new("Monthly",
-                new[] { new object?[] { "Persian month", "Income (IRR)", "Expenses (IRR)", "Net (IRR)" } }
+                new[] { new object?[] { "Persian month", $"Income ({report.CurrencyCode})", $"Expenses ({report.CurrencyCode})", $"Net ({report.CurrencyCode})" } }
                 .Concat(report.MonthlyTrend.Select(x => (object?[])[x.Label, x.IncomeMinor, x.ExpenseMinor, checked(x.IncomeMinor - x.ExpenseMinor)]))
                 .ToArray()),
             new("Categories",
-                new[] { new object?[] { "Expense category", "Amount (IRR)" } }
+                new[] { new object?[] { "Expense category", $"Amount ({report.CurrencyCode})" } }
                 .Concat(report.ExpensesByCategory.Select(x => (object?[])[x.Name, x.AmountMinor])).ToArray()),
             new("Accounts",
-                new[] { new object?[] { "Account", "Type", "Balance (IRR)" } }
+                new[] { new object?[] { "Account", "Type", $"Balance ({report.CurrencyCode})" } }
                 .Concat(report.Accounts.Select(x => (object?[])[x.Name, x.Type, x.BalanceMinor])).ToArray()),
             new("People",
-                new[] { new object?[] { "Person", "Current balance (IRR)", "Period change (IRR)", "Activities" } }
+                new[] { new object?[] { "Person", $"Current balance ({report.CurrencyCode})", $"Period change ({report.CurrencyCode})", "Activities" } }
                 .Concat(report.People.Select(x => new object?[] { x.Name, x.BalanceMinor, x.PeriodChangeMinor, x.ActivityCount })).ToArray())
         ];
     }
@@ -74,7 +74,7 @@ public sealed class ReportsExportService
     {
         var rows = new List<string[]>
         {
-            new[] { "Summary", "Amount (IRR)" },
+            new[] { "Summary", $"Amount ({report.CurrencyCode})" },
             new[] { "From date", report.FromDate.ToString("yyyy-MM-dd") },
             new[] { "To date", report.ToDate.ToString("yyyy-MM-dd") },
             new[] { "Income", report.IncomeMinor.ToString() },
@@ -84,7 +84,7 @@ public sealed class ReportsExportService
             new[] { "Liabilities", report.LiabilitiesMinor.ToString() },
             new[] { "Net worth", report.NetWorthMinor.ToString() },
             Array.Empty<string>(),
-            new[] { "Monthly trend", "Income (IRR)", "Expenses (IRR)", "Net (IRR)" }
+            new[] { "Monthly trend", $"Income ({report.CurrencyCode})", $"Expenses ({report.CurrencyCode})", $"Net ({report.CurrencyCode})" }
         };
         rows.AddRange(report.MonthlyTrend.Select(x => new[]
         {
@@ -92,13 +92,13 @@ public sealed class ReportsExportService
             checked(x.IncomeMinor - x.ExpenseMinor).ToString()
         }));
         rows.Add([]);
-        rows.Add(["Expense categories", "Amount (IRR)"]);
+        rows.Add(["Expense categories", $"Amount ({report.CurrencyCode})"]);
         rows.AddRange(report.ExpensesByCategory.Select(x => new[] { x.Name, x.AmountMinor.ToString() }));
         rows.Add([]);
-        rows.Add(["Accounts", "Type", "Balance (IRR)"]);
+        rows.Add(["Accounts", "Type", $"Balance ({report.CurrencyCode})"]);
         rows.AddRange(report.Accounts.Select(x => new[] { x.Name, x.Type, x.BalanceMinor.ToString() }));
         rows.Add([]);
-        rows.Add(["People", "Current balance (IRR)", "Period change (IRR)", "Activities"]);
+        rows.Add(["People", $"Current balance ({report.CurrencyCode})", $"Period change ({report.CurrencyCode})", "Activities"]);
         rows.AddRange(report.People.Select(x => new[] { x.Name, x.BalanceMinor.ToString(), x.PeriodChangeMinor.ToString(), x.ActivityCount.ToString() }));
         return rows;
     }

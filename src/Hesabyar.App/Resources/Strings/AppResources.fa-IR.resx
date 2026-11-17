@@ -458,4 +458,5 @@
   <data name="BudgetActivate" xml:space="preserve"><value>فعال‌سازی</value></data>
   <data name="BudgetDeactivateConfirm" xml:space="preserve"><value>این بودجه غیرفعال شود؟ در فهرست باقی می‌ماند و بعداً قابل فعال‌سازی است.</value></data>
   <data name="BudgetInactive" xml:space="preserve"><value>غیرفعال</value></data>
+  <data name="ReportsCurrency" xml:space="preserve"><value>ارز گزارش</value></data>
 </root>

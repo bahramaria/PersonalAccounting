@@ -459,6 +459,7 @@ public static class AppStrings
 
     public static string ReportsHeading => Get(nameof(ReportsHeading));
     public static string ReportsRange => Get(nameof(ReportsRange));
+    public static string ReportsCurrency => Get(nameof(ReportsCurrency));
     public static string ReportsFromDate => Get(nameof(ReportsFromDate));
     public static string ReportsToDate => Get(nameof(ReportsToDate));
     public static string ReportsDateInvalid => Get(nameof(ReportsDateInvalid));
