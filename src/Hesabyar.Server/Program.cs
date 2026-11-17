@@ -81,6 +81,9 @@ app.MapPost("/api/v1/auth/otp/verify", async (
     PhoneOtpTokenIssuer tokens,
     CancellationToken cancellationToken) =>
 {
+    if (request.DeviceId == Guid.Empty)
+        return Results.BadRequest(new { error = "invalid_device_id" });
+
     var result = await otpService.VerifyAsync(
         request.ChallengeId, request.PhoneNumber, request.Code, cancellationToken);
     if (result != PhoneOtpVerificationStatus.Verified)
@@ -93,9 +96,6 @@ app.MapPost("/api/v1/auth/otp/verify", async (
     var phone = PhoneNumberNormalizer.TryNormalizeE164(request.PhoneNumber, out var normalized)
         ? normalized
         : throw new InvalidOperationException("The verified phone number could not be normalized.");
-    if (request.DeviceId == Guid.Empty)
-        return Results.BadRequest(new { error = "invalid_device_id" });
-
     var userId = await accounts.GetOrCreateAsync(phone, cancellationToken);
     var token = tokens.Issue(userId, phone);
     var refreshToken = await refreshTokens.CreateAsync(
