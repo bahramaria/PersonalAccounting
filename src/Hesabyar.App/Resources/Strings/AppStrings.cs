@@ -56,6 +56,7 @@ public static class AppStrings
     public static string DashboardAssets => Get(nameof(DashboardAssets));
     public static string DashboardLiabilities => Get(nameof(DashboardLiabilities));
     public static string DashboardNetWorth => Get(nameof(DashboardNetWorth));
+    public static string DashboardCurrency => Get(nameof(DashboardCurrency));
     public static string DashboardRecentTransactions => Get(nameof(DashboardRecentTransactions));
     public static string DashboardQuickAdd => Get(nameof(DashboardQuickAdd));
     public static string DashboardLoadFailed => Get(nameof(DashboardLoadFailed));

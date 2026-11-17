@@ -459,4 +459,5 @@
   <data name="BudgetDeactivateConfirm" xml:space="preserve"><value>Deactivate this budget? It will remain in the list and can be activated again.</value></data>
   <data name="BudgetInactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="ReportsCurrency" xml:space="preserve"><value>Report currency</value></data>
+  <data name="DashboardCurrency" xml:space="preserve"><value>Balance currency</value></data>
 </root>

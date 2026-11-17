@@ -8,6 +8,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="16">
             <Label Text="{x:Static strings:AppStrings.HomeHeading}" FontSize="28" FontAttributes="Bold" />
+            <Button Text="{x:Static strings:AppStrings.DashboardCurrency}" Clicked="OnCurrencyClicked" />
             <Border Padding="18" StrokeThickness="1" Stroke="#E2E2E2">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{x:Static strings:AppStrings.DashboardAssets}" FontSize="13" />

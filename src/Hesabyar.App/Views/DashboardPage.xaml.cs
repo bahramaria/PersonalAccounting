@@ -24,6 +24,17 @@ public partial class DashboardPage : ContentPage
         await _viewModel.LoadAsync();
     }
 
+    private async void OnCurrencyClicked(object? sender, EventArgs e)
+    {
+        var currencies = _viewModel.CurrencyCodes;
+        if (currencies.Count == 0) return;
+        var selected = await DisplayActionSheetAsync(AppStrings.DashboardCurrency, AppStrings.Cancel, null,
+            currencies.ToArray());
+        if (string.IsNullOrWhiteSpace(selected) || selected == AppStrings.Cancel) return;
+        _viewModel.SelectCurrency(selected);
+        await _viewModel.LoadAsync();
+    }
+
     private async void OnTransactionsClicked(object? sender, EventArgs e) =>
         await Shell.Current.GoToAsync("//transactions");
 
