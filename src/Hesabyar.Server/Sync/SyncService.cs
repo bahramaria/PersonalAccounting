@@ -48,14 +48,20 @@ public sealed class SyncService(IdentityDbContext database, TimeProvider timePro
             throw new SyncDeviceNotRegisteredException();
 
         var changeIds = request.Changes.Select(change => change.ChangeId).ToArray();
-        var existingIds = await database.SyncChangeLogs
+        var existingRows = await database.SyncChangeLogs
             .Where(change => change.UserId == userId && changeIds.Contains(change.ChangeId))
-            .Select(change => change.ChangeId)
+            .Select(change => new { change.ChangeId, change.Payload })
             .ToListAsync(cancellationToken);
-        var existing = existingIds.ToHashSet();
+        var existing = existingRows.ToDictionary(row => row.ChangeId, row => row.Payload);
+        foreach (var item in request.Changes.Select((change, index) => new { Change = change, Payload = payloads[index] }))
+        {
+            if (existing.TryGetValue(item.Change.ChangeId, out var storedPayload) &&
+                !string.Equals(storedPayload, item.Payload, StringComparison.Ordinal))
+                throw new ArgumentException("A previously accepted ChangeId cannot be reused with different content.");
+        }
         var newChanges = request.Changes
             .Select((change, index) => new { Change = change, Payload = payloads[index] })
-            .Where(item => !existing.Contains(item.Change.ChangeId))
+            .Where(item => !existing.ContainsKey(item.Change.ChangeId))
             .ToArray();
 
         if (newChanges.Length > 0)
@@ -89,7 +95,7 @@ public sealed class SyncService(IdentityDbContext database, TimeProvider timePro
         await transaction.CommitAsync(cancellationToken);
         return new SyncPushResponse(
             newChanges.Select(item => item.Change.ChangeId).ToArray(),
-            request.Changes.Where(change => existing.Contains(change.ChangeId))
+            request.Changes.Where(change => existing.ContainsKey(change.ChangeId))
                 .Select(change => change.ChangeId).ToArray(),
             []);
     }
