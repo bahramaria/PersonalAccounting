@@ -56,6 +56,21 @@ public sealed class CloudSessionStore(IDeviceSecretStore secretStore)
         await secretStore.SetAsync(DeviceIdKey, deviceId.ToString("D"));
     }
 
+    public async Task UpdateTokensAsync(
+        string accessToken,
+        DateTimeOffset accessTokenExpiresAtUtc,
+        string refreshToken,
+        DateTimeOffset refreshTokenExpiresAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            throw new ArgumentException("The refreshed cloud tokens are required.");
+
+        await secretStore.SetAsync(AccessTokenKey, accessToken);
+        await secretStore.SetAsync(AccessTokenExpiryKey, accessTokenExpiresAtUtc.ToString("O"));
+        await secretStore.SetAsync(RefreshTokenKey, refreshToken);
+        await secretStore.SetAsync(RefreshTokenExpiryKey, refreshTokenExpiresAtUtc.ToString("O"));
+    }
+
     public async Task<CloudSession?> GetAsync()
     {
         var accessToken = await secretStore.GetAsync(AccessTokenKey);
