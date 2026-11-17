@@ -48,6 +48,17 @@ builder.Services.AddRateLimiter(options =>
             AutoReplenishment = true
         });
     });
+    options.AddPolicy("sync-ip", context =>
+    {
+        var key = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        });
+    });
 });
 
 var app = builder.Build();
@@ -214,7 +225,7 @@ app.MapPost("/api/v1/sync/push", async (
     {
         return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
     }
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("sync-ip");
 
 app.MapPost("/api/v1/sync/pull", async (
     SyncPullRequest request,
@@ -240,7 +251,7 @@ app.MapPost("/api/v1/sync/pull", async (
     {
         return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
     }
-}).RequireAuthorization();
+}).RequireAuthorization().RequireRateLimiting("sync-ip");
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.Run();
