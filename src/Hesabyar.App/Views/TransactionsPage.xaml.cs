@@ -225,8 +225,8 @@ public partial class TransactionsPage : ContentPage
         }
         if (kind is null) return;
 
-        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
-            AppStrings.Save, AppStrings.Cancel,
+        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt,
+            $"{AppStrings.TransactionAmountPrompt} ({currencyCode})", AppStrings.Save, AppStrings.Cancel,
             initialValue: existing?.AmountMinor.ToString(System.Globalization.CultureInfo.InvariantCulture),
             keyboard: Keyboard.Numeric);
         if (amountText is null) return;
@@ -263,7 +263,7 @@ public partial class TransactionsPage : ContentPage
         {
             var destinationAmountText = await DisplayPromptAsync(
                 AppStrings.TransactionExchangeDestinationAmountPrompt,
-                AppStrings.TransactionExchangeDestinationAmountPrompt,
+                $"{AppStrings.TransactionExchangeDestinationAmountPrompt} ({_viewModel.Accounts.First(x => x.Id == secondId).CurrencyCode})",
                 AppStrings.Save, AppStrings.Cancel,
                 initialValue: existing?.CounterAmountMinor?.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 keyboard: Keyboard.Numeric);
@@ -299,11 +299,12 @@ public partial class TransactionsPage : ContentPage
     {
         var items = choices.ToArray();
         if (items.Length == 0) return null;
-        var selectedName = items.FirstOrDefault(x => x.Id == selectedId)?.Name;
-        var labels = selectedName is null ? items.Select(x => x.Name).ToArray()
-            : new[] { selectedName }.Concat(items.Where(x => x.Name != selectedName).Select(x => x.Name)).ToArray();
+        var labelsById = items.ToDictionary(x => x.Id, x => $"{x.Name} ({x.CurrencyCode})");
+        var selectedLabel = selectedId is Guid id && labelsById.TryGetValue(id, out var label) ? label : null;
+        var labels = selectedLabel is null ? items.Select(x => labelsById[x.Id]).ToArray()
+            : new[] { selectedLabel }.Concat(items.Where(x => labelsById[x.Id] != selectedLabel).Select(x => labelsById[x.Id])).ToArray();
         var selected = await DisplayActionSheetAsync(title, AppStrings.Cancel, null, labels);
-        return selected == AppStrings.Cancel ? null : items.FirstOrDefault(x => x.Name == selected)?.Id;
+        return selected == AppStrings.Cancel ? null : items.FirstOrDefault(x => labelsById[x.Id] == selected)?.Id;
     }
 
     private static string NormalizeDigits(string value)
