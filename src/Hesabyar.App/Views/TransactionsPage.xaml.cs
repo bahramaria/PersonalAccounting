@@ -225,6 +225,13 @@ public partial class TransactionsPage : ContentPage
         }
         if (kind is null) return;
 
+        var accountChoices = _viewModel.Accounts.Where(x =>
+            kind is TransactionKind.Transfer or TransactionKind.CurrencyExchange ? x.Type == AccountType.Asset :
+            x.Type == AccountType.Asset || kind == TransactionKind.Expense && x.Type == AccountType.Liability).ToArray();
+        var accountId = await SelectAsync(AppStrings.TransactionAccountPrompt, accountChoices, existing?.AccountId);
+        if (accountId is null) return;
+
+        var currencyCode = _viewModel.Accounts.First(x => x.Id == accountId).CurrencyCode;
         var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt,
             $"{AppStrings.TransactionAmountPrompt} ({currencyCode})", AppStrings.Save, AppStrings.Cancel,
             initialValue: existing?.AmountMinor.ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -238,13 +245,6 @@ public partial class TransactionsPage : ContentPage
             return;
         }
 
-        var accountChoices = _viewModel.Accounts.Where(x =>
-            kind is TransactionKind.Transfer or TransactionKind.CurrencyExchange ? x.Type == AccountType.Asset :
-            x.Type == AccountType.Asset || kind == TransactionKind.Expense && x.Type == AccountType.Liability).ToArray();
-        var accountId = await SelectAsync(AppStrings.TransactionAccountPrompt, accountChoices, existing?.AccountId);
-        if (accountId is null) return;
-
-        var currencyCode = _viewModel.Accounts.First(x => x.Id == accountId).CurrencyCode;
         var secondChoices = kind switch
         {
             TransactionKind.Transfer => _viewModel.Accounts
