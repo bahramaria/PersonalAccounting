@@ -16,23 +16,17 @@ public sealed class RefreshTokenServiceIntegrationTests
             var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-17T12:00:00Z"));
             var userId = await database.AddActiveUserAsync();
             var deviceId = Guid.NewGuid();
-            var initial = await database.CreateTokenAsync(clock, 
-                userId, deviceId, "Integration test device", CancellationToken.None);
+            var initial = await database.CreateTokenAsync(clock, userId, deviceId, "Integration test device");
 
-            var rotated = await database.RotateAsync(clock, 
-                initial.Value, deviceId, CancellationToken.None);
-
+            var rotated = await database.RotateAsync(clock, initial.Value, deviceId);
             Assert.Equal(RefreshTokenStatus.Rotated, rotated.Status);
             Assert.NotNull(rotated.Token);
             Assert.NotEqual(initial.Value, rotated.Token!.Value);
 
-            var replay = await database.CreateService(clock).RotateAsync(
-                initial.Value, deviceId, CancellationToken.None);
-
+            var replay = await database.RotateAsync(clock, initial.Value, deviceId);
             Assert.Equal(RefreshTokenStatus.ReuseDetected, replay.Status);
 
-            var revokedReplacement = await database.CreateService(clock).RotateAsync(
-                rotated.Token.Value, deviceId, CancellationToken.None);
+            var revokedReplacement = await database.RotateAsync(clock, rotated.Token.Value, deviceId);
             Assert.Equal(RefreshTokenStatus.ReuseDetected, revokedReplacement.Status);
         }
         finally
@@ -50,13 +44,10 @@ public sealed class RefreshTokenServiceIntegrationTests
             var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-17T12:00:00Z"));
             var userId = await database.AddActiveUserAsync();
             var deviceId = Guid.NewGuid();
-            var initial = await database.CreateService(clock).CreateAsync(
-                userId, deviceId, "Concurrent test device", CancellationToken.None);
+            var initial = await database.CreateTokenAsync(clock, userId, deviceId, "Concurrent test device");
 
-            var firstRequest = database.RotateAsync(clock, 
-                initial.Value, deviceId, CancellationToken.None);
-            var secondRequest = database.RotateAsync(clock, 
-                initial.Value, deviceId, CancellationToken.None);
+            var firstRequest = database.RotateAsync(clock, initial.Value, deviceId);
+            var secondRequest = database.RotateAsync(clock, initial.Value, deviceId);
             var results = await Task.WhenAll(firstRequest, secondRequest);
 
             Assert.Single(results, result => result.Status == RefreshTokenStatus.Rotated);
@@ -84,15 +75,12 @@ public sealed class RefreshTokenServiceIntegrationTests
             var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-17T12:00:00Z"));
             var userId = await database.AddActiveUserAsync();
             var deviceId = Guid.NewGuid();
-            var initial = await database.CreateService(clock).CreateAsync(
-                userId, deviceId, "Device binding test", CancellationToken.None);
+            var initial = await database.CreateTokenAsync(clock, userId, deviceId, "Device binding test");
 
-            var rejected = await database.CreateService(clock).RotateAsync(
-                initial.Value, Guid.NewGuid(), CancellationToken.None);
+            var rejected = await database.RotateAsync(clock, initial.Value, Guid.NewGuid());
             Assert.Equal(RefreshTokenStatus.Invalid, rejected.Status);
 
-            var valid = await database.CreateService(clock).RotateAsync(
-                initial.Value, deviceId, CancellationToken.None);
+            var valid = await database.RotateAsync(clock, initial.Value, deviceId);
             Assert.Equal(RefreshTokenStatus.Rotated, valid.Status);
         }
         finally
