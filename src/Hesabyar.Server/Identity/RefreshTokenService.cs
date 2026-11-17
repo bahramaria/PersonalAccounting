@@ -6,6 +6,7 @@ namespace Hesabyar.Server.Identity;
 
 public sealed record IssuedRefreshToken(string Value, DateTimeOffset ExpiresAtUtc);
 public sealed record RefreshTokenUser(Guid Id, string PhoneNumber);
+public sealed record RefreshTokenSessionInfo(Guid DeviceId, string DeviceName, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
 public enum RefreshTokenStatus { Rotated, Invalid, ReuseDetected }
 public sealed record RefreshTokenRotation(RefreshTokenStatus Status, Guid UserId, IssuedRefreshToken? Token);
 
@@ -97,6 +98,35 @@ public sealed class RefreshTokenService(IdentityDbContext database, TimeProvider
             .Where(x => x.Id == userId && x.IsActive)
             .Select(x => new RefreshTokenUser(x.Id, x.PhoneNumber))
             .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RefreshTokenSessionInfo>> GetActiveSessionsAsync(
+        Guid userId, CancellationToken cancellationToken)
+    {
+        var now = timeProvider.GetUtcNow();
+        var sessions = await database.RefreshTokenSessions.AsNoTracking()
+            .Where(x => x.UserId == userId && x.RevokedAtUtc == null && x.ExpiresAtUtc > now)
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new RefreshTokenSessionInfo(
+                x.DeviceId, x.DeviceName, x.CreatedAtUtc, x.ExpiresAtUtc))
+            .ToListAsync(cancellationToken);
+        return sessions
+            .GroupBy(x => x.DeviceId)
+            .Select(group => group.First())
+            .ToArray();
+    }
+
+    public async Task<int> RevokeDeviceAsync(
+        Guid userId, Guid deviceId, CancellationToken cancellationToken)
+    {
+        var sessions = await database.RefreshTokenSessions
+            .Where(x => x.UserId == userId && x.DeviceId == deviceId && x.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+        var now = timeProvider.GetUtcNow();
+        foreach (var session in sessions)
+            session.RevokedAtUtc = now;
+        await database.SaveChangesAsync(cancellationToken);
+        return sessions.Count;
+    }
 
     public async Task<bool> RevokeAsync(
         string? token, Guid deviceId, CancellationToken cancellationToken)
