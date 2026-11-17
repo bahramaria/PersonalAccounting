@@ -19,10 +19,10 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         challenge.HasIndex(x => x.ExpiresAtUtc);
 
         var rateLimit = modelBuilder.Entity<PhoneOtpRateLimitEntity>();
-        rateLimit.ToTable("PhoneOtpRateLimits");
+        rateLimit.ToTable("PhoneOtpRateLimits", table =>
+            table.HasCheckConstraint("CK_PhoneOtpRateLimits_RequestCount_NonNegative", "[RequestCount] >= 0"));
         rateLimit.HasKey(x => x.PhoneNumber);
         rateLimit.Property(x => x.PhoneNumber).HasMaxLength(16);
-        rateLimit.HasCheckConstraint("CK_PhoneOtpRateLimits_RequestCount_NonNegative", "[RequestCount] >= 0");
 
         var user = modelBuilder.Entity<IdentityUserEntity>();
         user.ToTable("Users");
