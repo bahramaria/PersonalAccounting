@@ -17,7 +17,7 @@ public sealed class AccessTokenAuthenticationHandler(
 {
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var authorization = Request.Headers.Authorization.ToString();
+        var authorization = Request.Headers["Authorization"].ToString();
         if (string.IsNullOrWhiteSpace(authorization))
             return Task.FromResult(AuthenticateResult.NoResult());
 
