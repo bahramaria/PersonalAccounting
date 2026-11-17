@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Hesabyar.Sync.Contracts;
 
 namespace Hesabyar.App.Services;
@@ -43,7 +44,6 @@ public sealed class SyncApiClient(HttpClient httpClient, CloudSessionStore sessi
 
     private async Task<CloudSession> GetValidSessionAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
         if (httpClient.BaseAddress is null ||
             httpClient.BaseAddress.Scheme != Uri.UriSchemeHttps)
             throw new InvalidOperationException("Configure an HTTPS cloud API base address before synchronizing.");
@@ -52,10 +52,55 @@ public sealed class SyncApiClient(HttpClient httpClient, CloudSessionStore sessi
         if (session is null)
             throw new InvalidOperationException("Sign in to the cloud account before synchronizing.");
 
-        if (session.AccessTokenExpiresAtUtc <= DateTimeOffset.UtcNow)
-            throw new InvalidOperationException("The cloud access token has expired. Refresh the session before synchronizing.");
+        if (session.AccessTokenExpiresAtUtc <= DateTimeOffset.UtcNow.AddSeconds(30))
+        {
+            if (session.RefreshTokenExpiresAtUtc <= DateTimeOffset.UtcNow)
+                throw new InvalidOperationException("The cloud session has expired. Sign in again.");
+
+            session = await RefreshSessionAsync(session, cancellationToken);
+        }
 
         return session;
+    }
+
+    private async Task<CloudSession> RefreshSessionAsync(
+        CloudSession session,
+        CancellationToken cancellationToken)
+    {
+        using var response = await httpClient.PostAsJsonAsync(
+            "/api/v1/auth/refresh",
+            new RefreshRequest(session.RefreshToken, session.DeviceId),
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw new HttpRequestException(
+                "The cloud session could not be refreshed. Sign in again.",
+                null,
+                response.StatusCode);
+
+        var tokens = await response.Content.ReadFromJsonAsync<RefreshResponse>(
+            cancellationToken: cancellationToken)
+            ?? throw new InvalidOperationException("The cloud refresh response was empty.");
+
+        if (string.IsNullOrWhiteSpace(tokens.AccessToken) ||
+            string.IsNullOrWhiteSpace(tokens.RefreshToken) ||
+            tokens.AccessTokenExpiresAtUtc == default ||
+            tokens.RefreshTokenExpiresAtUtc == default)
+            throw new InvalidOperationException("The cloud refresh response is incomplete.");
+
+        await sessionStore.UpdateTokensAsync(
+            tokens.AccessToken,
+            tokens.AccessTokenExpiresAtUtc,
+            tokens.RefreshToken,
+            tokens.RefreshTokenExpiresAtUtc);
+
+        return session with
+        {
+            AccessToken = tokens.AccessToken,
+            AccessTokenExpiresAtUtc = tokens.AccessTokenExpiresAtUtc,
+            RefreshToken = tokens.RefreshToken,
+            RefreshTokenExpiresAtUtc = tokens.RefreshTokenExpiresAtUtc
+        };
     }
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, string path, CloudSession session)
@@ -64,4 +109,14 @@ public sealed class SyncApiClient(HttpClient httpClient, CloudSessionStore sessi
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
         return request;
     }
+
+    private sealed record RefreshRequest(
+        [property: JsonPropertyName("refreshToken")] string RefreshToken,
+        [property: JsonPropertyName("deviceId")] Guid DeviceId);
+
+    private sealed record RefreshResponse(
+        [property: JsonPropertyName("access_token")] string AccessToken,
+        [property: JsonPropertyName("expires_at_utc")] DateTimeOffset AccessTokenExpiresAtUtc,
+        [property: JsonPropertyName("refresh_token")] string RefreshToken,
+        [property: JsonPropertyName("refresh_expires_at_utc")] DateTimeOffset RefreshTokenExpiresAtUtc);
 }
