@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using Hesabyar.Server.Identity;
 using Xunit;
@@ -11,10 +10,14 @@ public sealed class HttpJsonPhoneOtpSenderTests
     [Fact]
     public async Task SendAsync_PostsNormalizedRecipientAndMessageWithConfiguredCredential()
     {
-        HttpRequestMessage? captured = null;
-        var handler = new StubHttpMessageHandler(request =>
+        string? capturedBody = null;
+        string? capturedApiKey = null;
+        HttpMethod? capturedMethod = null;
+        var handler = new StubHttpMessageHandler(async request =>
         {
-            captured = request;
+            capturedMethod = request.Method;
+            capturedApiKey = request.Headers.GetValues("X-Api-Key").Single();
+            capturedBody = await request.Content!.ReadAsStringAsync();
             return new HttpResponseMessage(HttpStatusCode.Accepted);
         });
         using var client = new HttpClient(handler);
@@ -31,10 +34,9 @@ public sealed class HttpJsonPhoneOtpSenderTests
 
         await sender.SendAsync("+989121234567", "123456", CancellationToken.None);
 
-        Assert.NotNull(captured);
-        Assert.Equal(HttpMethod.Post, captured!.Method);
-        Assert.Equal("test-secret", captured.Headers.GetValues("X-Api-Key").Single());
-        using var payload = JsonDocument.Parse(await captured.Content!.ReadAsStringAsync());
+        Assert.Equal(HttpMethod.Post, capturedMethod);
+        Assert.Equal("test-secret", capturedApiKey);
+        using var payload = JsonDocument.Parse(capturedBody!);
         Assert.Equal("+989121234567", payload.RootElement.GetProperty("to").GetString());
         Assert.Contains("123456", payload.RootElement.GetProperty("message").GetString());
         Assert.Equal("Hesabyar", payload.RootElement.GetProperty("sender").GetString());
@@ -44,7 +46,7 @@ public sealed class HttpJsonPhoneOtpSenderTests
     public async Task SendAsync_ThrowsWhenProviderRejectsRequest()
     {
         using var client = new HttpClient(new StubHttpMessageHandler(
-            _ => new HttpResponseMessage(HttpStatusCode.Unauthorized)));
+            _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized))));
         var sender = new HttpJsonPhoneOtpSender(client, new SmsProviderOptions
         {
             Provider = "HttpJson",
@@ -70,11 +72,11 @@ public sealed class HttpJsonPhoneOtpSenderTests
     }
 
     private sealed class StubHttpMessageHandler(
-        Func<HttpRequestMessage, HttpResponseMessage> responseFactory) : HttpMessageHandler
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> responseFactory) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken) =>
-            Task.FromResult(responseFactory(request));
+            responseFactory(request);
     }
 }
