@@ -141,7 +141,7 @@ public sealed class PlanningPage : ContentPage
         var endText = await DisplayPromptAsync(AppStrings.BudgetEndPrompt, AppStrings.BudgetEndPrompt,
             AppStrings.Save, AppStrings.Cancel, initialValue: _calendar.Format(start.AddMonths(1).AddDays(-1)));
         if (endText is null || !_calendar.TryParse(endText, out var end)) return;
-        var limitText = await DisplayPromptAsync(AppStrings.BudgetLimitPrompt, AppStrings.BudgetLimitPrompt,
+        var limitText = await DisplayPromptAsync(AppStrings.BudgetLimitPrompt, $"{AppStrings.BudgetLimitPrompt} ({category.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (limitText is null || !TryParseAmount(limitText, out var limit) || limit <= 0)
         {
@@ -158,7 +158,7 @@ public sealed class PlanningPage : ContentPage
         if (sender is not Button { CommandParameter: Guid id }) return;
         var item = _viewModel.Budgets.FirstOrDefault(x => x.Id == id);
         if (item is null) return;
-        var text = await DisplayPromptAsync(AppStrings.BudgetEdit, AppStrings.BudgetLimitPrompt,
+        var text = await DisplayPromptAsync(AppStrings.BudgetEdit, $"{AppStrings.BudgetLimitPrompt} ({item.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, initialValue: item.LimitText, keyboard: Keyboard.Numeric);
         if (text is null) return;
         if (!TryParseAmount(text, out var limit) || limit <= 0 ||

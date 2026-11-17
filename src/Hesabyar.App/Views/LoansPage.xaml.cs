@@ -38,7 +38,7 @@ public partial class LoansPage : ContentPage
             _viewModel.Accounts.Select(x => x.DisplayName).ToArray());
         var account = _viewModel.Accounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
-        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
+        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!TryParseAmount(amountText, out var principal))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanInvalid, AppStrings.Ok); return; }
@@ -70,10 +70,10 @@ public partial class LoansPage : ContentPage
                 var dueText = await DisplayPromptAsync($"{AppStrings.LoanInstallmentNumber} {i}", AppStrings.LoanDueDate,
                     AppStrings.Save, AppStrings.Cancel);
                 if (!_calendar.TryParse(dueText, out var due) || due <= startDate) return;
-                var principalText = await DisplayPromptAsync(AppStrings.LoanInstallmentPrincipal, AppStrings.LoanInstallmentPrincipal,
+                var principalText = await DisplayPromptAsync(AppStrings.LoanInstallmentPrincipal, $"{AppStrings.LoanInstallmentPrincipal} ({account.CurrencyCode})",
                     AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
                 if (!TryParseAmount(principalText, out var part)) return;
-                var interestText = await DisplayPromptAsync(AppStrings.LoanInstallmentInterest, AppStrings.LoanInstallmentInterest,
+                var interestText = await DisplayPromptAsync(AppStrings.LoanInstallmentInterest, $"{AppStrings.LoanInstallmentInterest} ({account.CurrencyCode})",
                     AppStrings.Save, AppStrings.Skip, keyboard: Keyboard.Numeric, initialValue: "0");
                 if (!TryParseOptionalAmount(interestText, out var interest)) return;
                 rows.Add(new ManualInstallmentRequest(due, part, interest));
@@ -111,7 +111,7 @@ public partial class LoansPage : ContentPage
             paymentAccounts.Select(x => x.DisplayName).ToArray());
         var account = paymentAccounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
-        var amountText = await DisplayPromptAsync(AppStrings.LoanPaymentAmount, AppStrings.LoanPaymentAmount,
+        var amountText = await DisplayPromptAsync(AppStrings.LoanPaymentAmount, $"{AppStrings.LoanPaymentAmount} ({loan.Loan.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!TryParseAmount(amountText, out var amount) || amount > loan.RemainingMinor)
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanInvalid, AppStrings.Ok); return; }
