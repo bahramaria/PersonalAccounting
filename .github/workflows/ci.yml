@@ -24,6 +24,33 @@ jobs:
       - name: Test core
         run: dotnet test Hesabyar.Core.slnx --no-build --configuration Release
 
+  test-server:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Your_password123!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Your_password123!' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore server tests
+        run: dotnet restore tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj
+      - name: Build server tests
+        run: dotnet build tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj --no-restore --configuration Release
+      - name: Test server
+        run: dotnet test tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj --no-build --configuration Release
+
   build-android:
     runs-on: ubuntu-latest
     steps:
