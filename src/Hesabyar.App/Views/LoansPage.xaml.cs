@@ -39,9 +39,10 @@ public partial class LoansPage : ContentPage
             _viewModel.Accounts.Select(x => x.DisplayName).ToArray());
         var account = _viewModel.Accounts.FirstOrDefault(x => x.DisplayName == accountText);
         if (account is null) return;
-        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
+        var currencyCode = string.IsNullOrWhiteSpace(currencyCode) ? "IRR" : currencyCode;
+        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, $"{AppStrings.TransactionAmountPrompt} ({currencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-        if (!MoneyDisplayService.TryParse(amountText, account.CurrencyCode, out var principal))
+        if (!MoneyDisplayService.TryParse(amountText, currencyCode, out var principal))
         { await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.LoanInvalid, AppStrings.Ok); return; }
         var startText = await DisplayPromptAsync(AppStrings.LoanStartDate, AppStrings.LoanStartDate, AppStrings.Save, AppStrings.Cancel);
         if (!_calendar.TryParse(startText, out var startDate))
@@ -71,14 +72,14 @@ public partial class LoansPage : ContentPage
                 var dueText = await DisplayPromptAsync($"{AppStrings.LoanInstallmentNumber} {i}", AppStrings.LoanDueDate,
                     AppStrings.Save, AppStrings.Cancel);
                 if (!_calendar.TryParse(dueText, out var due) || due <= startDate) return;
-                var principalText = await DisplayPromptAsync(AppStrings.LoanInstallmentPrincipal, $"{AppStrings.LoanInstallmentPrincipal} ({account.CurrencyCode})",
+                var principalText = await DisplayPromptAsync(AppStrings.LoanInstallmentPrincipal, $"{AppStrings.LoanInstallmentPrincipal} ({currencyCode})",
                     AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
-                if (!MoneyDisplayService.TryParse(principalText, account.CurrencyCode, out var part)) return;
-                var interestText = await DisplayPromptAsync(AppStrings.LoanInstallmentInterest, $"{AppStrings.LoanInstallmentInterest} ({account.CurrencyCode})",
+                if (!MoneyDisplayService.TryParse(principalText, currencyCode, out var part)) return;
+                var interestText = await DisplayPromptAsync(AppStrings.LoanInstallmentInterest, $"{AppStrings.LoanInstallmentInterest} ({currencyCode})",
                     AppStrings.Save, AppStrings.Skip, keyboard: Keyboard.Numeric, initialValue: "0");
                 var interest = 0L;
                 if (!string.IsNullOrWhiteSpace(interestText) &&
-                    !MoneyDisplayService.TryParse(interestText, account.CurrencyCode, out interest, allowZero: true)) return;
+                    !MoneyDisplayService.TryParse(interestText, currencyCode, out interest, allowZero: true)) return;
                 rows.Add(new ManualInstallmentRequest(due, part, interest));
             }
             manual = rows;
