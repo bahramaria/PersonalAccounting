@@ -29,8 +29,8 @@ public sealed class CurrencyExchange : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropColumn(name: "CounterAmountMinor", table: "Transactions");
         migrationBuilder.DropIndex(name: "IX_Transactions_DocumentNumber", table: "Transactions");
+        migrationBuilder.DropColumn(name: "CounterAmountMinor", table: "Transactions");
     }
 
     protected override void BuildTargetModel(ModelBuilder modelBuilder) =>
