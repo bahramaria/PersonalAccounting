@@ -74,10 +74,10 @@ public sealed class PlanningViewModel(IServiceScopeFactory scopeFactory, IDateCa
         await LoadAsync(); return true;
     }
 
-    public async Task<bool> SaveTagAsync(string name)
+    public async Task<bool> SaveTagAsync(string name, Guid? id = null, string? color = null)
     {
         using var scope = scopeFactory.CreateScope();
-        var result = await scope.ServiceProvider.GetRequiredService<TagService>().SaveAsync(null, name, null);
+        var result = await scope.ServiceProvider.GetRequiredService<TagService>().SaveAsync(id, name, color);
         if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.TagSaveFailed; return false; }
         await LoadAsync(); return true;
     }

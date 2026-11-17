@@ -34,6 +34,8 @@ public static class AppStrings
     public static string BudgetInactive => Get(nameof(BudgetInactive));
     public static string TagsHeading => Get(nameof(TagsHeading));
     public static string AddTag => Get(nameof(AddTag));
+    public static string EditTag => Get(nameof(EditTag));
+    public static string TagColorPrompt => Get(nameof(TagColorPrompt));
     public static string TagNamePrompt => Get(nameof(TagNamePrompt));
     public static string TagSaveFailed => Get(nameof(TagSaveFailed));
     public static string FiscalPeriodsHeading => Get(nameof(FiscalPeriodsHeading));

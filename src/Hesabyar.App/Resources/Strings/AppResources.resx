@@ -460,4 +460,6 @@
   <data name="BudgetInactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="ReportsCurrency" xml:space="preserve"><value>Report currency</value></data>
   <data name="DashboardCurrency" xml:space="preserve"><value>Balance currency</value></data>
+  <data name="EditTag" xml:space="preserve"><value>Edit tag</value></data>
+  <data name="TagColorPrompt" xml:space="preserve"><value>Color (optional, e.g. #336699; blank for none)</value></data>
 </root>

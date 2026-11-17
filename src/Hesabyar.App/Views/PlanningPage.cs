@@ -65,7 +65,19 @@ public sealed class PlanningPage : ContentPage
         }
         AddSection(AppStrings.TagsHeading, AppStrings.AddTag, OnAddTagClicked);
         foreach (var tag in _viewModel.Tags)
-            _content.Children.Add(new Label { Text = $"• {tag.Name}", FontSize = 15 });
+        {
+            var row = new HorizontalStackLayout { Spacing = 8 };
+            row.Children.Add(new Label
+            {
+                Text = tag.Color is null ? tag.Name : $"{tag.Name} · {tag.Color}",
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Fill
+            });
+            var edit = new Button { Text = AppStrings.EditTag, CommandParameter = tag.Id, FontSize = 12 };
+            edit.Clicked += OnEditTagClicked;
+            row.Children.Add(edit);
+            _content.Children.Add(row);
+        }
         AddSection(AppStrings.FiscalPeriodsHeading, AppStrings.AddFiscalPeriod, OnAddFiscalPeriodClicked);
         foreach (var period in _viewModel.FiscalPeriods)
         {
@@ -183,7 +195,26 @@ public sealed class PlanningPage : ContentPage
         var name = await DisplayPromptAsync(AppStrings.AddTag, AppStrings.TagNamePrompt,
             AppStrings.Save, AppStrings.Cancel, maxLength: 40);
         if (string.IsNullOrWhiteSpace(name)) return;
-        if (!await _viewModel.SaveTagAsync(name))
+        var color = await DisplayPromptAsync(AppStrings.TagColorPrompt, AppStrings.TagColorPrompt,
+            AppStrings.Save, AppStrings.Cancel, maxLength: 16);
+        if (color is null) return;
+        if (!await _viewModel.SaveTagAsync(name, color: color))
+            await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        Render();
+    }
+
+    private async void OnEditTagClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: Guid id }) return;
+        var tag = _viewModel.Tags.FirstOrDefault(x => x.Id == id);
+        if (tag is null) return;
+        var name = await DisplayPromptAsync(AppStrings.EditTag, AppStrings.TagNamePrompt,
+            AppStrings.Save, AppStrings.Cancel, initialValue: tag.Name, maxLength: 40);
+        if (string.IsNullOrWhiteSpace(name)) return;
+        var color = await DisplayPromptAsync(AppStrings.TagColorPrompt, AppStrings.TagColorPrompt,
+            AppStrings.Save, AppStrings.Cancel, initialValue: tag.Color, maxLength: 16);
+        if (color is null) return;
+        if (!await _viewModel.SaveTagAsync(name, id, color))
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         Render();
     }
