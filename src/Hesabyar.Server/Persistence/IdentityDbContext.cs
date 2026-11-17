@@ -7,6 +7,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<PhoneOtpChallengeEntity> PhoneOtpChallenges => Set<PhoneOtpChallengeEntity>();
     public DbSet<PhoneOtpRateLimitEntity> PhoneOtpRateLimits => Set<PhoneOtpRateLimitEntity>();
     public DbSet<IdentityUserEntity> Users => Set<IdentityUserEntity>();
+    public DbSet<RefreshTokenSessionEntity> RefreshTokenSessions => Set<RefreshTokenSessionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,20 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         user.HasKey(x => x.Id);
         user.Property(x => x.PhoneNumber).HasMaxLength(16).IsRequired();
         user.HasIndex(x => x.PhoneNumber).IsUnique();
+
+        var refresh = modelBuilder.Entity<RefreshTokenSessionEntity>();
+        refresh.ToTable("RefreshTokenSessions");
+        refresh.HasKey(x => x.Id);
+        refresh.Property(x => x.DeviceName).HasMaxLength(80).IsRequired();
+        refresh.Property(x => x.TokenHash).HasColumnType("varbinary(32)").IsRequired();
+        refresh.HasIndex(x => x.TokenHash).IsUnique();
+        refresh.HasIndex(x => new { x.UserId, x.DeviceId });
+        refresh.HasIndex(x => x.FamilyId);
+        refresh.HasIndex(x => x.ExpiresAtUtc);
+        refresh.HasOne<IdentityUserEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
