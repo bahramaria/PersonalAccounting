@@ -1,6 +1,7 @@
 using Hesabyar.Application.Identity;
 using Hesabyar.Server.Identity;
 using Hesabyar.Server.Persistence;
+using Hesabyar.Server.Sync;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
@@ -26,6 +27,7 @@ builder.Services.AddScoped<IPhoneOtpStore, EfPhoneOtpStore>();
 builder.Services.AddScoped<PhoneOtpService>();
 builder.Services.AddScoped<PhoneOtpAccountService>();
 builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddScoped<SyncService>();
 builder.Services.AddSingleton(tokenSecret);
 builder.Services.AddSingleton(new PhoneOtpTokenIssuer(tokenSecret, TimeSpan.FromMinutes(15)));
 builder.Services.AddAuthentication("Bearer")
@@ -186,6 +188,58 @@ app.MapDelete("/api/v1/auth/sessions/{deviceId:guid}", async (
         return Results.Unauthorized();
     await refreshTokens.RevokeDeviceAsync(userId, deviceId, cancellationToken);
     return Results.NoContent();
+}).RequireAuthorization();
+
+app.MapPost("/api/v1/sync/push", async (
+    SyncPushRequest request,
+    ClaimsPrincipal principal,
+    SyncService sync,
+    CancellationToken cancellationToken) =>
+{
+    if (!TryGetUserId(principal, out var userId))
+        return Results.Unauthorized();
+    try
+    {
+        return Results.Ok(await sync.PushAsync(userId, request, cancellationToken));
+    }
+    catch (SyncDeviceNotRegisteredException)
+    {
+        return Results.Unauthorized();
+    }
+    catch (SyncSequenceConflictException exception)
+    {
+        return Results.Conflict(new { error = "sync_sequence_conflict", detail = exception.Message });
+    }
+    catch (ArgumentException exception)
+    {
+        return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
+    }
+}).RequireAuthorization();
+
+app.MapPost("/api/v1/sync/pull", async (
+    SyncPullRequest request,
+    ClaimsPrincipal principal,
+    SyncService sync,
+    CancellationToken cancellationToken) =>
+{
+    if (!TryGetUserId(principal, out var userId))
+        return Results.Unauthorized();
+    try
+    {
+        return Results.Ok(await sync.PullAsync(userId, request, cancellationToken));
+    }
+    catch (SyncDeviceNotRegisteredException)
+    {
+        return Results.Unauthorized();
+    }
+    catch (SyncCursorException exception)
+    {
+        return Results.BadRequest(new { error = "invalid_sync_cursor", detail = exception.Message });
+    }
+    catch (ArgumentException exception)
+    {
+        return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
+    }
 }).RequireAuthorization();
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
