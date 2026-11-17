@@ -69,6 +69,20 @@ public sealed class RefreshTokenService(IdentityDbContext database, TimeProvider
         if (current.DeviceId != deviceId || current.ExpiresAtUtc <= currentTime)
             return new RefreshTokenRotation(RefreshTokenStatus.Invalid, Guid.Empty, null);
 
+        var accountIsActive = await database.Users.AnyAsync(
+            x => x.Id == current.UserId && x.IsActive, cancellationToken);
+        if (!accountIsActive)
+        {
+            var family = await database.RefreshTokenSessions
+                .Where(x => x.FamilyId == current.FamilyId && x.RevokedAtUtc == null)
+                .ToListAsync(cancellationToken);
+            foreach (var session in family)
+                session.RevokedAtUtc = currentTime;
+            await database.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return new RefreshTokenRotation(RefreshTokenStatus.Invalid, Guid.Empty, null);
+        }
+
         var raw = RandomNumberGenerator.GetBytes(64);
         var next = new RefreshTokenSessionEntity
         {
