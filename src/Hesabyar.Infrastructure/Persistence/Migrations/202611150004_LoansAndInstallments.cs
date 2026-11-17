@@ -77,14 +77,40 @@ public sealed class LoansAndInstallments : Migration
         migrationBuilder.CreateIndex("IX_LoanInstallments_LoanId_DueDate_Sequence", "LoanInstallments",
             new[] { "LoanId", "DueDate", "Sequence" }, unique: true);
         migrationBuilder.CreateIndex("IX_Transactions_LoanId", "Transactions", "LoanId");
-        migrationBuilder.AddForeignKey("FK_Transactions_Loans_LoanId", "Transactions", "LoanId",
-            "Loans", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+        migrationBuilder.Sql("""
+            CREATE TRIGGER "TR_Transactions_LoanId_Insert"
+            BEFORE INSERT ON "Transactions"
+            WHEN NEW."LoanId" IS NOT NULL
+                AND NOT EXISTS (SELECT 1 FROM "Loans" WHERE "Id" = NEW."LoanId")
+            BEGIN
+                SELECT RAISE(ABORT, 'FOREIGN KEY constraint failed');
+            END;
+            """);
+        migrationBuilder.Sql("""
+            CREATE TRIGGER "TR_Transactions_LoanId_Update"
+            BEFORE UPDATE OF "LoanId" ON "Transactions"
+            WHEN NEW."LoanId" IS NOT NULL
+                AND NOT EXISTS (SELECT 1 FROM "Loans" WHERE "Id" = NEW."LoanId")
+            BEGIN
+                SELECT RAISE(ABORT, 'FOREIGN KEY constraint failed');
+            END;
+            """);
+        migrationBuilder.Sql("""
+            CREATE TRIGGER "TR_Loans_ReferencedDelete"
+            BEFORE DELETE ON "Loans"
+            WHEN EXISTS (SELECT 1 FROM "Transactions" WHERE "LoanId" = OLD."Id")
+            BEGIN
+                SELECT RAISE(ABORT, 'FOREIGN KEY constraint failed');
+            END;
+            """);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropIndex(name: "IX_Transactions_LoanId", table: "Transactions");
-        migrationBuilder.DropForeignKey(name: "FK_Transactions_Loans_LoanId", table: "Transactions");
+        migrationBuilder.Sql("""DROP TRIGGER IF EXISTS "TR_Transactions_LoanId_Insert";""");
+        migrationBuilder.Sql("""DROP TRIGGER IF EXISTS "TR_Transactions_LoanId_Update";""");
+        migrationBuilder.Sql("""DROP TRIGGER IF EXISTS "TR_Loans_ReferencedDelete";""");
         migrationBuilder.DropColumn(name: "LoanId", table: "Transactions");
         migrationBuilder.DropTable(name: "LoanInstallments");
         migrationBuilder.DropTable(name: "Loans");
