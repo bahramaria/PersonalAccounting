@@ -16,10 +16,10 @@ public sealed class RefreshTokenServiceIntegrationTests
             var clock = new FixedTimeProvider(DateTimeOffset.Parse("2026-11-17T12:00:00Z"));
             var userId = await database.AddActiveUserAsync();
             var deviceId = Guid.NewGuid();
-            var initial = await database.CreateService(clock).CreateAsync(
+            var initial = await database.CreateTokenAsync(clock, 
                 userId, deviceId, "Integration test device", CancellationToken.None);
 
-            var rotated = await database.CreateService(clock).RotateAsync(
+            var rotated = await database.RotateAsync(clock, 
                 initial.Value, deviceId, CancellationToken.None);
 
             Assert.Equal(RefreshTokenStatus.Rotated, rotated.Status);
@@ -53,9 +53,9 @@ public sealed class RefreshTokenServiceIntegrationTests
             var initial = await database.CreateService(clock).CreateAsync(
                 userId, deviceId, "Concurrent test device", CancellationToken.None);
 
-            var firstRequest = database.CreateService(clock).RotateAsync(
+            var firstRequest = database.RotateAsync(clock, 
                 initial.Value, deviceId, CancellationToken.None);
-            var secondRequest = database.CreateService(clock).RotateAsync(
+            var secondRequest = database.RotateAsync(clock, 
                 initial.Value, deviceId, CancellationToken.None);
             var results = await Task.WhenAll(firstRequest, secondRequest);
 
@@ -121,8 +121,21 @@ public sealed class RefreshTokenServiceIntegrationTests
 
         public IdentityDbContext CreateContext() => new(_options);
 
-        public RefreshTokenService CreateService(TimeProvider clock) =>
-            new(CreateContext(), clock);
+        public async Task<IssuedRefreshToken> CreateTokenAsync(
+            TimeProvider clock, Guid userId, Guid deviceId, string deviceName)
+        {
+            await using var context = CreateContext();
+            return await new RefreshTokenService(context, clock).CreateAsync(
+                userId, deviceId, deviceName, CancellationToken.None);
+        }
+
+        public async Task<RefreshTokenRotation> RotateAsync(
+            TimeProvider clock, string token, Guid deviceId)
+        {
+            await using var context = CreateContext();
+            return await new RefreshTokenService(context, clock).RotateAsync(
+                token, deviceId, CancellationToken.None);
+        }
 
         public async Task<Guid> AddActiveUserAsync()
         {
