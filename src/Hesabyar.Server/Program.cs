@@ -4,6 +4,7 @@ using Hesabyar.Server.Persistence;
 using Hesabyar.Server.Sync;
 using Hesabyar.Sync.Contracts;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 using System.Security.Claims;
@@ -226,7 +227,8 @@ app.MapPost("/api/v1/sync/push", async (
     {
         return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
     }
-}).RequireAuthorization().RequireRateLimiting("sync-ip");
+}).RequireAuthorization().RequireRateLimiting("sync-ip")
+  .WithMetadata(new RequestSizeLimitAttribute(2 * 1024 * 1024));
 
 app.MapPost("/api/v1/sync/pull", async (
     SyncPullRequest request,
@@ -252,7 +254,8 @@ app.MapPost("/api/v1/sync/pull", async (
     {
         return Results.BadRequest(new { error = "invalid_sync_request", detail = exception.Message });
     }
-}).RequireAuthorization().RequireRateLimiting("sync-ip");
+}).RequireAuthorization().RequireRateLimiting("sync-ip")
+  .WithMetadata(new RequestSizeLimitAttribute(2 * 1024 * 1024));
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.Run();
