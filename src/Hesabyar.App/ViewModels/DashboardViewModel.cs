@@ -65,8 +65,7 @@ public sealed class DashboardViewModel(
                 x.Account.IncludeInTotal && x.Account.CurrencyCode == _currencyCode).ToArray();
             var people = await scope.ServiceProvider.GetRequiredService<PersonService>()
                 .GetPeopleAsync(cancellationToken: cancellationToken);
-            if (_currencyCode != "IRR")
-                people = Array.Empty<PersonSnapshot>();
+            people = people.Where(x => x.CurrencyCode == _currencyCode).ToArray();
             var loans = (await scope.ServiceProvider.GetRequiredService<LoanService>()
                 .GetLoansAsync(cancellationToken)).Where(x => x.CurrencyCode == _currencyCode).ToArray();
             var assets = included.Where(x => x.Account.Type == AccountType.Asset).Sum(x => (decimal)x.BalanceMinor)

@@ -34,20 +34,21 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory, IDateCale
             People.Clear();
             foreach (var person in rows)
             {
-                var dues = await people.GetOutstandingDuesAsync(person.Id, cancellationToken);
+                var dues = await people.GetOutstandingDuesAsync(person.Id, cancellationToken, person.CurrencyCode);
                 var nextDue = dues.FirstOrDefault(x => x.DueDate <= DateOnly.FromDateTime(DateTime.Today.AddDays(7)));
                 var dueText = nextDue is null ? string.Empty :
                     string.Format(AppStrings.PersonDueReminder, calendar.Format(nextDue.DueDate),
-                        MoneyDisplayService.Format(nextDue.RemainingAmountMinor));
+                        MoneyDisplayService.Format(nextDue.RemainingAmountMinor, person.CurrencyCode));
                 People.Add(new PersonListItem(person.Id, person.Name, person.Phone ?? string.Empty,
-                    MoneyDisplayService.Format(person.BalanceMinor == long.MinValue ? long.MaxValue : Math.Abs(person.BalanceMinor)), person.BalanceMinor, dueText));
+                    MoneyDisplayService.Format(person.BalanceMinor == long.MinValue ? long.MaxValue : Math.Abs(person.BalanceMinor), person.CurrencyCode),
+                    person.BalanceMinor, person.CurrencyCode, dueText));
             }
             Accounts.Clear();
             if (accounts.IsSuccess && accounts.Value is not null)
                 foreach (var account in accounts.Value.Where(x => !x.Account.IsArchived &&
-                    x.Account.Type == AccountType.Asset && x.Account.CurrencyCode == "IRR" &&
+                    x.Account.Type == AccountType.Asset &&
                     x.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card or AccountKind.Wallet))
-                    Accounts.Add(new PersonAccountChoice(account.Account.Id, account.Account.Name));
+                    Accounts.Add(new PersonAccountChoice(account.Account.Id, account.Account.Name, account.Account.CurrencyCode));
             StatusMessage = People.Count == 0 ? AppStrings.PeopleEmpty : string.Empty;
         }
         catch { StatusMessage = AppStrings.PeopleLoadFailed; }
@@ -108,10 +109,10 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory, IDateCale
     {
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<PersonService>();
-        var entries = await service.GetEntriesAsync(person.Id, cancellationToken);
+        var entries = await service.GetEntriesAsync(person.Id, cancellationToken, person.CurrencyCode);
         if (entries.Count == 0) return AppStrings.PersonHistoryEmpty;
         return string.Join(Environment.NewLine, entries.Select(x =>
-            $"{calendar.Format(x.Date)}  {x.Kind}  {MoneyDisplayService.Format(x.AmountMinor)}  {x.AccountName}" +
+            $"{calendar.Format(x.Date)}  {x.Kind}  {MoneyDisplayService.Format(x.AmountMinor, x.CurrencyCode)}  {x.AccountName}" +
             (x.DueDate is DateOnly due ? $"  {AppStrings.PersonDueDate}: {calendar.Format(due)}" : string.Empty)));
     }
 
@@ -119,17 +120,20 @@ public sealed class PeopleViewModel(IServiceScopeFactory scopeFactory, IDateCale
     {
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<PersonService>();
-        var entries = await service.GetEntriesAsync(person.Id, cancellationToken);
-        var lines = entries.Select(x => $"{calendar.Format(x.Date)} | {x.Kind} | {MoneyDisplayService.Format(x.AmountMinor)} | {x.AccountName} | {x.Note}" +
+        var entries = await service.GetEntriesAsync(person.Id, cancellationToken, person.CurrencyCode);
+        var lines = entries.Select(x => $"{calendar.Format(x.Date)} | {x.Kind} | {MoneyDisplayService.Format(x.AmountMinor, x.CurrencyCode)} | {x.AccountName} | {x.Note}" +
             (x.DueDate is DateOnly due ? $" | {AppStrings.PersonDueDate}: {calendar.Format(due)}" : string.Empty));
         var statement = $"{person.Name}\n{person.BalanceDescription}: {person.BalanceText}\n\n{string.Join(Environment.NewLine, lines)}";
         await Share.Default.RequestAsync(new ShareTextRequest { Title = AppStrings.PersonStatementTitle, Text = statement });
     }
 }
 
-public sealed record PersonListItem(Guid Id, string Name, string Phone, string BalanceText, long BalanceMinor, string DueReminderText)
+public sealed record PersonListItem(Guid Id, string Name, string Phone, string BalanceText, long BalanceMinor, string CurrencyCode, string DueReminderText)
 {
     public string BalanceDescription => BalanceMinor > 0 ? AppStrings.PersonTheyOweMe :
         BalanceMinor < 0 ? AppStrings.PersonIOweThem : AppStrings.PersonSettled;
 }
-public sealed record PersonAccountChoice(Guid Id, string Name);
+public sealed record PersonAccountChoice(Guid Id, string Name, string CurrencyCode)
+{
+    public string DisplayName => $"{Name} ({CurrencyCode})";
+}

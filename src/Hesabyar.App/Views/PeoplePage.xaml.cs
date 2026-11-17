@@ -37,7 +37,7 @@ public partial class PeoplePage : ContentPage
     {
         if (e.CurrentSelection.FirstOrDefault() is not PersonListItem person) return;
         if (sender is CollectionView list) list.SelectedItem = null;
-        var action = await DisplayActionSheetAsync(person.Name, AppStrings.Cancel, null,
+        var action = await DisplayActionSheetAsync($"{person.Name} ({person.CurrencyCode})", AppStrings.Cancel, null,
             AppStrings.PersonLend, AppStrings.PersonBorrow, AppStrings.PersonRepay, AppStrings.PersonHistory,
             AppStrings.PersonShare, AppStrings.PersonEdit, AppStrings.PersonArchive);
         if (action == AppStrings.PersonHistory)
@@ -68,16 +68,20 @@ public partial class PeoplePage : ContentPage
             return;
         }
         if (action != AppStrings.PersonLend && action != AppStrings.PersonBorrow && action != AppStrings.PersonRepay) return;
-        if (_viewModel.Accounts.Count == 0)
+        var availableAccounts = action == AppStrings.PersonRepay
+            ? _viewModel.Accounts.Where(x => x.CurrencyCode == person.CurrencyCode).ToArray()
+            : _viewModel.Accounts.ToArray();
+        if (availableAccounts.Length == 0)
         {
             await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.PersonNoAccount, AppStrings.Ok);
             return;
         }
         var selectedName = await DisplayActionSheetAsync(AppStrings.TransactionAccountPrompt, AppStrings.Cancel, null,
-            _viewModel.Accounts.Select(x => x.Name).ToArray());
-        var account = _viewModel.Accounts.FirstOrDefault(x => x.Name == selectedName);
+            availableAccounts.Select(x => x.DisplayName).ToArray());
+        var account = availableAccounts.FirstOrDefault(x => x.DisplayName == selectedName);
         if (account is null) return;
-        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt, AppStrings.TransactionAmountPrompt,
+        var amountText = await DisplayPromptAsync(AppStrings.TransactionAmountPrompt,
+            $"{AppStrings.TransactionAmountPrompt} ({account.CurrencyCode})",
             AppStrings.Save, AppStrings.Cancel, keyboard: Keyboard.Numeric);
         if (!TryParseAmount(amountText, out var amount))
         {

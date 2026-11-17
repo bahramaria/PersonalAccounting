@@ -7,8 +7,9 @@ public sealed class PersonService(IPeopleRepository repository, IClock clock)
     public Task<IReadOnlyList<PersonSnapshot>> GetPeopleAsync(bool includeArchived = false, CancellationToken cancellationToken = default) =>
         repository.GetPeopleAsync(includeArchived, cancellationToken);
 
-    public Task<IReadOnlyList<PersonEntrySnapshot>> GetEntriesAsync(Guid personId, CancellationToken cancellationToken = default) =>
-        repository.GetEntriesAsync(personId, cancellationToken);
+    public Task<IReadOnlyList<PersonEntrySnapshot>> GetEntriesAsync(Guid personId, CancellationToken cancellationToken = default,
+        string currencyCode = "IRR") =>
+        repository.GetEntriesAsync(personId, currencyCode, cancellationToken);
 
     public async Task<Result<Guid>> CreateAsync(CreatePersonRequest request, CancellationToken cancellationToken = default)
     {
@@ -57,9 +58,10 @@ public sealed class PersonService(IPeopleRepository repository, IClock clock)
         return saved ? Result<bool>.Success(true) : Result<bool>.Failure("person.repayment.invalid", "Repayment exceeds the outstanding balance, or person/account was not found.");
     }
 
-    public async Task<IReadOnlyList<PersonDueSnapshot>> GetOutstandingDuesAsync(Guid personId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<PersonDueSnapshot>> GetOutstandingDuesAsync(Guid personId,
+        CancellationToken cancellationToken = default, string currencyCode = "IRR")
     {
-        var entries = (await repository.GetEntriesAsync(personId, cancellationToken))
+        var entries = (await repository.GetEntriesAsync(personId, currencyCode, cancellationToken))
             .OrderBy(x => x.Date).ThenBy(x => x.CreatedAtUtc).ToArray();
         var obligations = new List<DueObligation>();
 

@@ -17,27 +17,36 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
         var ids = parties.Select(x => x.Id).ToArray();
         var balances = await db.Postings.Where(x => x.PartyId != null && ids.Contains(x.PartyId.Value) &&
                 x.Account.SystemKey == ClearingAccountKey && !x.Transaction.IsDeleted)
-            .GroupBy(x => x.PartyId!.Value)
-            .Select(g => new { Id = g.Key, Balance = g.Sum(x => x.AmountMinor) })
-            .ToDictionaryAsync(x => x.Id, x => x.Balance, cancellationToken);
-        return parties.Select(x => new PersonSnapshot(x.Id, x.Name, x.Phone, x.Note,
-            balances.GetValueOrDefault(x.Id), x.IsArchived)).ToArray();
+            .GroupBy(x => new { Id = x.PartyId!.Value, x.CurrencyCode })
+            .Select(g => new { g.Key.Id, g.Key.CurrencyCode, Balance = g.Sum(x => x.AmountMinor) })
+            .ToListAsync(cancellationToken);
+        return parties.SelectMany(party =>
+        {
+            var personBalances = balances.Where(x => x.Id == party.Id).ToArray();
+            return personBalances.Length == 0
+                ? new[] { new PersonSnapshot(party.Id, party.Name, party.Phone, party.Note, 0, party.IsArchived) }
+                : personBalances.Select(x => new PersonSnapshot(party.Id, party.Name, party.Phone, party.Note,
+                    x.Balance, party.IsArchived, x.CurrencyCode));
+        }).ToArray();
     }
 
-    public async Task<IReadOnlyList<PersonEntrySnapshot>> GetEntriesAsync(Guid personId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<PersonEntrySnapshot>> GetEntriesAsync(Guid personId, string currencyCode, CancellationToken cancellationToken)
     {
         var entries = await db.Transactions.AsNoTracking().Include(x => x.Postings).ThenInclude(x => x.Account)
-            .Where(x => x.PartyId == personId && (x.Kind == TransactionKind.PersonDebt || x.Kind == TransactionKind.PersonRepay))
+            .Where(x => x.PartyId == personId &&
+                x.Postings.Any(p => p.PartyId == personId && p.CurrencyCode == currencyCode) &&
+                (x.Kind == TransactionKind.PersonDebt || x.Kind == TransactionKind.PersonRepay))
             .OrderByDescending(x => x.BusinessDate)
             .ToListAsync(cancellationToken);
         entries = entries.OrderByDescending(x => x.BusinessDate).ThenByDescending(x => x.CreatedAtUtc).ToList();
         return entries.Select(x =>
         {
-            var partyPosting = x.Postings.FirstOrDefault(p => p.PartyId == personId);
-            var cashPosting = x.Postings.FirstOrDefault(p => p.PartyId == null && p.Account.SystemKey == null);
+            var partyPosting = x.Postings.FirstOrDefault(p => p.PartyId == personId && p.CurrencyCode == currencyCode);
+            var cashPosting = x.Postings.FirstOrDefault(p => p.PartyId == null &&
+                p.Account.SystemKey == null && p.CurrencyCode == currencyCode);
             return new PersonEntrySnapshot(x.Id, x.BusinessDate, x.Kind == TransactionKind.PersonDebt ? "Debt" : "Repayment",
                 decimal.ToInt64(Math.Abs((decimal)(partyPosting?.AmountMinor ?? 0))), cashPosting?.Account.Name ?? string.Empty,
-                x.Description, x.DueDate, partyPosting?.AmountMinor ?? 0, x.CreatedAtUtc);
+                x.Description, x.DueDate, partyPosting?.AmountMinor ?? 0, x.CreatedAtUtc, currencyCode);
         }).ToArray();
     }
 
@@ -62,8 +71,12 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
     {
         var party = await db.Parties.SingleOrDefaultAsync(x => x.Id == personId && !x.IsArchived, cancellationToken);
         if (party is null) return false;
-        var balance = await GetBalanceAsync(personId, cancellationToken);
-        if (balance != 0) return false;
+        var balances = await db.Postings
+            .Where(x => x.PartyId == personId && x.Account.SystemKey == ClearingAccountKey && !x.Transaction.IsDeleted)
+            .GroupBy(x => x.CurrencyCode)
+            .Select(group => group.Sum(x => x.AmountMinor))
+            .ToListAsync(cancellationToken);
+        if (balances.Any(x => x != 0)) return false;
         party.IsArchived = true; party.UpdatedAtUtc = nowUtc;
         await db.SaveChangesAsync(cancellationToken);
         return true;
@@ -74,7 +87,10 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
 
     public async Task<bool> RepayAsync(Guid personId, Guid accountId, long amountMinor, DateOnly date, string? note, bool allowOverpayment, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
-        var balance = await GetBalanceAsync(personId, cancellationToken);
+        var account = await db.Accounts.SingleOrDefaultAsync(x => x.Id == accountId && !x.IsArchived &&
+            x.Kind != AccountKind.System && x.Type == AccountType.Asset, cancellationToken);
+        if (account is null) return false;
+        var balance = await GetBalanceAsync(personId, account.CurrencyCode, cancellationToken);
         if (balance == 0) return false;
         var outstanding = Math.Abs((decimal)balance);
         if (amountMinor > outstanding && !allowOverpayment) return false;
@@ -87,8 +103,9 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
             date, null, note, nowUtc, cancellationToken, excessAmount, excessClearingAmount);
     }
 
-    private async Task<long> GetBalanceAsync(Guid personId, CancellationToken cancellationToken) =>
-        await db.Postings.Where(x => x.PartyId == personId && x.Account.SystemKey == ClearingAccountKey && !x.Transaction.IsDeleted)
+    private async Task<long> GetBalanceAsync(Guid personId, string currencyCode, CancellationToken cancellationToken) =>
+        await db.Postings.Where(x => x.PartyId == personId && x.CurrencyCode == currencyCode &&
+                x.Account.SystemKey == ClearingAccountKey && !x.Transaction.IsDeleted)
             .Select(x => (long?)x.AmountMinor).SumAsync(cancellationToken) ?? 0L;
 
     private async Task<bool> SaveEntryAsync(Guid personId, Guid accountId, long amountMinor, long clearingAmount,
@@ -97,15 +114,17 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
     {
         var party = await db.Parties.SingleOrDefaultAsync(x => x.Id == personId && !x.IsArchived, cancellationToken);
         var account = await db.Accounts.SingleOrDefaultAsync(x => x.Id == accountId && !x.IsArchived &&
-            !x.IsDeleted && x.Kind != AccountKind.System && x.CurrencyCode == "IRR", cancellationToken);
+            !x.IsDeleted && x.Kind != AccountKind.System, cancellationToken);
         if (party is null || account is null || account.Type != AccountType.Asset) return false;
+        var currencyCode = account.CurrencyCode;
 
         await using var dbTransaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        var clearing = await db.Accounts.SingleOrDefaultAsync(x => x.SystemKey == ClearingAccountKey && x.CurrencyCode == "IRR", cancellationToken);
+        var clearing = await db.Accounts.SingleOrDefaultAsync(x => x.SystemKey == ClearingAccountKey &&
+            x.CurrencyCode == currencyCode, cancellationToken);
         if (clearing is null)
         {
             clearing = new DbAccount { Name = "People clearing", Type = AccountType.Asset, Kind = AccountKind.System,
-                CurrencyCode = "IRR", SystemKey = ClearingAccountKey, IncludeInTotal = false,
+                CurrencyCode = currencyCode, SystemKey = ClearingAccountKey, IncludeInTotal = false,
                 CreatedAtUtc = nowUtc, UpdatedAtUtc = nowUtc };
             db.Accounts.Add(clearing);
             await db.SaveChangesAsync(cancellationToken);
@@ -117,8 +136,8 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
             Source = TransactionSource.Manual, IsConfirmed = true, CreatedAtUtc = nowUtc, UpdatedAtUtc = nowUtc,
             Postings =
             [
-                new DbPosting { AccountId = clearing.Id, AmountMinor = clearingAmount, CurrencyCode = "IRR", PartyId = personId },
-                new DbPosting { AccountId = accountId, AmountMinor = -clearingAmount, CurrencyCode = "IRR" }
+                new DbPosting { AccountId = clearing.Id, AmountMinor = clearingAmount, CurrencyCode = currencyCode, PartyId = personId },
+                new DbPosting { AccountId = accountId, AmountMinor = -clearingAmount, CurrencyCode = currencyCode }
             ]
         };
         db.Transactions.Add(transaction);
@@ -136,8 +155,8 @@ public sealed class PeopleRepository(AppDbContext db) : IPeopleRepository
                 UpdatedAtUtc = nowUtc.AddTicks(1),
                 Postings =
                 [
-                    new DbPosting { AccountId = clearing.Id, AmountMinor = excessClearingAmount, CurrencyCode = "IRR", PartyId = personId },
-                    new DbPosting { AccountId = accountId, AmountMinor = -excessClearingAmount, CurrencyCode = "IRR" }
+                    new DbPosting { AccountId = clearing.Id, AmountMinor = excessClearingAmount, CurrencyCode = currencyCode, PartyId = personId },
+                    new DbPosting { AccountId = accountId, AmountMinor = -excessClearingAmount, CurrencyCode = currencyCode }
                 ]
             });
         }

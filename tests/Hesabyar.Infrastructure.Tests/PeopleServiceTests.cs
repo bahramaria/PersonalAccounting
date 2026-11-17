@@ -117,6 +117,42 @@ public sealed class PeopleServiceTests
             .SelectMany(x => x.Postings).SumAsync(x => x.AmountMinor));
     }
 
+    [Fact]
+    public async Task PersonLedger_TracksBalancesPerCurrencyAndRejectsCrossCurrencyRepayment()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.MigrateAsync();
+
+        var accounts = new AccountService(new EfAccountingRepository(db), new FixedClock());
+        var irr = await accounts.CreateAsync(new CreateAccountRequest("IRR bank", AccountType.Asset, AccountKind.Bank));
+        var usd = await accounts.CreateAsync(new CreateAccountRequest("USD bank", AccountType.Asset, AccountKind.Bank,
+            CurrencyCode: "USD"));
+        var service = new PersonService(new PeopleRepository(db), new FixedClock());
+        var person = await service.CreateAsync(new CreatePersonRequest("Mina"));
+        Assert.True(irr.IsSuccess);
+        Assert.True(usd.IsSuccess);
+        Assert.True(person.IsSuccess);
+
+        Assert.True((await service.AddDebtAsync(person.Value, usd.Value, 250, true, Today, "USD debt")).IsSuccess);
+        var usdBalance = Assert.Single(await service.GetPeopleAsync());
+        Assert.Equal("USD", usdBalance.CurrencyCode);
+        Assert.Equal(250, usdBalance.BalanceMinor);
+
+        var wrongCurrency = await service.RepayAsync(person.Value, irr.Value, 50, Today, "Wrong currency");
+        Assert.True(wrongCurrency.IsFailure);
+        Assert.True((await service.RepayAsync(person.Value, usd.Value, 100, Today, "USD repayment")).IsSuccess);
+
+        var entries = await service.GetEntriesAsync(person.Value, currencyCode: "USD");
+        Assert.Equal(2, entries.Count);
+        Assert.All(entries, x => Assert.Equal("USD", x.CurrencyCode));
+        var balance = Assert.Single(await service.GetPeopleAsync());
+        Assert.Equal(150, balance.BalanceMinor);
+        Assert.Equal("USD", balance.CurrencyCode);
+    }
+
     private sealed class FixedClock : IClock
     {
         public DateTimeOffset UtcNow => Now;
