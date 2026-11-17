@@ -13,8 +13,8 @@ src/
   Hesabyar.Infrastructure/   # EF Core + SQLite development provider, SMS, Backup, export, KeyProvider
   Hesabyar.Localization/     # ICalendarService, ILocalizationService, Jalali, NumberNormalizer, .resx
   Hesabyar.App/              # MAUI Android/Windows: Views, ViewModels, Shell, Resources, Platforms
-  Hesabyar.Sync.Contracts/   # (فاز بعد) DTOهای مشترک کلاینت/سرور
-  Hesabyar.Server/           # (فاز بعد) ASP.NET Core Sync API
+  Hesabyar.Sync.Contracts/   # قراردادهای نسخه‌دار و مستقل از UI برای Sync کلاینت/سرور
+  Hesabyar.Server/           # ASP.NET Core Sync API (بسته بعدی دهک ۹)
 tests/
   Hesabyar.Domain.Tests/  Hesabyar.Application.Tests/
   Hesabyar.Infrastructure.Tests/  Hesabyar.Localization.Tests/
@@ -74,3 +74,14 @@ public interface IEntitlementService { bool IsEnabled(FeatureKey key); }   // MV
 ## ۷. گزینه‌های بررسی‌شده
 - *Prism*: ماژولار قوی ولی هزینه یادگیری/وابستگی بالاتر؛ Shell+DI کافی است.
 - *Hexagonal کامل با CQRS Event Store*: برای نیاز فعلی Over-engineering؛ دفترداری دوطرفه خودش Audit می‌دهد.
+
+
+## ۸. معماری همگام‌سازی (دهک ۹)
+
+- قراردادهای مشترک در پروژه مستقل `Hesabyar.Sync.Contracts` قرار دارند؛ این پروژه به MAUI، EF Core، دیتابیس و روش احراز هویت وابسته نیست.
+- هر تغییر با `ChangeId` یکتا، شناسه Aggregate، نوع عملیات، نسخه Schema و مهر نسخه شامل زمان UTC، شناسه دستگاه و شماره ترتیبی همان دستگاه منتقل می‌شود.
+- تغییرات یک Aggregate به‌صورت یک واحد همگام می‌شوند؛ به‌ویژه تراکنش مالی و تمام Postingهای آن نباید جداگانه اعمال شوند.
+- ادغام فیلدها مستقل است و بر اساس مهر نسخه با ترتیب قطعی انجام می‌شود؛ حذف با Tombstone مستقل از حذف فیزیکی نمایش داده می‌شود.
+- Push دارای شناسه تغییر idempotent و ترتیب افزایشی شماره دستگاه است؛ Pull با Cursor و صفحه‌بندی محدود انجام می‌شود.
+- احراز هویت و مالکیت داده از Claim معتبر سرور به دست می‌آید؛ هیچ `UserId` ارسالی از کلاینت مرجع مالکیت نیست.
+- قرارداد فعلی صرفاً پروتکل و اعتبارسنجی مستقل را پیاده‌سازی می‌کند؛ انتقال شبکه، ذخیره ChangeLog سمت سرور، احراز هویت و ادغام پایگاه داده در بسته‌های بعدی دهک ۹ اضافه می‌شوند.

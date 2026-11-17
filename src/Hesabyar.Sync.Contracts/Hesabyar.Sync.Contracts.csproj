@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Hesabyar.Sync.Contracts</AssemblyName>
+    <RootNamespace>Hesabyar.Sync.Contracts</RootNamespace>
+  </PropertyGroup>
+</Project>
