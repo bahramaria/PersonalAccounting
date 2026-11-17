@@ -139,7 +139,10 @@ app.MapPost("/api/v1/auth/refresh", async (
 
     var user = await refreshTokens.GetUserIdentityAsync(rotation.UserId, cancellationToken);
     if (user is null)
+    {
+        await refreshTokens.RevokeAsync(rotation.Token.Value, request.DeviceId, cancellationToken);
         return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "account_unavailable");
+    }
 
     var accessToken = tokens.Issue(user.Id, user.PhoneNumber);
     return Results.Ok(new
