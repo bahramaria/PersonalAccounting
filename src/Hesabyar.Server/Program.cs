@@ -24,7 +24,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options => options.UseSqlServer
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddSingleton<PhoneOtpOptions>(otpOptions);
 builder.Services.AddSingleton<IPhoneOtpCodeHasher>(_ => new HmacPhoneOtpCodeHasher(otpSecret));
-builder.Services.AddSingleton<IPhoneOtpSender, UnconfiguredPhoneOtpSender>();
+builder.Services.AddPhoneOtpSender(builder.Configuration);
 builder.Services.AddScoped<IPhoneOtpStore, EfPhoneOtpStore>();
 builder.Services.AddScoped<PhoneOtpService>();
 builder.Services.AddScoped<PhoneOtpAccountService>();
