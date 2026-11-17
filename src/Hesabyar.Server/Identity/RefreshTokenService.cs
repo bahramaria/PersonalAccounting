@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
-using System.Text;
 using Hesabyar.Server.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hesabyar.Server.Identity;
 
-public sealed record IssuedRefreshToken(string Value, DateTimeOffset ExpiresAtUtc);\npublic sealed record RefreshTokenUser(Guid Id, string PhoneNumber);
+public sealed record IssuedRefreshToken(string Value, DateTimeOffset ExpiresAtUtc);
+public sealed record RefreshTokenUser(Guid Id, string PhoneNumber);
 public enum RefreshTokenStatus { Rotated, Invalid, ReuseDetected }
 public sealed record RefreshTokenRotation(RefreshTokenStatus Status, Guid UserId, IssuedRefreshToken? Token);
 
