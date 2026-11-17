@@ -78,6 +78,7 @@ public sealed class PlanningFeatureTests
         Assert.True(transaction.IsSuccess);
 
         var tags = new TagService(new PlanningRepository(db), clock);
+        Assert.True((await tags.SaveAsync(null, "Home, Office", null)).IsFailure);
         var created = await tags.SaveAsync(null, "Travel", "#336699");
         Assert.True(created.IsSuccess);
         Assert.True((await tags.SetTransactionTagsAsync(transaction.Value, [created.Value])).IsSuccess);
@@ -91,6 +92,8 @@ public sealed class PlanningFeatureTests
         Assert.Contains(created.Value, await tags.GetForTransactionAsync(transaction.Value));
         Assert.True((await tags.ArchiveAsync(created.Value)).IsSuccess);
         Assert.Empty(await tags.GetAsync());
+        Assert.Contains(created.Value, await tags.GetForTransactionAsync(transaction.Value));
+        Assert.True((await tags.SetTransactionTagsAsync(transaction.Value, [created.Value])).IsFailure);
         Assert.Contains(created.Value, await tags.GetForTransactionAsync(transaction.Value));
     }
 

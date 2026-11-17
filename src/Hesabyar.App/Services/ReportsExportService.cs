@@ -47,26 +47,29 @@ public sealed class ReportsExportService
                 ["Metric", $"Amount ({report.CurrencyCode})"],
                 ["From date", report.FromDate.ToString("yyyy-MM-dd")],
                 ["To date", report.ToDate.ToString("yyyy-MM-dd")],
-                ["Income", report.IncomeMinor],
-                ["Expenses", report.ExpenseMinor],
-                ["Net cash flow", checked(report.IncomeMinor - report.ExpenseMinor)],
-                ["Assets", report.AssetsMinor],
-                ["Liabilities", report.LiabilitiesMinor],
-                ["Net worth", report.NetWorthMinor]
+                ["Income", Major(report.IncomeMinor, report.CurrencyCode)],
+                ["Expenses", Major(report.ExpenseMinor, report.CurrencyCode)],
+                ["Net cash flow", Major(checked(report.IncomeMinor - report.ExpenseMinor), report.CurrencyCode)],
+                ["Assets", Major(report.AssetsMinor, report.CurrencyCode)],
+                ["Liabilities", Major(report.LiabilitiesMinor, report.CurrencyCode)],
+                ["Net worth", Major(report.NetWorthMinor, report.CurrencyCode)]
             ]),
             new("Monthly",
                 new[] { new object?[] { "Persian month", $"Income ({report.CurrencyCode})", $"Expenses ({report.CurrencyCode})", $"Net ({report.CurrencyCode})" } }
-                .Concat(report.MonthlyTrend.Select(x => (object?[])[x.Label, x.IncomeMinor, x.ExpenseMinor, checked(x.IncomeMinor - x.ExpenseMinor)]))
+                .Concat(report.MonthlyTrend.Select(x => (object?[])[x.Label,
+                    Major(x.IncomeMinor, report.CurrencyCode), Major(x.ExpenseMinor, report.CurrencyCode),
+                    Major(checked(x.IncomeMinor - x.ExpenseMinor), report.CurrencyCode)]))
                 .ToArray()),
             new("Categories",
                 new[] { new object?[] { "Expense category", $"Amount ({report.CurrencyCode})" } }
-                .Concat(report.ExpensesByCategory.Select(x => (object?[])[x.Name, x.AmountMinor])).ToArray()),
+                .Concat(report.ExpensesByCategory.Select(x => (object?[])[x.Name, Major(x.AmountMinor, report.CurrencyCode)])).ToArray()),
             new("Accounts",
                 new[] { new object?[] { "Account", "Type", $"Balance ({report.CurrencyCode})" } }
-                .Concat(report.Accounts.Select(x => (object?[])[x.Name, x.Type, x.BalanceMinor])).ToArray()),
+                .Concat(report.Accounts.Select(x => (object?[])[x.Name, x.Type, Major(x.BalanceMinor, report.CurrencyCode)])).ToArray()),
             new("People",
                 new[] { new object?[] { "Person", $"Current balance ({report.CurrencyCode})", $"Period change ({report.CurrencyCode})", "Activities" } }
-                .Concat(report.People.Select(x => new object?[] { x.Name, x.BalanceMinor, x.PeriodChangeMinor, x.ActivityCount })).ToArray())
+                .Concat(report.People.Select(x => new object?[] { x.Name, Major(x.BalanceMinor, report.CurrencyCode),
+                    Major(x.PeriodChangeMinor, report.CurrencyCode), x.ActivityCount })).ToArray())
         ];
     }
 
@@ -77,35 +80,43 @@ public sealed class ReportsExportService
             new[] { "Summary", $"Amount ({report.CurrencyCode})" },
             new[] { "From date", report.FromDate.ToString("yyyy-MM-dd") },
             new[] { "To date", report.ToDate.ToString("yyyy-MM-dd") },
-            new[] { "Income", report.IncomeMinor.ToString() },
-            new[] { "Expenses", report.ExpenseMinor.ToString() },
-            new[] { "Net cash flow", checked(report.IncomeMinor - report.ExpenseMinor).ToString() },
-            new[] { "Assets", report.AssetsMinor.ToString() },
-            new[] { "Liabilities", report.LiabilitiesMinor.ToString() },
-            new[] { "Net worth", report.NetWorthMinor.ToString() },
+            new[] { "Income", CsvMoney(report.IncomeMinor, report.CurrencyCode) },
+            new[] { "Expenses", CsvMoney(report.ExpenseMinor, report.CurrencyCode) },
+            new[] { "Net cash flow", CsvMoney(checked(report.IncomeMinor - report.ExpenseMinor), report.CurrencyCode) },
+            new[] { "Assets", CsvMoney(report.AssetsMinor, report.CurrencyCode) },
+            new[] { "Liabilities", CsvMoney(report.LiabilitiesMinor, report.CurrencyCode) },
+            new[] { "Net worth", CsvMoney(report.NetWorthMinor, report.CurrencyCode) },
             Array.Empty<string>(),
             new[] { "Monthly trend", $"Income ({report.CurrencyCode})", $"Expenses ({report.CurrencyCode})", $"Net ({report.CurrencyCode})" }
         };
         rows.AddRange(report.MonthlyTrend.Select(x => new[]
         {
-            x.Label, x.IncomeMinor.ToString(), x.ExpenseMinor.ToString(),
-            checked(x.IncomeMinor - x.ExpenseMinor).ToString()
+            x.Label, CsvMoney(x.IncomeMinor, report.CurrencyCode), CsvMoney(x.ExpenseMinor, report.CurrencyCode),
+            CsvMoney(checked(x.IncomeMinor - x.ExpenseMinor), report.CurrencyCode)
         }));
         rows.Add([]);
         rows.Add(["Expense categories", $"Amount ({report.CurrencyCode})"]);
-        rows.AddRange(report.ExpensesByCategory.Select(x => new[] { x.Name, x.AmountMinor.ToString() }));
+        rows.AddRange(report.ExpensesByCategory.Select(x => new[] { x.Name, CsvMoney(x.AmountMinor, report.CurrencyCode) }));
         rows.Add([]);
         rows.Add(["Accounts", "Type", $"Balance ({report.CurrencyCode})"]);
-        rows.AddRange(report.Accounts.Select(x => new[] { x.Name, x.Type, x.BalanceMinor.ToString() }));
+        rows.AddRange(report.Accounts.Select(x => new[] { x.Name, x.Type, CsvMoney(x.BalanceMinor, report.CurrencyCode) }));
         rows.Add([]);
         rows.Add(["People", $"Current balance ({report.CurrencyCode})", $"Period change ({report.CurrencyCode})", "Activities"]);
-        rows.AddRange(report.People.Select(x => new[] { x.Name, x.BalanceMinor.ToString(), x.PeriodChangeMinor.ToString(), x.ActivityCount.ToString() }));
+        rows.AddRange(report.People.Select(x => new[] { x.Name, CsvMoney(x.BalanceMinor, report.CurrencyCode), CsvMoney(x.PeriodChangeMinor, report.CurrencyCode), x.ActivityCount.ToString() }));
         return rows;
     }
 
+    private static decimal Major(long amountMinor, string currencyCode) =>
+        MoneyDisplayService.ToMajorAmount(amountMinor, currencyCode);
+
+    private static string CsvMoney(long amountMinor, string currencyCode) =>
+        Major(amountMinor, currencyCode).ToString("0.################", System.Globalization.CultureInfo.InvariantCulture);
+
     private static string EscapeCsv(string value)
     {
-        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@')
+        if (value.Length > 0 && (value[0] is '=' or '+' or '-' or '@') &&
+            !decimal.TryParse(value, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out _))
             value = "'" + value;
         return value.Contains(',') || value.Contains('"') || value.Contains('\r') || value.Contains('\n')
             ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
@@ -145,8 +156,8 @@ public sealed class ReportsExportService
                 var value = rows[rowIndex][columnIndex];
                 if (value is null) continue;
                 var reference = $"{ColumnName(columnIndex + 1)}{rowIndex + 1}";
-                var style = rowIndex == 0 ? " s=\"1\"" : value is long or int ? " s=\"2\"" : string.Empty;
-                if (value is long or int)
+                var style = rowIndex == 0 ? " s=\"1\"" : value is long or int or decimal ? " s=\"2\"" : string.Empty;
+                if (value is long or int or decimal)
                     builder.Append($"<c r=\"{reference}\"{style}><v>{Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)}</v></c>");
                 else
                     builder.Append($"<c r=\"{reference}\" t=\"inlineStr\"{style}><is><t xml:space=\"preserve\">{Xml(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)}</t></is></c>");
@@ -178,7 +189,7 @@ public sealed class ReportsExportService
         writer.Write(content);
     }
 
-    private const string StylesXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><numFmts count=\"1\"><numFmt numFmtId=\"164\" formatCode=\"#,##0;[Red]-#,##0\"/></numFmts><fonts count=\"2\"><font><sz val=\"11\"/><name val=\"Tahoma\"/></font><font><b/><sz val=\"11\"/><name val=\"Tahoma\"/></font></fonts><fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills><borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs><cellXfs count=\"3\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\"/><xf numFmtId=\"164\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/></cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>";
+    private const string StylesXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><numFmts count=\"1\"><numFmt numFmtId=\"164\" formatCode=\"#,##0.####;[Red]-#,##0.####\"/></numFmts><fonts count=\"2\"><font><sz val=\"11\"/><name val=\"Tahoma\"/></font><font><b/><sz val=\"11\"/><name val=\"Tahoma\"/></font></fonts><fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills><borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs><cellXfs count=\"3\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\"/><xf numFmtId=\"164\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/></cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>";
 
     private sealed record ReportSheet(string Name, IReadOnlyList<object?[]> Rows);
 }

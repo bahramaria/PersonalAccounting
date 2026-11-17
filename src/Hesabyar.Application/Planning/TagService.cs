@@ -13,7 +13,8 @@ public sealed class TagService(IPlanningRepository repository, IClock clock)
     public async Task<Result<Guid>> SaveAsync(Guid? id, string name, string? color,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 40 || color?.Length > 16)
+        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 40 ||
+            name.Contains(',') || name.Contains('\n') || name.Contains('\r') || color?.Length > 16)
             return Result<Guid>.Failure("tag.details.invalid", "Tag name or color is invalid.");
         var saved = await repository.SaveTagAsync(id, name.Trim(),
             string.IsNullOrWhiteSpace(color) ? null : color.Trim(), clock.UtcNow, cancellationToken);

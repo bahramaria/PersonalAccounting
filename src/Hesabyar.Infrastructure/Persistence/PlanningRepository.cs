@@ -90,7 +90,7 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
         if (duplicate) return null;
         if (tagId is Guid id)
         {
-            var existing = await db.Tags.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+            var existing = await db.Tags.SingleOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
             if (existing is null) return null;
             existing.Name = name; existing.Color = color; existing.UpdatedAtUtc = nowUtc;
             await db.SaveChangesAsync(cancellationToken);
@@ -105,7 +105,7 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
 
     public async Task<bool> ArchiveTagAsync(Guid tagId, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
-        var tag = await db.Tags.SingleOrDefaultAsync(x => x.Id == tagId, cancellationToken);
+        var tag = await db.Tags.SingleOrDefaultAsync(x => x.Id == tagId && !x.IsDeleted, cancellationToken);
         if (tag is null) return false;
         tag.IsDeleted = true;
         tag.UpdatedAtUtc = nowUtc;
@@ -116,8 +116,8 @@ public sealed class PlanningRepository(AppDbContext db) : IPlanningRepository
     public async Task<bool> SetTransactionTagsAsync(Guid transactionId, IReadOnlyCollection<Guid> tagIds,
         DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
-        if (!await db.Transactions.AnyAsync(x => x.Id == transactionId, cancellationToken)) return false;
-        if (tagIds.Count > 0 && await db.Tags.CountAsync(x => tagIds.Contains(x.Id), cancellationToken) != tagIds.Count)
+        if (!await db.Transactions.AnyAsync(x => x.Id == transactionId && !x.IsDeleted, cancellationToken)) return false;
+        if (tagIds.Count > 0 && await db.Tags.CountAsync(x => tagIds.Contains(x.Id) && !x.IsDeleted, cancellationToken) != tagIds.Count)
             return false;
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var existing = await db.TransactionTags.Where(x => x.TransactionId == transactionId).ToListAsync(cancellationToken);
