@@ -188,9 +188,10 @@ public sealed class PlanningPage : ContentPage
     private async Task<PlanningCategory?> SelectCategoryAsync()
     {
         var choices = _viewModel.Categories.ToArray();
+        var labels = choices.ToDictionary(x => x.Id, x => $"{x.Name} ({x.CurrencyCode})");
         var selected = await DisplayActionSheetAsync(AppStrings.BudgetCategoryPrompt, AppStrings.Cancel, null,
-            choices.Select(x => x.Name).ToArray());
-        return choices.FirstOrDefault(x => x.Name == selected);
+            choices.Select(x => labels[x.Id]).ToArray());
+        return choices.FirstOrDefault(x => labels[x.Id] == selected);
     }
 
     private async void OnAddTagClicked(object? sender, EventArgs e)
