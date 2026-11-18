@@ -197,6 +197,32 @@ public sealed class AccountingServiceTests
     }
 
     [Fact]
+    public async Task RestoreArchivedAccount_MakesItActiveWithoutChangingLedgerHistory()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var service = new AccountService(repository, new FixedClock(NowUtc));
+        var created = await service.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank,
+            OpeningBalanceMinor: 900_000, OpeningDate: BusinessDate));
+
+        Assert.True((await service.ArchiveAsync(created.Value)).IsSuccess);
+        var restored = await service.RestoreAsync(created.Value);
+        var activeAccounts = await repository.GetAccountsAsync(includeArchived: false, default);
+        var account = await repository.GetAccountAsync(created.Value, default);
+
+        Assert.True(restored.IsSuccess);
+        Assert.False(account!.IsArchived);
+        Assert.Contains(activeAccounts, x => x.Id == created.Value && !x.IsArchived);
+        Assert.Equal(900_000, await repository.GetBalanceMinorAsync(created.Value, default));
+        Assert.Equal(2, await db.Postings.CountAsync());
+    }
+
+    [Fact]
     public async Task RenameArchivedAccount_IsRejected()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
