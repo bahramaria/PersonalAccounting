@@ -117,12 +117,13 @@ public sealed class AccountingServiceTests
         var transactions = new TransactionService(repository, new FixedClock(NowUtc));
         var bank = await accounts.CreateAsync(new CreateAccountRequest("Bank", AccountType.Asset, AccountKind.Bank));
 
+        var transactionCountBeforeInvalidRequest = await db.Transactions.CountAsync();
         var result = await transactions.CreateTransferAsync(new TransferRequest(
             BusinessDate, 100, bank.Value, bank.Value));
 
         Assert.True(result.IsFailure);
         Assert.Equal("transaction.transfer.same_account", result.Error.Code);
-        Assert.Equal(transactionCountBeforeInvalidRequests, await db.Transactions.CountAsync());
+        Assert.Equal(transactionCountBeforeInvalidRequest, await db.Transactions.CountAsync());
     }
 
     [Fact]
@@ -270,7 +271,7 @@ public sealed class AccountingServiceTests
         Assert.Equal("transaction.account.invalid", transferWithArchivedAccount.Error.Code);
         Assert.True(exchangeWithArchivedAccount.IsFailure);
         Assert.Equal("transaction.account.invalid", exchangeWithArchivedAccount.Error.Code);
-        Assert.Empty(await db.Transactions.ToListAsync());
+        Assert.Equal(transactionCountBeforeInvalidRequests, await db.Transactions.CountAsync());
 
         Assert.True((await accounts.RestoreAsync(bank.Value)).IsSuccess);
         Assert.True((await accounts.RestoreAsync(food.Value)).IsSuccess);
