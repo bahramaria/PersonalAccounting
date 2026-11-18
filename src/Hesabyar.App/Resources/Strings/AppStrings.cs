@@ -138,6 +138,12 @@ public static class AppStrings
     public static string AccountCreateFailed => Get(nameof(AccountCreateFailed));
     public static string EditAccount => Get(nameof(EditAccount));
     public static string ArchiveAccount => Get(nameof(ArchiveAccount));
+    public static string ShowArchived => Get(nameof(ShowArchived));
+    public static string ShowActive => Get(nameof(ShowActive));
+    public static string RestoreAccount => Get(nameof(RestoreAccount));
+    public static string RestoreCategory => Get(nameof(RestoreCategory));
+    public static string AccountRestoreFailed => Get(nameof(AccountRestoreFailed));
+    public static string CategoryRestoreFailed => Get(nameof(CategoryRestoreFailed));
     public static string ArchiveAccountConfirmation => Get(nameof(ArchiveAccountConfirmation));
     public static string AccountUpdateFailed => Get(nameof(AccountUpdateFailed));
     public static string AccountArchiveFailed => Get(nameof(AccountArchiveFailed));
