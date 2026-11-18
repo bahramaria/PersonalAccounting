@@ -139,7 +139,7 @@ public sealed class BackupService(
             manifest.DatabaseSizeBytes, archiveBytes.Length, IsEncrypted(backupPath), manifest.DeviceBound);
     }
 
-    public async Task<string> RestoreBackupAsync(
+    public async Task<string?> RestoreBackupAsync(
         string backupPath,
         string? password = null,
         CancellationToken cancellationToken = default)
@@ -155,9 +155,13 @@ public sealed class BackupService(
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
         Directory.CreateDirectory(directory);
-        var safetyBackup = Path.Combine(directory,
-            $"pre-restore-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}.hbak");
-        await CreateBackupAsync(safetyBackup, keyProvider?.GetDatabasePassword(), cancellationToken);
+        string? safetyBackup = null;
+        if (File.Exists(databasePath))
+        {
+            safetyBackup = Path.Combine(directory,
+                $"pre-restore-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}.hbak");
+            await CreateBackupAsync(safetyBackup, keyProvider?.GetDatabasePassword(), cancellationToken);
+        }
 
         var restoreId = Guid.NewGuid().ToString("N");
         var replacementPath = Path.Combine(directory, $".{restoreId}.restore");

@@ -104,6 +104,46 @@ public sealed class BackupServiceTests
         }
     }
     [Fact]
+    public async Task RestoreBackup_WhenCurrentDatabaseIsMissing_RestoresWithoutSafetyBackup()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var databasePath = Path.Combine(directory, "hesabyar.db");
+        var backupPath = Path.Combine(directory, "recovery.hbak");
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath, ForeignKeys = true, Pooling = false
+        }.ToString();
+        var factory = new TestDbContextFactory(connectionString);
+        var service = new BackupService(factory, databasePath, TimeProvider.System);
+        try
+        {
+            await using (var db = factory.CreateDbContext())
+            {
+                await db.Database.MigrateAsync();
+                db.Accounts.Add(new DbAccount
+                { Name = "Recovered Cash", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" });
+                await db.SaveChangesAsync();
+            }
+
+            await service.CreateBackupAsync(backupPath, "recovery password");
+            SqliteConnection.ClearAllPools();
+            File.Delete(databasePath);
+
+            var safetyBackup = await service.RestoreBackupAsync(backupPath, "recovery password");
+
+            Assert.Null(safetyBackup);
+            await using var restored = factory.CreateDbContext();
+            Assert.Equal("Recovered Cash", await restored.Accounts.Select(x => x.Name).SingleAsync());
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task PasswordlessEncryptedBackup_IsDeviceBoundToItsSourceKey()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
