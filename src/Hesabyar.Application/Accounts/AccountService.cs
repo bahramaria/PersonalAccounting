@@ -149,6 +149,22 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
         return Result<bool>.Success(true);
     }
 
+    public async Task<Result<bool>> RestoreAsync(Guid accountId, CancellationToken cancellationToken = default)
+    {
+        var account = await repository.GetAccountAsync(accountId, cancellationToken);
+        if (account is null)
+            return Result<bool>.Failure("account.not_found", "Account was not found.");
+
+        if (account.Kind == AccountKind.System)
+            return Result<bool>.Failure("account.system.read_only", "System accounts cannot be restored.");
+
+        if (!account.IsArchived)
+            return Result<bool>.Success(true);
+
+        await repository.RestoreAccountAsync(accountId, clock.UtcNow, cancellationToken);
+        return Result<bool>.Success(true);
+    }
+
     private static bool TryValidateKind(AccountType type, AccountKind kind, out string error)
     {
         var valid = kind switch
