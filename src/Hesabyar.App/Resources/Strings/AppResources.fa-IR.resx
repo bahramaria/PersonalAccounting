@@ -42,6 +42,12 @@
   <data name="AccountCreateFailed" xml:space="preserve"><value>ایجاد حساب انجام نشد.</value></data>
   <data name="EditAccount" xml:space="preserve"><value>ویرایش حساب</value></data>
   <data name="ArchiveAccount" xml:space="preserve"><value>بایگانی حساب</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>نمایش بایگانی‌شده‌ها</value></data>
+  <data name="ShowActive" xml:space="preserve"><value>نمایش موارد فعال</value></data>
+  <data name="RestoreAccount" xml:space="preserve"><value>بازیابی حساب</value></data>
+  <data name="RestoreCategory" xml:space="preserve"><value>بازیابی دسته‌بندی</value></data>
+  <data name="AccountRestoreFailed" xml:space="preserve"><value>بازیابی حساب انجام نشد.</value></data>
+  <data name="CategoryRestoreFailed" xml:space="preserve"><value>بازیابی دسته‌بندی انجام نشد.</value></data>
   <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>حساب از فهرست فعال خارج می‌شود و سوابق مالی آن حفظ خواهد شد. ادامه می‌دهید؟</value></data>
   <data name="AccountUpdateFailed" xml:space="preserve"><value>ویرایش حساب انجام نشد.</value></data>
   <data name="AccountArchiveFailed" xml:space="preserve"><value>بایگانی حساب انجام نشد.</value></data>
