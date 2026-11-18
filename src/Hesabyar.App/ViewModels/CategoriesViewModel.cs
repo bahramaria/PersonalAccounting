@@ -11,11 +11,20 @@ public sealed class CategoriesViewModel : ObservableObject
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private bool _isBusy;
+    private bool _includeArchived;
     private string _statusMessage = string.Empty;
 
     public CategoriesViewModel(IServiceScopeFactory scopeFactory) => _scopeFactory = scopeFactory;
     public ObservableCollection<CategoryListItem> Categories { get; } = [];
+    public string ArchiveToggleText => _includeArchived ? AppStrings.ShowActive : AppStrings.ShowArchived;
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
+
+    public async Task ToggleArchivedAsync(CancellationToken cancellationToken = default)
+    {
+        _includeArchived = !_includeArchived;
+        OnPropertyChanged(nameof(ArchiveToggleText));
+        await LoadAsync(cancellationToken);
+    }
     public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
@@ -74,11 +83,20 @@ public sealed class CategoriesViewModel : ObservableObject
         finally { IsBusy = false; }
     }
 
+    public Task<bool> RestoreAsync(Guid id, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(async service =>
+        {
+            var result = await service.RestoreAsync(id, cancellationToken);
+            if (!result.IsSuccess) { StatusMessage = result.Error.Message ?? AppStrings.CategoryRestoreFailed; return false; }
+            await ReloadAsync(cancellationToken);
+            return true;
+        }, AppStrings.CategoryRestoreFailed, cancellationToken);
+
     private async Task ReloadAsync(CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<AccountService>();
-        var result = await service.GetAccountsAsync(cancellationToken: cancellationToken);
+        var result = await service.GetAccountsAsync(includeArchived: _includeArchived, cancellationToken: cancellationToken);
         if (!result.IsSuccess || result.Value is null)
         {
             StatusMessage = AppStrings.CategoriesLoadFailed;
@@ -93,10 +111,10 @@ public sealed class CategoriesViewModel : ObservableObject
                      .ThenBy(x => x.Account.Name))
         {
             Categories.Add(new CategoryListItem(item.Account.Id, item.Account.Name,
-                item.Account.Type == AccountType.Expense ? AppStrings.ExpenseCategory : AppStrings.IncomeCategory, item.Account.CurrencyCode));
+                item.Account.Type == AccountType.Expense ? AppStrings.ExpenseCategory : AppStrings.IncomeCategory, item.Account.CurrencyCode, item.Account.IsArchived));
         }
         StatusMessage = Categories.Count == 0 ? AppStrings.CategoriesEmpty : string.Empty;
     }
 }
 
-public sealed record CategoryListItem(Guid Id, string Name, string TypeName, string CurrencyCode);
+public sealed record CategoryListItem(Guid Id, string Name, string TypeName, string CurrencyCode, bool IsArchived);
