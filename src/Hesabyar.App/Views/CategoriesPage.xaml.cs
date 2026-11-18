@@ -57,10 +57,10 @@ public partial class CategoriesPage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not CategoryListItem category) return;
         if (sender is CollectionView collectionView) collectionView.SelectedItem = null;
 
-        var action = await DisplayActionSheetAsync(category.Name, AppStrings.Cancel, null,
-            category.IsArchived
-                ? [AppStrings.RestoreCategory]
-                : [AppStrings.CategoryEdit, AppStrings.CategoryArchive]);
+        var actions = category.IsArchived
+            ? new[] { AppStrings.RestoreCategory }
+            : new[] { AppStrings.CategoryEdit, AppStrings.CategoryArchive };
+        var action = await DisplayActionSheetAsync(category.Name, AppStrings.Cancel, null, actions);
         if (action == AppStrings.RestoreCategory)
         {
             if (!await _viewModel.RestoreAsync(category.Id))
