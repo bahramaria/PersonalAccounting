@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Hesabyar.Sync.Contracts;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +27,7 @@ public sealed class AppDbContext(
     public DbSet<DbTransactionTag> TransactionTags => Set<DbTransactionTag>();
     public DbSet<DbFiscalPeriod> FiscalPeriods => Set<DbFiscalPeriod>();
     public DbSet<DbDocumentSequence> DocumentSequences => Set<DbDocumentSequence>();
+    public DbSet<DbSyncOutboxItem> SyncOutbox => Set<DbSyncOutboxItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +41,7 @@ public sealed class AppDbContext(
         ConfigureReminders(modelBuilder);
         ConfigureRecurringTransactions(modelBuilder);
         ConfigurePlanningAndFiscalFeatures(modelBuilder);
+        ConfigureSyncOutbox(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -45,6 +49,7 @@ public sealed class AppDbContext(
         var ownsTransaction = Database.CurrentTransaction is null;
         using var transaction = ownsTransaction ? Database.BeginTransaction() : null;
         AssignDocumentNumbersAsync(CancellationToken.None).GetAwaiter().GetResult();
+        PrepareSyncOutbox();
         ApplyAuditFields();
         var result = base.SaveChanges();
         transaction?.Commit();
@@ -58,6 +63,7 @@ public sealed class AppDbContext(
             ? await Database.BeginTransactionAsync(cancellationToken)
             : null;
         await AssignDocumentNumbersAsync(cancellationToken);
+        await PrepareSyncOutboxAsync(cancellationToken);
         ApplyAuditFields();
         var result = await base.SaveChangesAsync(cancellationToken);
         if (transaction is not null)
@@ -353,6 +359,108 @@ public sealed class AppDbContext(
         sequence.HasIndex(x => x.FiscalPeriodId).IsUnique();
         sequence.HasOne<DbFiscalPeriod>().WithMany().HasForeignKey(x => x.FiscalPeriodId).OnDelete(DeleteBehavior.Cascade);
         sequence.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+
+    private void PrepareSyncOutbox()
+    {
+        var changes = GetPendingTransactionChanges();
+        if (changes.Count == 0)
+            return;
+
+        var nextSequence = SyncOutbox.Select(x => (long?)x.DeviceSequence).Max() ?? 0L;
+        foreach (var change in changes)
+            SyncOutbox.Add(CreateOutboxItem(change.Entity, change.Operation, checked(++nextSequence)));
+    }
+
+    private async Task PrepareSyncOutboxAsync(CancellationToken cancellationToken)
+    {
+        var changes = GetPendingTransactionChanges();
+        if (changes.Count == 0)
+            return;
+
+        var nextSequence = await SyncOutbox.Select(x => (long?)x.DeviceSequence)
+            .MaxAsync(cancellationToken) ?? 0L;
+        foreach (var change in changes)
+            SyncOutbox.Add(CreateOutboxItem(change.Entity, change.Operation, checked(++nextSequence)));
+    }
+
+    private List<(DbLedgerTransaction Entity, SyncOperation Operation)> GetPendingTransactionChanges() =>
+        ChangeTracker.Entries<DbLedgerTransaction>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .OrderBy(entry => entry.Entity.Id)
+            .Select(entry => (
+                entry.Entity,
+                entry.State == EntityState.Deleted || entry.Entity.IsDeleted
+                    ? SyncOperation.Delete
+                    : SyncOperation.Upsert))
+            .ToList();
+
+    private DbSyncOutboxItem CreateOutboxItem(
+        DbLedgerTransaction transaction,
+        SyncOperation operation,
+        long deviceSequence)
+    {
+        IReadOnlyList<SyncFieldValue> fields = operation == SyncOperation.Delete
+            ? []
+            : CreateTransactionFields(transaction);
+
+        return new DbSyncOutboxItem
+        {
+            Id = Guid.CreateVersion7(),
+            AggregateId = transaction.Id,
+            AggregateType = "ledger-transaction",
+            Operation = (int)operation,
+            SchemaVersion = 1,
+            ChangedAtUtc = _timeProvider.GetUtcNow(),
+            DeviceSequence = deviceSequence,
+            FieldsJson = JsonSerializer.Serialize(fields)
+        };
+    }
+
+    private IReadOnlyList<SyncFieldValue> CreateTransactionFields(DbLedgerTransaction transaction)
+    {
+        var postings = transaction.Postings.Count > 0
+            ? transaction.Postings.ToArray()
+            : Postings.AsNoTracking().Where(x => x.TransactionId == transaction.Id).ToArray();
+
+        return
+        [
+            SyncFieldValue.From("businessDate", transaction.BusinessDate),
+            SyncFieldValue.From("kind", transaction.Kind.ToString()),
+            SyncFieldValue.From("description", transaction.Description),
+            SyncFieldValue.From("source", transaction.Source.ToString()),
+            SyncFieldValue.From("isConfirmed", transaction.IsConfirmed),
+            SyncFieldValue.From("partyId", transaction.PartyId),
+            SyncFieldValue.From("loanId", transaction.LoanId),
+            SyncFieldValue.From("dueDate", transaction.DueDate),
+            SyncFieldValue.From("counterAmountMinor", transaction.CounterAmountMinor),
+            SyncFieldValue.From("postings", postings.Select(posting => new
+            {
+                posting.Id,
+                posting.AccountId,
+                posting.AmountMinor,
+                posting.CurrencyCode,
+                posting.PartyId,
+                posting.Memo
+            }).ToArray())
+        ];
+    }
+
+    private static void ConfigureSyncOutbox(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbSyncOutboxItem>();
+        entity.ToTable("SyncOutbox");
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.AggregateType).HasMaxLength(64).IsRequired();
+        entity.Property(x => x.FieldsJson).IsRequired();
+        entity.Property(x => x.ChangedAtUtc).HasColumnType("TEXT");
+        entity.Property(x => x.AcknowledgedAtUtc).HasColumnType("TEXT");
+        entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+        entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+        entity.HasIndex(x => x.DeviceSequence).IsUnique();
+        entity.HasIndex(x => new { x.AcknowledgedAtUtc, x.DeviceSequence });
+        entity.HasIndex(x => new { x.AggregateType, x.AggregateId, x.DeviceSequence });
     }
 
     private static void ConfigurePostings(ModelBuilder modelBuilder)

@@ -377,6 +377,28 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+
+        modelBuilder.Entity<DbSyncOutboxItem>(entity =>
+        {
+            entity.ToTable("SyncOutbox");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.AggregateId).HasColumnType("TEXT");
+            entity.Property(x => x.AggregateType).IsRequired().HasMaxLength(64);
+            entity.Property(x => x.Operation);
+            entity.Property(x => x.SchemaVersion);
+            entity.Property(x => x.ChangedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.DeviceSequence);
+            entity.Property(x => x.FieldsJson).IsRequired();
+            entity.Property(x => x.AcknowledgedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.DeviceSequence).IsUnique();
+            entity.HasIndex(x => new { x.AcknowledgedAtUtc, x.DeviceSequence });
+            entity.HasIndex(x => new { x.AggregateType, x.AggregateId, x.DeviceSequence });
+        });
+
         modelBuilder.Entity<DbPosting>(entity =>
         {
             entity.ToTable("Postings", table =>

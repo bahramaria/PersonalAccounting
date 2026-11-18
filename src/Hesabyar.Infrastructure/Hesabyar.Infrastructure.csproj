@@ -8,5 +8,6 @@
     <PackageReference Include="SQLite3MC.PCLRaw.bundle" />
     <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
     <ProjectReference Include="../Hesabyar.Domain/Hesabyar.Domain.csproj" />
+    <ProjectReference Include="../Hesabyar.Sync.Contracts/Hesabyar.Sync.Contracts.csproj" />
   </ItemGroup>
 </Project>
