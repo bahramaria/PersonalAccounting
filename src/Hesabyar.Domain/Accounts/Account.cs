@@ -60,6 +60,12 @@ public sealed class Account : EntityBase
         MarkUpdated(nowUtc);
     }
 
+    public void Restore(DateTimeOffset nowUtc)
+    {
+        IsArchived = false;
+        MarkUpdated(nowUtc);
+    }
+
     public void SetIncludedInTotal(bool included, DateTimeOffset nowUtc)
     {
         IncludeInTotal = included;
