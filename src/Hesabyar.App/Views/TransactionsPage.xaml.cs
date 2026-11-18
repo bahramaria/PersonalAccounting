@@ -168,8 +168,14 @@ public partial class TransactionsPage : ContentPage
     {
         if (e.CurrentSelection.FirstOrDefault() is not TransactionListItem item) return;
         if (sender is CollectionView list) list.SelectedItem = null;
-        var action = await DisplayActionSheetAsync(item.KindName, AppStrings.Cancel, null,
-            AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags);
+        var supportsStandardActions = item.Kind is TransactionKind.Expense
+            or TransactionKind.Income
+            or TransactionKind.Transfer
+            or TransactionKind.CurrencyExchange;
+        var actions = supportsStandardActions
+            ? new[] { AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags }
+            : new[] { AppStrings.TransactionManageTags };
+        var action = await DisplayActionSheetAsync(item.KindName, AppStrings.Cancel, null, actions);
         if (action == AppStrings.TransactionManageTags)
         {
             var tags = await _viewModel.GetTagsAsync();
