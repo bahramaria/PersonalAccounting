@@ -55,6 +55,7 @@ public static class MauiProgram
             Timeout = TimeSpan.FromSeconds(30)
         });
         builder.Services.AddSingleton<SyncApiClient>();
+        builder.Services.AddSingleton<SyncOutboxPushService>();
         builder.Services.AddSingleton<DatabaseKeyProvider>(provider =>
             new DatabaseKeyProvider(databasePath, provider.GetRequiredService<IDeviceSecretStore>()));
         builder.Services.AddSingleton<IDatabaseKeyProvider>(provider =>
