@@ -1,6 +1,8 @@
+using Hesabyar.Application.Accounts;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.App.Views;
+using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Security;
 using Hesabyar.Localization;
@@ -74,11 +76,24 @@ public partial class StartupPage : ContentPage
             {
                 // Automatic backup failure must not prevent access to the application.
             }
+
             var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null) throw new InvalidOperationException("The application window is not available.");
-            window.Page = await _appLock.IsPinEnabledAsync()
-                ? _services.GetRequiredService<PinLockPage>()
-                : _services.GetRequiredService<AppShell>();
+
+            var onboardingCompleted = Preferences.Get("onboarding.completed", false);
+            if (!onboardingCompleted)
+            {
+                onboardingCompleted = await HasUserAccountsAsync();
+                if (onboardingCompleted)
+                    Preferences.Set("onboarding.completed", true);
+            }
+
+            if (!onboardingCompleted)
+                window.Page = _services.GetRequiredService<OnboardingPage>();
+            else
+                window.Page = await _appLock.IsPinEnabledAsync()
+                    ? _services.GetRequiredService<PinLockPage>()
+                    : _services.GetRequiredService<AppShell>();
         }
         catch (Exception)
         {
@@ -88,5 +103,15 @@ public partial class StartupPage : ContentPage
             RetryButton.IsVisible = true;
         }
         finally { _isInitializing = false; }
+    }
+
+    private async Task<bool> HasUserAccountsAsync()
+    {
+        using var scope = _services.CreateScope();
+        var accountService = scope.ServiceProvider.GetRequiredService<AccountService>();
+        var result = await accountService.GetAccountsAsync(includeArchived: true);
+        return result.IsSuccess && result.Value?.Any(item =>
+            item.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card
+                or AccountKind.Wallet or AccountKind.CreditCard) == true;
     }
 }
