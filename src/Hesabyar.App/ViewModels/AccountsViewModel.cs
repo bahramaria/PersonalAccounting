@@ -220,7 +220,7 @@ public sealed class AccountsViewModel : ObservableObject
     {
         using var scope = _scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<AccountService>();
-        var result = await service.GetAccountsAsync(cancellationToken: cancellationToken);
+        var result = await service.GetAccountsAsync(includeArchived: _includeArchived, cancellationToken: cancellationToken);
         if (!result.IsSuccess || result.Value is null)
         {
             StatusMessage = AppStrings.AccountsLoadFailed;
@@ -236,7 +236,7 @@ public sealed class AccountsViewModel : ObservableObject
                 item.Account.Id,
                 item.Account.Name,
                 GetKindName(item.Account.Kind),
-                FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode));
+                FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode, item.Account.IsArchived));
         }
 
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
@@ -246,7 +246,7 @@ public sealed class AccountsViewModel : ObservableObject
     {
         using var scope = _scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<AccountService>();
-        var result = await service.GetAccountsAsync(cancellationToken: cancellationToken);
+        var result = await service.GetAccountsAsync(includeArchived: _includeArchived, cancellationToken: cancellationToken);
         if (!result.IsSuccess || result.Value is null)
         {
             StatusMessage = AppStrings.AccountsLoadFailed;
@@ -262,7 +262,7 @@ public sealed class AccountsViewModel : ObservableObject
                 item.Account.Id,
                 item.Account.Name,
                 GetKindName(item.Account.Kind),
-                FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode));
+                FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode, item.Account.IsArchived));
         }
 
         StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
