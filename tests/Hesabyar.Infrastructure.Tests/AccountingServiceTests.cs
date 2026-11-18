@@ -122,7 +122,7 @@ public sealed class AccountingServiceTests
 
         Assert.True(result.IsFailure);
         Assert.Equal("transaction.transfer.same_account", result.Error.Code);
-        Assert.Empty(await db.Transactions.ToListAsync());
+        Assert.Equal(transactionCountBeforeInvalidRequests, await db.Transactions.CountAsync());
     }
 
     [Fact]
@@ -247,6 +247,7 @@ public sealed class AccountingServiceTests
         Assert.True(salary.IsSuccess);
         Assert.True((await accounts.ArchiveAsync(bank.Value)).IsSuccess);
         Assert.True((await accounts.ArchiveAsync(food.Value)).IsSuccess);
+        var transactionCountBeforeInvalidRequests = await db.Transactions.CountAsync();
 
         var expenseWithArchivedAccount = await transactions.CreateExpenseAsync(
             new ExpenseRequest(BusinessDate, 10_000, bank.Value, food.Value));
