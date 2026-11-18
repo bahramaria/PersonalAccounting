@@ -223,6 +223,65 @@ public sealed class AccountingServiceTests
     }
 
     [Fact]
+    public async Task ArchivedAccountsAndCategories_CannotBeUsedForNewTransactionsUntilRestored()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var repository = new EfAccountingRepository(db);
+        var clock = new FixedClock(NowUtc);
+        var accounts = new AccountService(repository, clock);
+        var transactions = new TransactionService(repository, clock);
+
+        var bank = await accounts.CreateAsync(new CreateAccountRequest(
+            "Bank", AccountType.Asset, AccountKind.Bank, OpeningBalanceMinor: 500_000, OpeningDate: BusinessDate));
+        var wallet = await accounts.CreateAsync(new CreateAccountRequest("Wallet", AccountType.Asset, AccountKind.Wallet));
+        var food = await accounts.CreateAsync(new CreateAccountRequest("Food", AccountType.Expense, AccountKind.Category));
+        var salary = await accounts.CreateAsync(new CreateAccountRequest("Salary", AccountType.Income, AccountKind.Category));
+
+        Assert.True(bank.IsSuccess);
+        Assert.True(wallet.IsSuccess);
+        Assert.True(food.IsSuccess);
+        Assert.True(salary.IsSuccess);
+        Assert.True((await accounts.ArchiveAsync(bank.Value)).IsSuccess);
+        Assert.True((await accounts.ArchiveAsync(food.Value)).IsSuccess);
+
+        var expenseWithArchivedAccount = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 10_000, bank.Value, food.Value));
+        var expenseWithArchivedCategory = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 10_000, wallet.Value, food.Value));
+        var incomeWithArchivedAccount = await transactions.CreateIncomeAsync(
+            new IncomeRequest(BusinessDate, 10_000, bank.Value, salary.Value));
+        var transferWithArchivedAccount = await transactions.CreateTransferAsync(
+            new TransferRequest(BusinessDate, 10_000, bank.Value, wallet.Value));
+        var exchangeWithArchivedAccount = await transactions.CreateCurrencyExchangeAsync(
+            new CurrencyExchangeRequest(BusinessDate, 10_000, 9_000, bank.Value, wallet.Value));
+
+        Assert.True(expenseWithArchivedAccount.IsFailure);
+        Assert.Equal("transaction.account.invalid", expenseWithArchivedAccount.Error.Code);
+        Assert.True(expenseWithArchivedCategory.IsFailure);
+        Assert.Equal("transaction.category.invalid", expenseWithArchivedCategory.Error.Code);
+        Assert.True(incomeWithArchivedAccount.IsFailure);
+        Assert.Equal("transaction.deposit_account.invalid", incomeWithArchivedAccount.Error.Code);
+        Assert.True(transferWithArchivedAccount.IsFailure);
+        Assert.Equal("transaction.account.invalid", transferWithArchivedAccount.Error.Code);
+        Assert.True(exchangeWithArchivedAccount.IsFailure);
+        Assert.Equal("transaction.account.invalid", exchangeWithArchivedAccount.Error.Code);
+        Assert.Empty(await db.Transactions.ToListAsync());
+
+        Assert.True((await accounts.RestoreAsync(bank.Value)).IsSuccess);
+        Assert.True((await accounts.RestoreAsync(food.Value)).IsSuccess);
+        var expenseAfterRestore = await transactions.CreateExpenseAsync(
+            new ExpenseRequest(BusinessDate, 10_000, bank.Value, food.Value));
+
+        Assert.True(expenseAfterRestore.IsSuccess);
+        Assert.Equal(490_000, await repository.GetBalanceMinorAsync(bank.Value, default));
+        Assert.Equal(10_000, await repository.GetBalanceMinorAsync(food.Value, default));
+    }
+
+    [Fact]
     public async Task RenameArchivedAccount_IsRejected()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
