@@ -72,7 +72,7 @@ public partial class StartupPage : ContentPage
                 await _backupService.CreateDailyAutomaticBackupAsync(
                     Path.Combine(FileSystem.AppDataDirectory, "backups", "automatic"));
             }
-            catch (IOException)
+            catch (Exception)
             {
                 // Automatic backup failure must not prevent access to the application.
             }

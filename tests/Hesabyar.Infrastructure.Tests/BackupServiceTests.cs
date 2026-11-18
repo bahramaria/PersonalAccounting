@@ -194,6 +194,51 @@ public sealed class BackupServiceTests
         }
     }
 
+    [Fact]
+    public async Task RestoreWithWrongPassword_DoesNotChangeCurrentDatabase()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var databasePath = Path.Combine(directory, "hesabyar.db");
+        var backupPath = Path.Combine(directory, "manual.hbak");
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath, ForeignKeys = true, Pooling = false
+        }.ToString();
+        var factory = new TestDbContextFactory(connectionString);
+        var service = new BackupService(factory, databasePath, TimeProvider.System);
+        try
+        {
+            await using (var db = factory.CreateDbContext())
+            {
+                await db.Database.MigrateAsync();
+                db.Accounts.Add(new DbAccount
+                { Name = "Original", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" });
+                await db.SaveChangesAsync();
+            }
+
+            await service.CreateBackupAsync(backupPath, "correct horse battery");
+            await using (var db = factory.CreateDbContext())
+            {
+                var account = await db.Accounts.SingleAsync();
+                account.Name = "Current";
+                await db.SaveChangesAsync();
+            }
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.RestoreBackupAsync(backupPath, "incorrect password"));
+
+            await using (var db = factory.CreateDbContext())
+                Assert.Equal("Current", await db.Accounts.Select(x => x.Name).SingleAsync());
+            Assert.Empty(Directory.GetFiles(directory, "pre-restore-*.hbak"));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private sealed class TestDbContextFactory(
         string connectionString, IDatabaseKeyProvider? keyProvider = null) : IDbContextFactory<AppDbContext>
     {
