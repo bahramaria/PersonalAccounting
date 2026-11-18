@@ -203,14 +203,7 @@ public sealed class OnboardingPage : ContentPage
 
     private async Task ConfigureOptionalPinAsync()
     {
-        var pin = await DisplayPromptAsync(
-            AppStrings.PinEnable,
-            AppStrings.PinEnterNew,
-            AppStrings.Save,
-            AppStrings.Skip,
-            maxLength: 8,
-            keyboard: Keyboard.Numeric,
-            isPassword: true);
+        var pin = await PromptPinAsync(AppStrings.PinEnterNew);
         if (string.IsNullOrEmpty(pin))
             return;
 
@@ -220,14 +213,7 @@ public sealed class OnboardingPage : ContentPage
             return;
         }
 
-        var confirmation = await DisplayPromptAsync(
-            AppStrings.PinEnable,
-            AppStrings.PinConfirm,
-            AppStrings.Save,
-            AppStrings.Skip,
-            maxLength: 8,
-            keyboard: Keyboard.Numeric,
-            isPassword: true);
+        var confirmation = await PromptPinAsync(AppStrings.PinConfirm);
         if (confirmation is null)
             return;
 
@@ -238,5 +224,75 @@ public sealed class OnboardingPage : ContentPage
         }
 
         await _appLock.SetPinAsync(pin);
+    }
+
+    private async Task<string?> PromptPinAsync(string prompt)
+    {
+        var promptPage = new PinPromptPage(prompt, AppStrings.Continue, AppStrings.Cancel);
+        await Navigation.PushModalAsync(promptPage);
+        return await promptPage.Result;
+    }
+
+    private sealed class PinPromptPage : ContentPage
+    {
+        private readonly Entry _entry;
+        private readonly TaskCompletionSource<string?> _completion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<string?> Result => _completion.Task;
+
+        public PinPromptPage(string prompt, string confirmText, string cancelText)
+        {
+            _entry = new Entry
+            {
+                IsPassword = true,
+                MaxLength = 8,
+                Keyboard = Keyboard.Numeric,
+                HorizontalOptions = LayoutOptions.Fill
+            };
+
+            var confirmButton = new Button { Text = confirmText };
+            var cancelButton = new Button { Text = cancelText };
+            confirmButton.Clicked += async (_, _) =>
+            {
+                var value = _entry.Text ?? string.Empty;
+                _entry.Text = string.Empty;
+                _completion.TrySetResult(value);
+                await Navigation.PopModalAsync();
+            };
+            cancelButton.Clicked += async (_, _) =>
+            {
+                _entry.Text = string.Empty;
+                _completion.TrySetResult(null);
+                await Navigation.PopModalAsync();
+            };
+
+            Content = new ScrollView
+            {
+                Content = new VerticalStackLayout
+                {
+                    Padding = 24,
+                    Spacing = 16,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label { Text = prompt, FontAttributes = FontAttributes.Bold },
+                        _entry,
+                        new HorizontalStackLayout
+                        {
+                            Spacing = 12,
+                            Children = { confirmButton, cancelButton }
+                        }
+                    }
+                }
+            };
+        }
+
+        protected override void OnDisappearing()
+        {
+            _entry.Text = string.Empty;
+            _completion.TrySetResult(null);
+            base.OnDisappearing();
+        }
     }
 }
