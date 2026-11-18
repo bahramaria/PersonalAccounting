@@ -156,11 +156,21 @@ public sealed class BackupService(
         var directory = Path.GetDirectoryName(Path.GetFullPath(databasePath))!;
         Directory.CreateDirectory(directory);
         string? safetyBackup = null;
+        var currentDatabaseBackupFailed = false;
         if (File.Exists(databasePath))
         {
             safetyBackup = Path.Combine(directory,
                 $"pre-restore-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}.hbak");
-            await CreateBackupAsync(safetyBackup, keyProvider?.GetDatabasePassword(), cancellationToken);
+            try
+            {
+                await CreateBackupAsync(safetyBackup, keyProvider?.GetDatabasePassword(), cancellationToken);
+            }
+            catch (SqliteException)
+            {
+                // Preserve an unreadable database for investigation and continue with the validated backup.
+                currentDatabaseBackupFailed = true;
+                safetyBackup = null;
+            }
         }
 
         var restoreId = Guid.NewGuid().ToString("N");
@@ -219,9 +229,24 @@ public sealed class BackupService(
 
             try
             {
-                if (File.Exists(rollbackDatabasePath)) File.Delete(rollbackDatabasePath);
-                foreach (var sidecar in rollbackSidecars)
-                    if (File.Exists(sidecar.RollbackPath)) File.Delete(sidecar.RollbackPath);
+                if (currentDatabaseBackupFailed && databaseMovedToRollback)
+                {
+                    var preservedPath = Path.Combine(directory,
+                        $"recovery-preserved-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}-{restoreId}.db");
+                    File.Move(rollbackDatabasePath, preservedPath);
+                    foreach (var sidecar in rollbackSidecars)
+                    {
+                        if (!File.Exists(sidecar.RollbackPath)) continue;
+                        var suffix = sidecar.OriginalPath.EndsWith("-wal", StringComparison.Ordinal) ? "-wal" : "-shm";
+                        File.Move(sidecar.RollbackPath, preservedPath + suffix);
+                    }
+                }
+                else
+                {
+                    if (File.Exists(rollbackDatabasePath)) File.Delete(rollbackDatabasePath);
+                    foreach (var sidecar in rollbackSidecars)
+                        if (File.Exists(sidecar.RollbackPath)) File.Delete(sidecar.RollbackPath);
+                }
             }
             catch (IOException)
             {
