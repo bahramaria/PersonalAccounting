@@ -26,6 +26,9 @@ public partial class AccountsPage : ContentPage
         await _viewModel.LoadAsync();
     }
 
+    private async void OnToggleArchivedClicked(object? sender, EventArgs e) =>
+        await _viewModel.ToggleArchivedAsync();
+
     private async void OnAddAccountClicked(object? sender, EventArgs e)
     {
         var name = await DisplayPromptAsync(
@@ -97,10 +100,16 @@ public partial class AccountsPage : ContentPage
             account.Name,
             AppStrings.Cancel,
             null,
-            AppStrings.EditAccount,
-            AppStrings.ArchiveAccount);
+            account.IsArchived
+                ? [AppStrings.RestoreAccount]
+                : [AppStrings.EditAccount, AppStrings.ArchiveAccount]);
 
-        if (action == AppStrings.EditAccount)
+        if (action == AppStrings.RestoreAccount)
+        {
+            if (!await _viewModel.RestoreAsync(account.Id))
+                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        }
+        else if (!account.IsArchived && action == AppStrings.EditAccount)
         {
             var name = await DisplayPromptAsync(
                 AppStrings.EditAccount,
@@ -116,7 +125,7 @@ public partial class AccountsPage : ContentPage
             if (!await _viewModel.RenameAsync(account.Id, name.Trim()))
                 await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         }
-        else if (action == AppStrings.ArchiveAccount)
+        else if (!account.IsArchived && action == AppStrings.ArchiveAccount)
         {
             var confirmed = await DisplayAlertAsync(
                 AppStrings.ArchiveAccount,
