@@ -42,6 +42,12 @@
   <data name="AccountCreateFailed" xml:space="preserve"><value>Could not create the account.</value></data>
   <data name="EditAccount" xml:space="preserve"><value>Edit account</value></data>
   <data name="ArchiveAccount" xml:space="preserve"><value>Archive account</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Show archived</value></data>
+  <data name="ShowActive" xml:space="preserve"><value>Show active</value></data>
+  <data name="RestoreAccount" xml:space="preserve"><value>Restore account</value></data>
+  <data name="RestoreCategory" xml:space="preserve"><value>Restore category</value></data>
+  <data name="AccountRestoreFailed" xml:space="preserve"><value>Could not restore the account.</value></data>
+  <data name="CategoryRestoreFailed" xml:space="preserve"><value>Could not restore the category.</value></data>
   <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>This account will be removed from the active list while its financial history is preserved. Continue?</value></data>
   <data name="AccountUpdateFailed" xml:space="preserve"><value>Could not update the account.</value></data>
   <data name="AccountArchiveFailed" xml:space="preserve"><value>Could not archive the account.</value></data>
