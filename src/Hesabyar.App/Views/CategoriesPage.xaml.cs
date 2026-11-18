@@ -25,6 +25,9 @@ public partial class CategoriesPage : ContentPage
         await _viewModel.LoadAsync();
     }
 
+    private async void OnToggleArchivedClicked(object? sender, EventArgs e) =>
+        await _viewModel.ToggleArchivedAsync();
+
     private async void OnAddCategoryClicked(object? sender, EventArgs e)
     {
         var name = await DisplayPromptAsync(AppStrings.AddCategory, AppStrings.AccountNamePrompt,
@@ -55,8 +58,15 @@ public partial class CategoriesPage : ContentPage
         if (sender is CollectionView collectionView) collectionView.SelectedItem = null;
 
         var action = await DisplayActionSheetAsync(category.Name, AppStrings.Cancel, null,
-            AppStrings.CategoryEdit, AppStrings.CategoryArchive);
-        if (action == AppStrings.CategoryEdit)
+            category.IsArchived
+                ? [AppStrings.RestoreCategory]
+                : [AppStrings.CategoryEdit, AppStrings.CategoryArchive]);
+        if (action == AppStrings.RestoreCategory)
+        {
+            if (!await _viewModel.RestoreAsync(category.Id))
+                await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
+        }
+        else if (!category.IsArchived && action == AppStrings.CategoryEdit)
         {
             var name = await DisplayPromptAsync(AppStrings.CategoryEdit, AppStrings.AccountNamePrompt,
                 AppStrings.Save, AppStrings.Cancel, initialValue: category.Name, maxLength: 120);
@@ -65,7 +75,7 @@ public partial class CategoriesPage : ContentPage
             if (!await _viewModel.RenameAsync(category.Id, name.Trim()))
                 await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
         }
-        else if (action == AppStrings.CategoryArchive)
+        else if (!category.IsArchived && action == AppStrings.CategoryArchive)
         {
             var confirmed = await DisplayAlertAsync(AppStrings.CategoryArchive,
                 AppStrings.CategoryArchiveConfirmation, AppStrings.CategoryArchive, AppStrings.Cancel);
