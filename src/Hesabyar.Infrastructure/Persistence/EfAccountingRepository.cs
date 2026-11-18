@@ -178,6 +178,14 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task RestoreAccountAsync(Guid accountId, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
+        var account = await db.Accounts.SingleAsync(x => x.Id == accountId, cancellationToken);
+        account.IsArchived = false;
+        account.UpdatedAtUtc = nowUtc;
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Guid> CreateTransactionAsync(LedgerTransaction transaction, CancellationToken cancellationToken)
     {
         db.Transactions.Add(ToEntity(transaction));
