@@ -96,13 +96,10 @@ public partial class AccountsPage : ContentPage
         if (sender is CollectionView collectionView)
             collectionView.SelectedItem = null;
 
-        var action = await DisplayActionSheetAsync(
-            account.Name,
-            AppStrings.Cancel,
-            null,
-            account.IsArchived
-                ? [AppStrings.RestoreAccount]
-                : [AppStrings.EditAccount, AppStrings.ArchiveAccount]);
+        var actions = account.IsArchived
+            ? new[] { AppStrings.RestoreAccount }
+            : new[] { AppStrings.EditAccount, AppStrings.ArchiveAccount };
+        var action = await DisplayActionSheetAsync(account.Name, AppStrings.Cancel, null, actions);
 
         if (action == AppStrings.RestoreAccount)
         {
