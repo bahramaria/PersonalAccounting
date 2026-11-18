@@ -12,7 +12,7 @@
             <Button Grid.Column="1" Text="{x:Static strings:AppStrings.AddTransaction}"
                     Clicked="OnAddTransactionClicked" />
         </Grid>
-        <SearchBar Grid.Row="1" Placeholder="{x:Static strings:AppStrings.TransactionSearchPlaceholder}"
+        <SearchBar x:Name="TransactionSearchBar" Grid.Row="1" Placeholder="{x:Static strings:AppStrings.TransactionSearchPlaceholder}"
                    SearchButtonPressed="OnSearchButtonPressed" />
         <HorizontalStackLayout Grid.Row="2" Spacing="8">
             <Button Text="{x:Static strings:AppStrings.TransactionFilters}" Clicked="OnFiltersClicked" />
