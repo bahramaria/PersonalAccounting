@@ -119,6 +119,7 @@ public partial class TransactionsPage : ContentPage
         _minimumAmountMinor = null;
         _maximumAmountMinor = null;
         _searchText = null;
+        TransactionSearchBar.Text = string.Empty;
         await ReloadAsync();
     }
 
@@ -157,11 +158,22 @@ public partial class TransactionsPage : ContentPage
     {
         var items = choices.ToArray();
         var allLabel = AppStrings.TransactionFilterAll;
-        var labels = new[] { allLabel }.Concat(items.Select(x => x.Name)).ToArray();
+        var baseLabels = items.ToDictionary(x => x.Id, x => $"{x.Name} ({x.CurrencyCode})");
+        var duplicateLabels = baseLabels.Values
+            .GroupBy(x => x, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.Ordinal);
+        var labelsById = items.ToDictionary(
+            x => x.Id,
+            x => duplicateLabels.Contains(baseLabels[x.Id])
+                ? $"{baseLabels[x.Id]} · {x.Id.ToString("N")[..4]}"
+                : baseLabels[x.Id]);
+        var labels = new[] { allLabel }.Concat(items.Select(x => labelsById[x.Id])).ToArray();
         var selected = await DisplayActionSheetAsync(title, AppStrings.Cancel, null, labels);
         if (selected == AppStrings.Cancel) return selectedId;
         if (selected == allLabel) return null;
-        return items.FirstOrDefault(x => x.Name == selected)?.Id ?? selectedId;
+        return items.FirstOrDefault(x => labelsById[x.Id] == selected)?.Id ?? selectedId;
     }
 
     private async void OnTransactionSelectionChanged(object? sender, SelectionChangedEventArgs e)
