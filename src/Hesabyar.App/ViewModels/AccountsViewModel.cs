@@ -13,6 +13,7 @@ public sealed class AccountsViewModel : ObservableObject
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private bool _isBusy;
+    private bool _includeArchived;
     private string _statusMessage = string.Empty;
 
     public AccountsViewModel(IServiceScopeFactory scopeFactory)
@@ -26,6 +27,15 @@ public sealed class AccountsViewModel : ObservableObject
     {
         get => _isBusy;
         private set => SetProperty(ref _isBusy, value);
+    }
+
+    public string ArchiveToggleText => _includeArchived ? AppStrings.ShowActive : AppStrings.ShowArchived;
+
+    public async Task ToggleArchivedAsync(CancellationToken cancellationToken = default)
+    {
+        _includeArchived = !_includeArchived;
+        OnPropertyChanged(nameof(ArchiveToggleText));
+        await LoadAsync(cancellationToken);
     }
 
     public string StatusMessage
@@ -44,7 +54,7 @@ public sealed class AccountsViewModel : ObservableObject
         {
             using var scope = _scopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<AccountService>();
-            var result = await service.GetAccountsAsync(cancellationToken: cancellationToken);
+            var result = await service.GetAccountsAsync(includeArchived: _includeArchived, cancellationToken: cancellationToken);
             if (!result.IsSuccess || result.Value is null)
             {
                 StatusMessage = AppStrings.AccountsLoadFailed;
@@ -60,7 +70,7 @@ public sealed class AccountsViewModel : ObservableObject
                     item.Account.Id,
                     item.Account.Name,
                     GetKindName(item.Account.Kind),
-                    FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode));
+                    FormatBalance(item.BalanceMinor, item.Account.CurrencyCode), item.Account.CurrencyCode, item.Account.IsArchived));
             }
 
             StatusMessage = Accounts.Count == 0 ? AppStrings.AccountsEmpty : string.Empty;
@@ -181,6 +191,31 @@ public sealed class AccountsViewModel : ObservableObject
         }
     }
 
+    public async Task<bool> RestoreAsync(Guid accountId, CancellationToken cancellationToken = default)
+    {
+        if (IsBusy) return false;
+        IsBusy = true;
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<AccountService>();
+            var result = await service.RestoreAsync(accountId, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                StatusMessage = result.Error.Message ?? AppStrings.AccountRestoreFailed;
+                return false;
+            }
+            await ReloadAccountsAsync(cancellationToken);
+            return true;
+        }
+        catch (Exception)
+        {
+            StatusMessage = AppStrings.AccountRestoreFailed;
+            return false;
+        }
+        finally { IsBusy = false; }
+    }
+
     private async Task ReloadAccountsAsync(CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
@@ -247,4 +282,4 @@ public sealed class AccountsViewModel : ObservableObject
     };
 }
 
-public sealed record AccountListItem(Guid Id, string Name, string KindName, string BalanceText, string CurrencyCode);
+public sealed record AccountListItem(Guid Id, string Name, string KindName, string BalanceText, string CurrencyCode, bool IsArchived);
