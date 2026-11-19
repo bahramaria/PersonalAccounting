@@ -58,11 +58,11 @@ public sealed class DocumentAttachmentService(
         var storedName = id.ToString("N") + ".hatt";
         Directory.CreateDirectory(storageDirectory);
         var fullPath = GetSafePath(storedName);
-        var encrypted = Encrypt(plaintext);
-        await File.WriteAllBytesAsync(fullPath, encrypted, cancellationToken);
-
+        byte[]? encrypted = null;
         try
         {
+            encrypted = Encrypt(plaintext);
+            await File.WriteAllBytesAsync(fullPath, encrypted, cancellationToken);
             await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
             if (transactionId is { } tx &&
                 !await db.Transactions.AnyAsync(x => x.Id == tx, cancellationToken))
@@ -92,6 +92,7 @@ public sealed class DocumentAttachmentService(
         }
         finally
         {
+            if (encrypted is not null) CryptographicOperations.ZeroMemory(encrypted);
             CryptographicOperations.ZeroMemory(plaintext);
         }
     }
