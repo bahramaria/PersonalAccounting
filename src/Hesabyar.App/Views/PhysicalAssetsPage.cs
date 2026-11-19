@@ -165,7 +165,7 @@ public sealed class PhysicalAssetsPage : ContentPage
 
             var unit = await DisplayPromptAsync(AppStrings.AssetUnitPrompt, AppStrings.AssetUnitPrompt,
                 AppStrings.Save, AppStrings.Skip, initialValue: asset.Unit, maxLength: 24);
-            var note = await DisplayPromptAsync(AppStrings.Note, AppStrings.Note,
+            var note = await DisplayPromptAsync(AppStrings.AssetNotePrompt, AppStrings.AssetNotePrompt,
                 AppStrings.Save, AppStrings.Skip, initialValue: asset.Note, maxLength: 500);
             try
             {
