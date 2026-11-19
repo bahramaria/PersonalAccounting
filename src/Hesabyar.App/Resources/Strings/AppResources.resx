@@ -471,4 +471,20 @@
   <data name="TagColorPrompt" xml:space="preserve"><value>Color (optional, e.g. #336699; blank for none)</value></data>
   <data name="ArchiveTag" xml:space="preserve"><value>Archive tag</value></data>
   <data name="ArchiveTagConfirm" xml:space="preserve"><value>Archive this tag? Existing transaction links will be preserved.</value></data>
+
+  <data name="AssetsHeading" xml:space="preserve"><value>Physical and investment assets</value></data>
+  <data name="AssetsAdd" xml:space="preserve"><value>Add asset</value></data>
+  <data name="AssetsEmpty" xml:space="preserve"><value>No assets have been added.</value></data>
+  <data name="AssetNamePrompt" xml:space="preserve"><value>Asset name</value></data>
+  <data name="AssetTypePrompt" xml:space="preserve"><value>Asset type</value></data>
+  <data name="AssetQuantityPrompt" xml:space="preserve"><value>Quantity</value></data>
+  <data name="AssetUnitPrompt" xml:space="preserve"><value>Unit (e.g. gram or item)</value></data>
+  <data name="AssetCurrencyPrompt" xml:space="preserve"><value>Currency code (three ASCII letters)</value></data>
+  <data name="AssetCostPrompt" xml:space="preserve"><value>Acquisition cost in minor currency units</value></data>
+  <data name="AssetValuationPrompt" xml:space="preserve"><value>Current value in minor currency units</value></data>
+  <data name="AssetValuationAdd" xml:space="preserve"><value>Add valuation</value></data>
+  <data name="AssetArchive" xml:space="preserve"><value>Archive asset</value></data>
+  <data name="AssetGainLabel" xml:space="preserve"><value>Unrealized gain or loss</value></data>
+  <data name="AssetSaveFailed" xml:space="preserve"><value>Could not save or load asset information.</value></data>
+
 </root>
