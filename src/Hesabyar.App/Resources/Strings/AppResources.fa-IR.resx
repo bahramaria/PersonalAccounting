@@ -498,4 +498,5 @@
   <data name="AssetTypeOther" xml:space="preserve"><value>سایر</value></data>
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>برای این دارایی هنوز ارزش‌گذاری ثبت نشده است.</value></data>
 
+  <data name="AssetNotePrompt" xml:space="preserve"><value>یادداشت (اختیاری)</value></data>
 </root>
