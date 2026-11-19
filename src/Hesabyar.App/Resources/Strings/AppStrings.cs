@@ -11,6 +11,22 @@ public static class AppStrings
 
     public static CultureInfo? Culture { get; set; }
 
+
+    public static string AssetsHeading => Get(nameof(AssetsHeading));
+    public static string AssetsAdd => Get(nameof(AssetsAdd));
+    public static string AssetsEmpty => Get(nameof(AssetsEmpty));
+    public static string AssetNamePrompt => Get(nameof(AssetNamePrompt));
+    public static string AssetTypePrompt => Get(nameof(AssetTypePrompt));
+    public static string AssetQuantityPrompt => Get(nameof(AssetQuantityPrompt));
+    public static string AssetUnitPrompt => Get(nameof(AssetUnitPrompt));
+    public static string AssetCurrencyPrompt => Get(nameof(AssetCurrencyPrompt));
+    public static string AssetCostPrompt => Get(nameof(AssetCostPrompt));
+    public static string AssetValuationPrompt => Get(nameof(AssetValuationPrompt));
+    public static string AssetValuationAdd => Get(nameof(AssetValuationAdd));
+    public static string AssetArchive => Get(nameof(AssetArchive));
+    public static string AssetGainLabel => Get(nameof(AssetGainLabel));
+    public static string AssetSaveFailed => Get(nameof(AssetSaveFailed));
+
     public static string HomeTab => Get(nameof(HomeTab));
     public static string PlanningTab => Get(nameof(PlanningTab));
     public static string CurrencyCodePrompt => Get(nameof(CurrencyCodePrompt));
