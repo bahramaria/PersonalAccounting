@@ -1,3 +1,5 @@
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Hesabyar.App.Services;
 using Hesabyar.App.Resources.Strings;
 using Hesabyar.Application.Transactions;
