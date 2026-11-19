@@ -12,8 +12,10 @@ public sealed class BackupService(
     IDbContextFactory<AppDbContext> contextFactory,
     string databasePath,
     TimeProvider timeProvider,
-    IDatabaseKeyProvider? keyProvider = null)
+    IDatabaseKeyProvider? keyProvider = null,
+    IBackupFileOperations? fileOperations = null)
 {
+    private readonly IBackupFileOperations _fileOperations = fileOperations ?? new BackupFileOperations();
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1\n");
     private const int FormatVersion = 2;
     private const int KdfIterations = 600_000;
@@ -188,7 +190,7 @@ public sealed class BackupService(
             {
                 if (File.Exists(databasePath))
                 {
-                    File.Move(databasePath, rollbackDatabasePath);
+                    _fileOperations.Move(databasePath, rollbackDatabasePath);
                     databaseMovedToRollback = true;
                 }
 
@@ -197,11 +199,11 @@ public sealed class BackupService(
                     var sidecarPath = databasePath + suffix;
                     if (!File.Exists(sidecarPath)) continue;
                     var rollbackPath = rollbackDatabasePath + suffix;
-                    File.Move(sidecarPath, rollbackPath);
+                    _fileOperations.Move(sidecarPath, rollbackPath);
                     rollbackSidecars.Add((sidecarPath, rollbackPath));
                 }
 
-                File.Move(replacementPath, databasePath);
+                _fileOperations.Move(replacementPath, databasePath);
                 replacementInstalled = true;
             }
             catch (Exception restoreException)
@@ -214,11 +216,11 @@ public sealed class BackupService(
                     foreach (var sidecar in rollbackSidecars.AsEnumerable().Reverse())
                     {
                         if (File.Exists(sidecar.RollbackPath))
-                            File.Move(sidecar.RollbackPath, sidecar.OriginalPath);
+                            _fileOperations.Move(sidecar.RollbackPath, sidecar.OriginalPath);
                     }
 
                     if (databaseMovedToRollback && File.Exists(rollbackDatabasePath))
-                        File.Move(rollbackDatabasePath, databasePath);
+                        _fileOperations.Move(rollbackDatabasePath, databasePath);
                 }
                 catch (Exception rollbackException)
                 {
@@ -236,12 +238,12 @@ public sealed class BackupService(
                 {
                     var preservedPath = Path.Combine(directory,
                         $"recovery-preserved-{timeProvider.GetUtcNow():yyyyMMddTHHmmssfffZ}-{restoreId}.db");
-                    File.Move(rollbackDatabasePath, preservedPath);
+                    _fileOperations.Move(rollbackDatabasePath, preservedPath);
                     foreach (var sidecar in rollbackSidecars)
                     {
                         if (!File.Exists(sidecar.RollbackPath)) continue;
                         var suffix = sidecar.OriginalPath.EndsWith("-wal", StringComparison.Ordinal) ? "-wal" : "-shm";
-                        File.Move(sidecar.RollbackPath, preservedPath + suffix);
+                        _fileOperations.Move(sidecar.RollbackPath, preservedPath + suffix);
                     }
                 }
                 else

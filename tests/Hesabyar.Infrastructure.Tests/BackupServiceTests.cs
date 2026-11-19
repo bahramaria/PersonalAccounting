@@ -321,6 +321,74 @@ public sealed class BackupServiceTests
         }
     }
 
+    [Fact]
+    public async Task RestoreBackup_WhenReplacementMoveFails_RestoresOriginalDatabase()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var databasePath = Path.Combine(directory, "hesabyar.db");
+        var backupPath = Path.Combine(directory, "rollback.hbak");
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath, ForeignKeys = true, Pooling = false
+        }.ToString();
+        var factory = new TestDbContextFactory(connectionString);
+        var fileOperations = new FailingRestoreMoveOperations(databasePath);
+        var service = new BackupService(factory, databasePath, TimeProvider.System,
+            fileOperations: fileOperations);
+        try
+        {
+            await using (var db = factory.CreateDbContext())
+            {
+                await db.Database.MigrateAsync();
+                db.Accounts.Add(new DbAccount
+                { Name = "Original", Type = AccountType.Asset, Kind = AccountKind.Cash, CurrencyCode = "IRR" });
+                await db.SaveChangesAsync();
+            }
+
+            await service.CreateBackupAsync(backupPath, "rollback password");
+            await using (var db = factory.CreateDbContext())
+            {
+                var account = await db.Accounts.SingleAsync();
+                account.Name = "Current";
+                await db.SaveChangesAsync();
+            }
+            SqliteConnection.ClearAllPools();
+
+            await Assert.ThrowsAsync<IOException>(() =>
+                service.RestoreBackupAsync(backupPath, "rollback password"));
+
+            await using var restored = factory.CreateDbContext();
+            Assert.Equal("Current", await restored.Accounts.Select(x => x.Name).SingleAsync());
+            Assert.Empty(Directory.GetFiles(directory, "*.rollback"));
+            Assert.Empty(Directory.GetFiles(directory, "*.restore"));
+            Assert.True(fileOperations.FailureInjected);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private sealed class FailingRestoreMoveOperations(string databasePath) : IBackupFileOperations
+    {
+        public bool FailureInjected { get; private set; }
+
+        public void Move(string sourcePath, string destinationPath)
+        {
+            if (!FailureInjected &&
+                sourcePath.EndsWith(".restore", StringComparison.Ordinal) &&
+                string.Equals(destinationPath, databasePath, StringComparison.Ordinal))
+            {
+                FailureInjected = true;
+                throw new IOException("Injected replacement installation failure.");
+            }
+
+            File.Move(sourcePath, destinationPath);
+        }
+    }
+
     private sealed class TestDbContextFactory(
         string connectionString, IDatabaseKeyProvider? keyProvider = null) : IDbContextFactory<AppDbContext>
     {
