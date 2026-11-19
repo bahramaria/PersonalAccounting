@@ -178,6 +178,7 @@ public sealed class BackupService(
         var rollbackDatabasePath = Path.Combine(directory, $".{restoreId}.rollback");
         var rollbackSidecars = new List<(string OriginalPath, string RollbackPath)>();
         var databaseMovedToRollback = false;
+        var replacementInstalled = false;
         try
         {
             await CreateRestoreDatabaseAsync(replacementPath, databaseBytes, sourceDatabasePassword, cancellationToken);
@@ -201,12 +202,14 @@ public sealed class BackupService(
                 }
 
                 File.Move(replacementPath, databasePath);
+                replacementInstalled = true;
             }
             catch (Exception restoreException)
             {
                 try
                 {
-                    if (File.Exists(databasePath)) File.Delete(databasePath);
+                    // Never delete the original database when the replacement was not installed.
+                    if (replacementInstalled && File.Exists(databasePath)) File.Delete(databasePath);
 
                     foreach (var sidecar in rollbackSidecars.AsEnumerable().Reverse())
                     {
