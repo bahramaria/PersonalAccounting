@@ -18,6 +18,8 @@ public sealed record PhysicalAssetSnapshot(
     bool IsArchived,
     string? Note);
 
+public sealed record AssetValuationSnapshot(Guid Id, DateOnly ValuationDate, long ValueMinor, string CurrencyCode, string? Note);
+
 public sealed record CreatePhysicalAssetRequest(
     string Name,
     PhysicalAssetType Type,
@@ -61,7 +63,7 @@ public sealed class PhysicalAssetService(IDbContextFactory<AppDbContext> context
             return new PhysicalAssetSnapshot(
                 asset.Id, asset.Name, asset.Type, asset.Quantity, asset.Unit,
                 asset.CurrencyCode, asset.AcquiredOn, asset.AcquisitionCostMinor,
-                latest?.ValueMinor, latest?.ValuationDate,
+                latest?.ValueMinor ?? asset.AcquisitionCostMinor, latest?.ValuationDate,
                 latest is null ? null : checked(latest.ValueMinor - asset.AcquisitionCostMinor),
                 asset.IsArchived, asset.Note);
         }).ToArray();
@@ -100,6 +102,59 @@ public sealed class PhysicalAssetService(IDbContextFactory<AppDbContext> context
         db.PhysicalAssets.Add(asset);
         await db.SaveChangesAsync(cancellationToken);
         return asset.Id;
+    }
+
+    public async Task<IReadOnlyList<AssetValuationSnapshot>> GetValuationsAsync(
+        Guid assetId,
+        CancellationToken cancellationToken = default)
+    {
+        if (assetId == Guid.Empty)
+            throw new ArgumentException("Asset id is required.", nameof(assetId));
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var exists = await db.PhysicalAssets.AnyAsync(x => x.Id == assetId, cancellationToken);
+        if (!exists)
+            throw new InvalidOperationException("Asset was not found.");
+
+        var items = await db.AssetValuations.AsNoTracking()
+            .Where(x => x.AssetId == assetId)
+            .OrderByDescending(x => x.ValuationDate)
+            .ToListAsync(cancellationToken);
+
+        return items.OrderByDescending(x => x.ValuationDate)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .ThenByDescending(x => x.Id)
+            .Select(x => new AssetValuationSnapshot(x.Id, x.ValuationDate, x.ValueMinor, x.CurrencyCode, x.Note))
+            .ToArray();
+    }
+
+    public async Task UpdateAsync(
+        Guid assetId,
+        string name,
+        decimal quantity,
+        string? unit,
+        string? note,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedName = name?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length > 120)
+            throw new ArgumentException("Asset name must contain 1 to 120 characters.", nameof(name));
+        if (quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+        if (unit?.Length > 24 || note?.Length > 500)
+            throw new ArgumentException("Asset unit or note exceeds its maximum length.");
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var asset = await db.PhysicalAssets.SingleOrDefaultAsync(x => x.Id == assetId, cancellationToken)
+            ?? throw new InvalidOperationException("Asset was not found.");
+        if (asset.IsArchived)
+            throw new InvalidOperationException("Archived assets cannot be edited.");
+
+        asset.Name = normalizedName;
+        asset.Quantity = quantity;
+        asset.Unit = string.IsNullOrWhiteSpace(unit) ? null : unit.Trim();
+        asset.Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Guid> AddValuationAsync(
