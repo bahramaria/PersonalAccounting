@@ -42,7 +42,18 @@ public sealed class DocumentAttachmentService(
             await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
         }
         var plaintext = buffer.ToArray();
-        var contentType = DetectContentType(plaintext);\n        var extension = Path.GetExtension(normalizedName).ToLowerInvariant();\n        var expectedExtension = contentType switch\n        {\n            "application/pdf" => ".pdf",\n            "image/jpeg" => ".jpg",\n            "image/png" => ".png",\n            "image/webp" => ".webp",\n            _ => ""\n        };\n        if (extension != expectedExtension && !(contentType == "image/jpeg" && extension == ".jpeg"))\n            throw new InvalidDataException("File extension does not match its content.");
+        var contentType = DetectContentType(plaintext);
+        var extension = Path.GetExtension(normalizedName).ToLowerInvariant();
+        var expectedExtension = contentType switch
+        {
+            "application/pdf" => ".pdf",
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            _ => ""
+        };
+        if (extension != expectedExtension && !(contentType == "image/jpeg" && extension == ".jpeg"))
+            throw new InvalidDataException("File extension does not match its content.");
         var id = Guid.CreateVersion7();
         var storedName = id.ToString("N") + ".hatt";
         Directory.CreateDirectory(storageDirectory);
