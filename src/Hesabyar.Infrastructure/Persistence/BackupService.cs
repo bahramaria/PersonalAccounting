@@ -165,6 +165,9 @@ public sealed class BackupService(
         var manifest = await ReadManifestAsync(archive, cancellationToken);
         var databaseBytes = await ReadDatabaseAsync(archive, manifest, cancellationToken);
         var sourceDatabasePassword = ResolveDatabasePassword(manifest);
+        if (keyProvider is not null && sourceDatabasePassword is not null)
+            restoredAttachments = restoredAttachments.Select(x => new BackupAttachmentBytes(
+                x.Name, ReencryptAttachment(x.Bytes, sourceDatabasePassword, keyProvider.GetDatabasePassword()))).ToArray();
         await ValidateDatabaseAsync(databaseBytes, manifest.SchemaVersion, sourceDatabasePassword, cancellationToken);
         await ValidateSchemaVersionAsync(manifest.SchemaVersion, cancellationToken);
 
@@ -508,6 +511,46 @@ public sealed class BackupService(
                 Convert.FromHexString(checksum), Convert.FromHexString(manifest.DatabaseSha256)))
             throw new InvalidDataException("Backup database checksum validation failed.");
         return database;
+    }
+
+
+    private static byte[] ReencryptAttachment(byte[] payload, string sourcePassword, string targetPassword)
+    {
+        const int nonceLength = 12;
+        const int tagLength = 16;
+        if (payload.Length < 1 + nonceLength + tagLength || payload[0] != 1)
+            throw new InvalidDataException("Attachment encryption format is invalid.");
+
+        var sourceKey = SHA256.HashData(Encoding.UTF8.GetBytes(sourcePassword));
+        var plaintext = new byte[payload.Length - 1 - nonceLength - tagLength];
+        try
+        {
+            using (var sourceAes = new AesGcm(sourceKey, tagLength))
+                sourceAes.Decrypt(payload.AsSpan(1, nonceLength),
+                    payload.AsSpan(1 + nonceLength + tagLength),
+                    payload.AsSpan(1 + nonceLength, tagLength), plaintext);
+
+            var targetKey = SHA256.HashData(Encoding.UTF8.GetBytes(targetPassword));
+            try
+            {
+                var nonce = RandomNumberGenerator.GetBytes(nonceLength);
+                var tag = new byte[tagLength];
+                var ciphertext = new byte[plaintext.Length];
+                using (var targetAes = new AesGcm(targetKey, tagLength))
+                    targetAes.Encrypt(nonce, plaintext, ciphertext, tag);
+                return [1, .. nonce, .. tag, .. ciphertext];
+            }
+            finally { CryptographicOperations.ZeroMemory(targetKey); }
+        }
+        catch (CryptographicException exception)
+        {
+            throw new InvalidDataException("Backup attachment could not be decrypted with its source database key.", exception);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(sourceKey);
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
     }
 
     private async Task<IReadOnlyList<BackupAttachmentBytes>> ReadAttachmentEntriesAsync(
