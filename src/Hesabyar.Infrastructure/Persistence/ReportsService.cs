@@ -158,7 +158,30 @@ public sealed class ReportsService(IDbContextFactory<AppDbContext> contextFactor
             .Sum(x => x.Installments.Sum(i =>
                 (decimal)(i.PrincipalDueMinor - i.PaidPrincipalMinor) + i.InterestDueMinor - i.PaidInterestMinor));
 
-        var assets = accountAssets + peopleAssets + loanAssets;
+        // Physical asset valuations are included in net worth without creating duplicate ledger balances.
+        var physicalAssets = await db.PhysicalAssets.AsNoTracking()
+            .Where(x => !x.IsArchived && x.CurrencyCode == currencyCode)
+            .ToListAsync(cancellationToken);
+        var physicalAssetIds = physicalAssets.Select(x => x.Id).ToArray();
+        var physicalValuations = physicalAssetIds.Length == 0
+            ? []
+            : await db.AssetValuations.AsNoTracking()
+                .Where(x => physicalAssetIds.Contains(x.AssetId))
+                .OrderByDescending(x => x.ValuationDate)
+                .ToListAsync(cancellationToken);
+        var latestValuations = physicalValuations
+            .GroupBy(x => x.AssetId)
+            .ToDictionary(group => group.Key, group => group
+                .OrderByDescending(x => x.ValuationDate)
+                .ThenByDescending(x => x.CreatedAtUtc)
+                .ThenByDescending(x => x.Id)
+                .First());
+        var physicalAssetValue = physicalAssets.Sum(asset =>
+            (decimal)(latestValuations.TryGetValue(asset.Id, out var valuation)
+                ? valuation.ValueMinor
+                : asset.AcquisitionCostMinor));
+
+        var assets = accountAssets + peopleAssets + loanAssets + physicalAssetValue;
         var liabilities = accountLiabilities + peopleLiabilities + loanLiabilities;
 
         return new FinancialReportSnapshot(
