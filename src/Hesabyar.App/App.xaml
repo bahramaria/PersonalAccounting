@@ -10,6 +10,10 @@
             <Color x:Key="SecondaryTextColor">#65727E</Color>
             <Color x:Key="BorderColor">#E5EAF0</Color>
             <Color x:Key="PrimaryColor">#087F66</Color>
+            <Color x:Key="BorderLightColor">#E5EAF0</Color>
+            <Color x:Key="BorderDarkColor">#303D48</Color>
+            <Color x:Key="WarningLightColor">#A96512</Color>
+            <Color x:Key="WarningDarkColor">#E9B45B</Color>
 
             <Style TargetType="ContentPage">
                 <Setter Property="BackgroundColor">
@@ -62,7 +66,7 @@
                 <Setter Property="TextColor" Value="White" />
                 <Setter Property="BackgroundColor">
                     <Setter.Value>
-                        <AppThemeBinding Light="#087F66" Dark="#35B58F" />
+                        <AppThemeBinding Light="#087F66" Dark="#087F66" />
                     </Setter.Value>
                 </Setter>
                 <Setter Property="CornerRadius" Value="12" />

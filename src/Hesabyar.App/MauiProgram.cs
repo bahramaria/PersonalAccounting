@@ -48,14 +48,6 @@ public static class MauiProgram
 
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "hesabyar.db");
         builder.Services.AddSingleton<IDeviceSecretStore, MauiSecureStorageAdapter>();
-        builder.Services.AddSingleton<CloudSessionStore>();
-        builder.Services.AddSingleton(provider => new HttpClient
-        {
-            BaseAddress = CloudApiConfiguration.GetBaseAddress(),
-            Timeout = TimeSpan.FromSeconds(30)
-        });
-        builder.Services.AddSingleton<SyncApiClient>();
-        builder.Services.AddSingleton<SyncOutboxPushService>();
         builder.Services.AddSingleton<DatabaseKeyProvider>(provider =>
             new DatabaseKeyProvider(databasePath, provider.GetRequiredService<IDeviceSecretStore>()));
         builder.Services.AddSingleton<IDatabaseKeyProvider>(provider =>
@@ -108,6 +100,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CategoriesViewModel>();
         builder.Services.AddTransient<CategoriesPage>();
         builder.Services.AddTransient<SettingsPage>();
+        builder.Services.AddTransient<MorePage>();
         return builder.Build();
     }
 }

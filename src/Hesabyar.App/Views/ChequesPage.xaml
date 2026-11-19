@@ -22,7 +22,7 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:ChequeListItem">
-                    <Border Padding="12" Margin="0,4" Stroke="#D8D8D8" StrokeThickness="1">
+                    <Border Padding="12" Margin="0,4" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}" StrokeThickness="1">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                             <Label Text="{Binding DirectionText}" FontSize="12" Opacity="0.7" />
                             <Label Grid.Column="1" Text="{Binding StatusText}" FontSize="12" FontAttributes="Bold" />
@@ -30,7 +30,7 @@
                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding AmountText}" FontAttributes="Bold" />
                             <Label Grid.Row="2" Text="{Binding SerialNumber}" FontSize="12" />
                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding DueDateText}" FontSize="12" />
-                            <Label Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding ReminderText}" FontSize="12" TextColor="Orange" />
+                            <Label Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding ReminderText}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource WarningLightColor}, Dark={StaticResource WarningDarkColor}}" />
                         </Grid>
                     </Border>
                 </DataTemplate>

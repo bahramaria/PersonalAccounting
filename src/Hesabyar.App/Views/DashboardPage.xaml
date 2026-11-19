@@ -9,7 +9,7 @@
         <VerticalStackLayout Padding="24" Spacing="16">
             <Label Text="{x:Static strings:AppStrings.HomeHeading}" FontSize="28" FontAttributes="Bold" />
             <Button Text="{x:Static strings:AppStrings.DashboardCurrency}" Clicked="OnCurrencyClicked" />
-            <Border Padding="18" StrokeThickness="1" Stroke="#E2E2E2">
+            <Border Padding="18" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{x:Static strings:AppStrings.DashboardAssets}" FontSize="13" />
                     <Label Text="{Binding AssetsMessage}" FontSize="21" FontAttributes="Bold" />
@@ -26,7 +26,7 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentTransactions}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:DashboardTransactionItem">
-                        <Border Padding="12" Stroke="#E2E2E2" StrokeThickness="1">
+                        <Border Padding="12" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}" StrokeThickness="1">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                                 <Label Text="{Binding Kind}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding AmountText}" FontAttributes="Bold" />

@@ -25,45 +25,9 @@ public sealed class AppShell : Shell
             "sms",
             () => services.GetRequiredService<BankSmsPage>()));
         tabs.Items.Add(CreateTab(
-            AppStrings.ChequesTab,
-            "cheques",
-            () => services.GetRequiredService<ChequesPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.LoansTab,
-            "loans",
-            () => services.GetRequiredService<LoansPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.RemindersTab,
-            "reminders",
-            () => services.GetRequiredService<RemindersPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.RecurringTab,
-            "recurring",
-            () => services.GetRequiredService<RecurringTransactionsPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.PeopleTab,
-            "people",
-            () => services.GetRequiredService<PeoplePage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.AccountsTab,
-            "accounts",
-            () => services.GetRequiredService<AccountsPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.CategoriesTab,
-            "categories",
-            () => services.GetRequiredService<CategoriesPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.ReportsTab,
-            "reports",
-            () => services.GetRequiredService<ReportsPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.PlanningTab,
-            "planning",
-            () => services.GetRequiredService<PlanningPage>()));
-        tabs.Items.Add(CreateTab(
-            AppStrings.SettingsTab,
-            "settings",
-            () => services.GetRequiredService<SettingsPage>()));
+            AppStrings.MoreTab,
+            "more",
+            () => new NavigationPage(services.GetRequiredService<MorePage>())));
 
         Items.Add(tabs);
     }

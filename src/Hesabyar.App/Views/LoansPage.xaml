@@ -17,14 +17,14 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:LoanListItem">
-                    <Border Padding="12" Margin="0,4" Stroke="#D8D8D8" StrokeThickness="1">
+                    <Border Padding="12" Margin="0,4" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}" StrokeThickness="1">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                             <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
                             <Label Grid.Column="1" Text="{Binding DirectionText}" FontSize="12" />
                             <Label Grid.Row="1" Text="{Binding PersonName}" FontSize="12" />
                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding RemainingText}" FontAttributes="Bold" />
                             <Label Grid.Row="2" Text="{Binding AccountName}" FontSize="12" />
-                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding StateText}" FontSize="12" TextColor="Orange" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding StateText}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource WarningLightColor}, Dark={StaticResource WarningDarkColor}}" />
                             <Label Grid.Row="3" Text="{Binding NextDueText}" FontSize="12" />
                             <Label Grid.Row="3" Grid.Column="1" Text="{Binding NextAmountText}" FontSize="12" />
                         </Grid>
