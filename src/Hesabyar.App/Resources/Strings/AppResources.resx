@@ -487,4 +487,15 @@
   <data name="AssetGainLabel" xml:space="preserve"><value>Unrealized gain or loss</value></data>
   <data name="AssetSaveFailed" xml:space="preserve"><value>Could not save or load asset information.</value></data>
 
+
+  <data name="AssetEdit" xml:space="preserve"><value>Edit details</value></data>
+  <data name="AssetHistory" xml:space="preserve"><value>Valuation history</value></data>
+  <data name="AssetTypeGold" xml:space="preserve"><value>Gold</value></data>
+  <data name="AssetTypeForeignCurrency" xml:space="preserve"><value>Cash currency</value></data>
+  <data name="AssetTypeVehicle" xml:space="preserve"><value>Vehicle</value></data>
+  <data name="AssetTypeProperty" xml:space="preserve"><value>Property</value></data>
+  <data name="AssetTypeEquipment" xml:space="preserve"><value>Equipment</value></data>
+  <data name="AssetTypeOther" xml:space="preserve"><value>Other</value></data>
+  <data name="AssetHistoryEmpty" xml:space="preserve"><value>No valuations have been recorded for this asset.</value></data>
+
 </root>
