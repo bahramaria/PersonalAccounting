@@ -61,7 +61,7 @@ public sealed class PhysicalAssetsPage : ContentPage
                 {
                     Padding = 14,
                     StrokeThickness = 1,
-                    Stroke = (Brush)Application.Current!.Resources["BorderLightColor"],
+                    Stroke = new SolidColorBrush(Colors.Gray),
                     Content = new VerticalStackLayout
                     {
                         Spacing = 5,
