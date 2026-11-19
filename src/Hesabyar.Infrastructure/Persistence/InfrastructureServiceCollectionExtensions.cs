@@ -27,7 +27,7 @@ public static class InfrastructureServiceCollectionExtensions
         });
 
         services.AddSingleton<BankSmsParser>();
-        services.AddScoped<BankSmsInboxService>();
+        services.AddTransient<BankSmsInboxService>();
         services.AddScoped<IAccountingRepository, EfAccountingRepository>();
         services.AddScoped<IPeopleRepository, PeopleRepository>();
         services.AddScoped<IChequeRepository, ChequesRepository>();
