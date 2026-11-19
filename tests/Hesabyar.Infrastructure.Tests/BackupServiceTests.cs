@@ -429,6 +429,85 @@ public sealed class BackupServiceTests
         }
     }
 
+    [Fact]
+    public async Task PortableBackup_RekeysAttachmentsForTargetDevice()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var sourcePath = Path.Combine(directory, "source.db");
+        var targetPath = Path.Combine(directory, "target.db");
+        var backupPath = Path.Combine(directory, "portable-with-attachment.hbak");
+        var sourceAttachments = Path.Combine(directory, "source-attachments");
+        var targetAttachments = Path.Combine(directory, "target-attachments");
+        Directory.CreateDirectory(sourceAttachments);
+        const string sourcePassword = "source-device-key";
+        const string targetPassword = "target-device-key";
+        const string backupPassword = "portable attachment backup password";
+        var sourceKey = new TestDatabaseKeyProvider(sourcePassword);
+        var targetKey = new TestDatabaseKeyProvider(targetPassword);
+        var sourceFactory = new TestDbContextFactory(new SqliteConnectionStringBuilder
+        { DataSource = sourcePath, ForeignKeys = true, Pooling = false }.ToString(), sourceKey);
+        var targetFactory = new TestDbContextFactory(new SqliteConnectionStringBuilder
+        { DataSource = targetPath, ForeignKeys = true, Pooling = false }.ToString(), targetKey);
+        var sourceService = new BackupService(sourceFactory, sourcePath, TimeProvider.System, sourceKey,
+            attachmentsDirectory: sourceAttachments);
+        var targetService = new BackupService(targetFactory, targetPath, TimeProvider.System, targetKey,
+            attachmentsDirectory: targetAttachments);
+        var plain = "%PDF-1.7\\nportable receipt\\n%%EOF"u8.ToArray();
+        var storedName = Guid.NewGuid().ToString("N") + ".hatt";
+        try
+        {
+            await using (var db = sourceFactory.CreateDbContext()) await db.Database.MigrateAsync();
+            await using (var db = targetFactory.CreateDbContext()) await db.Database.MigrateAsync();
+            await File.WriteAllBytesAsync(Path.Combine(sourceAttachments, storedName),
+                EncryptTestAttachment(plain, sourcePassword));
+
+            await sourceService.CreateBackupAsync(backupPath, backupPassword);
+            await targetService.RestoreBackupAsync(backupPath, backupPassword);
+
+            var restoredPayload = await File.ReadAllBytesAsync(Path.Combine(targetAttachments, storedName));
+            Assert.Equal(plain, DecryptTestAttachment(restoredPayload, targetPassword));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static byte[] EncryptTestAttachment(byte[] plaintext, string password)
+    {
+        const int nonceLength = 12;
+        const int tagLength = 16;
+        var key = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(password));
+        try
+        {
+            var nonce = System.Security.Cryptography.RandomNumberGenerator.GetBytes(nonceLength);
+            var tag = new byte[tagLength];
+            var ciphertext = new byte[plaintext.Length];
+            using var aes = new System.Security.Cryptography.AesGcm(key, tagLength);
+            aes.Encrypt(nonce, plaintext, ciphertext, tag);
+            return [1, .. nonce, .. tag, .. ciphertext];
+        }
+        finally { System.Security.Cryptography.CryptographicOperations.ZeroMemory(key); }
+    }
+
+    private static byte[] DecryptTestAttachment(byte[] payload, string password)
+    {
+        const int nonceLength = 12;
+        const int tagLength = 16;
+        var key = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(password));
+        var plaintext = new byte[payload.Length - 1 - nonceLength - tagLength];
+        try
+        {
+            using var aes = new System.Security.Cryptography.AesGcm(key, tagLength);
+            aes.Decrypt(payload.AsSpan(1, nonceLength), payload.AsSpan(1 + nonceLength + tagLength),
+                payload.AsSpan(1 + nonceLength, tagLength), plaintext);
+            return plaintext;
+        }
+        finally { System.Security.Cryptography.CryptographicOperations.ZeroMemory(key); }
+    }
+
     private sealed class TestDbContextFactory(
         string connectionString, IDatabaseKeyProvider? keyProvider = null) : IDbContextFactory<AppDbContext>
     {
