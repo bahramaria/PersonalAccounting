@@ -338,7 +338,11 @@
   <data name="SmsImportHistory" xml:space="preserve"><value>Import recent SMS history</value></data>
   <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>SMS history access</value></data>
   <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>With your explicit permission, Hesabyar will inspect up to 500 messages from the last 90 days. Only messages recognized as potentially financial are saved in the review queue; other messages are discarded. This permission is used only for this manual import.</value></data>
-  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}\nAdded to review: {1}\nDuplicates: {2}\nIgnored: {3}</value></data>\n
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}
+Added to review: {1}
+Duplicates: {2}
+Ignored: {3}</value></data>
+
   <data name="RemindersTab" xml:space="preserve"><value>Reminders</value></data>
   <data name="RemindersHeading" xml:space="preserve"><value>Reminders</value></data>
   <data name="RemindersEmpty" xml:space="preserve"><value>No reminders have been added.</value></data>
@@ -498,5 +502,11 @@
   <data name="AssetTypeOther" xml:space="preserve"><value>Other</value></data>
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>No valuations have been recorded for this asset.</value></data>
 
+  <data name="AssetAttachments" xml:space="preserve"><value>Asset attachments</value></data>
+  <data name="AttachmentAdd" xml:space="preserve"><value>Add file</value></data>
+  <data name="AttachmentOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="AttachmentDelete" xml:space="preserve"><value>Delete attachment</value></data>
+  <data name="AttachmentEmpty" xml:space="preserve"><value>No files attached.</value></data>
+  <data name="AttachmentFailed" xml:space="preserve"><value>Attachment operation failed.</value></data>
   <data name="AssetNotePrompt" xml:space="preserve"><value>Note (optional)</value></data>
 </root>
