@@ -111,6 +111,7 @@ public sealed class ReportsServiceTests
         await using (var db = new AppDbContext(options))
         {
             await db.Database.EnsureCreatedAsync();
+            var date = new DateOnly(2026, 11, 17);
             var usdCash = new DbAccount { Name = "USD wallet", Type = AccountType.Asset, Kind = AccountKind.Wallet, CurrencyCode = "USD" };
             var usdFood = new DbAccount { Name = "USD food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "USD" };
             var usdSalary = new DbAccount { Name = "USD salary", Type = AccountType.Income, Kind = AccountKind.Category, CurrencyCode = "USD" };
@@ -132,7 +133,6 @@ public sealed class ReportsServiceTests
             {
                 AssetId = usdAsset.Id, ValuationDate = date, ValueMinor = 220, CurrencyCode = "USD"
             });
-            var date = new DateOnly(2026, 11, 17);
             db.Transactions.AddRange(
                 new DbLedgerTransaction
                 {
