@@ -4,13 +4,69 @@
              x:Class="Hesabyar.App.App">
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="PageBackgroundColor">#FFFDFB</Color>
-            <Color x:Key="PrimaryTextColor">#202124</Color>
+            <Color x:Key="PageBackgroundColor">#F6F8FA</Color>
+            <Color x:Key="SurfaceColor">#FFFFFF</Color>
+            <Color x:Key="PrimaryTextColor">#17212B</Color>
+            <Color x:Key="SecondaryTextColor">#65727E</Color>
+            <Color x:Key="BorderColor">#E5EAF0</Color>
+            <Color x:Key="PrimaryColor">#087F66</Color>
+
             <Style TargetType="ContentPage">
-                <Setter Property="BackgroundColor" Value="{StaticResource PageBackgroundColor}" />
+                <Setter Property="BackgroundColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#F6F8FA" Dark="#101820" />
+                    </Setter.Value>
+                </Setter>
             </Style>
+
             <Style TargetType="Label">
-                <Setter Property="TextColor" Value="{StaticResource PrimaryTextColor}" />
+                <Setter Property="TextColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#17212B" Dark="#F3F6F8" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Entry">
+                <Setter Property="TextColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#17212B" Dark="#F3F6F8" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="PlaceholderColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#65727E" Dark="#AAB6C0" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BackgroundColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#FFFFFF" Dark="#19232D" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Picker">
+                <Setter Property="TextColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#17212B" Dark="#F3F6F8" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BackgroundColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#FFFFFF" Dark="#19232D" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="BackgroundColor">
+                    <Setter.Value>
+                        <AppThemeBinding Light="#087F66" Dark="#35B58F" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="MinimumHeightRequest" Value="44" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
