@@ -4,18 +4,21 @@ using Hesabyar.App.Services;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Hesabyar.Localization;
+using Hesabyar.Localization.Calendar;
 
 namespace Hesabyar.App.Views;
 
 public sealed class PhysicalAssetsPage : ContentPage
 {
     private readonly PhysicalAssetService _service;
+    private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
     private readonly Label _status = new() { FontSize = 13 };
 
-    public PhysicalAssetsPage(PhysicalAssetService service, ILocalizationService localization)
+    public PhysicalAssetsPage(PhysicalAssetService service, ILocalizationService localization, IDateCalendarService calendar)
     {
         _service = service;
+        _calendar = calendar;
         Title = AppStrings.AssetsHeading;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
@@ -69,7 +72,7 @@ public sealed class PhysicalAssetsPage : ContentPage
                         Children =
                         {
                             new Label { Text = asset.Name, FontAttributes = FontAttributes.Bold, FontSize = 17 },
-                            new Label { Text = $"{asset.Type} · {asset.Quantity.ToString(CultureInfo.InvariantCulture)} {asset.Unit}" },
+                            new Label { Text = $"{GetTypeName(asset.Type)} · {asset.Quantity.ToString(CultureInfo.InvariantCulture)} {asset.Unit}" },
                             new Label { Text = value, FontAttributes = FontAttributes.Bold },
                             new Label { Text = gain, FontSize = 12 }
                         }
@@ -96,9 +99,10 @@ public sealed class PhysicalAssetsPage : ContentPage
             return;
 
         var choices = Enum.GetValues<PhysicalAssetType>();
-        var choice = await DisplayActionSheetAsync(AppStrings.AssetTypePrompt, AppStrings.Cancel, null,
-            choices.Select(x => x.ToString()).ToArray());
-        if (!Enum.TryParse<PhysicalAssetType>(choice, out var type))
+        var labels = choices.Select(GetTypeName).ToArray();
+        var choice = await DisplayActionSheetAsync(AppStrings.AssetTypePrompt, AppStrings.Cancel, null, labels);
+        var type = choices.FirstOrDefault(x => GetTypeName(x) == choice);
+        if (!labels.Contains(choice, StringComparer.Ordinal))
             return;
 
         var quantityText = await DisplayPromptAsync(AppStrings.AssetQuantityPrompt, AppStrings.AssetQuantityPrompt,
@@ -141,9 +145,39 @@ public sealed class PhysicalAssetsPage : ContentPage
 
     private async Task OnAssetTappedAsync(PhysicalAssetSnapshot asset)
     {
-        var action = await DisplayActionSheetAsync(asset.Name, AppStrings.Cancel, null,
-            AppStrings.AssetValuationAdd, AppStrings.AssetArchive);
-        if (action == AppStrings.AssetValuationAdd)
+        var actions = asset.IsArchived
+            ? new[] { AppStrings.AssetHistory }
+            : new[] { AppStrings.AssetEdit, AppStrings.AssetValuationAdd, AppStrings.AssetHistory, AppStrings.AssetArchive };
+        var action = await DisplayActionSheetAsync(asset.Name, AppStrings.Cancel, null, actions);
+
+        if (action == AppStrings.AssetEdit)
+        {
+            var name = await DisplayPromptAsync(AppStrings.AssetEdit, AppStrings.AssetNamePrompt,
+                AppStrings.Save, AppStrings.Cancel, initialValue: asset.Name, maxLength: 120);
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            var quantityText = await DisplayPromptAsync(AppStrings.AssetQuantityPrompt, AppStrings.AssetQuantityPrompt,
+                AppStrings.Save, AppStrings.Cancel,
+                initialValue: asset.Quantity.ToString(CultureInfo.InvariantCulture), keyboard: Keyboard.Numeric);
+            if (!decimal.TryParse(NormalizeDigits(quantityText ?? string.Empty), NumberStyles.Number,
+                    CultureInfo.InvariantCulture, out var quantity) || quantity <= 0)
+                return;
+
+            var unit = await DisplayPromptAsync(AppStrings.AssetUnitPrompt, AppStrings.AssetUnitPrompt,
+                AppStrings.Save, AppStrings.Skip, initialValue: asset.Unit, maxLength: 24);
+            var note = await DisplayPromptAsync(AppStrings.Note, AppStrings.Note,
+                AppStrings.Save, AppStrings.Skip, initialValue: asset.Note, maxLength: 500);
+            try
+            {
+                await _service.UpdateAsync(asset.Id, name, quantity, unit, note);
+                await LoadAsync();
+            }
+            catch
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AssetSaveFailed, AppStrings.Ok);
+            }
+        }
+        else if (action == AppStrings.AssetValuationAdd)
         {
             var amountText = await DisplayPromptAsync(AppStrings.AssetValuationAdd,
                 $"{AppStrings.AssetValuationPrompt} ({asset.CurrencyCode})", AppStrings.Save,
@@ -162,6 +196,22 @@ public sealed class PhysicalAssetsPage : ContentPage
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AssetSaveFailed, AppStrings.Ok);
             }
         }
+        else if (action == AppStrings.AssetHistory)
+        {
+            try
+            {
+                var history = await _service.GetValuationsAsync(asset.Id);
+                var message = history.Count == 0
+                    ? AppStrings.AssetHistoryEmpty
+                    : string.Join(Environment.NewLine, history.Select(item =>
+                        $"{_calendar.Format(item.ValuationDate)}  —  {MoneyDisplayService.Format(item.ValueMinor, item.CurrencyCode)}"));
+                await DisplayAlertAsync(AppStrings.AssetHistory, message, AppStrings.Ok);
+            }
+            catch
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AssetSaveFailed, AppStrings.Ok);
+            }
+        }
         else if (action == AppStrings.AssetArchive)
         {
             var confirmed = await DisplayAlertAsync(AppStrings.AssetArchive, asset.Name,
@@ -173,6 +223,16 @@ public sealed class PhysicalAssetsPage : ContentPage
             }
         }
     }
+
+    private static string GetTypeName(PhysicalAssetType type) => type switch
+    {
+        PhysicalAssetType.Gold => AppStrings.AssetTypeGold,
+        PhysicalAssetType.ForeignCurrency => AppStrings.AssetTypeForeignCurrency,
+        PhysicalAssetType.Vehicle => AppStrings.AssetTypeVehicle,
+        PhysicalAssetType.Property => AppStrings.AssetTypeProperty,
+        PhysicalAssetType.Equipment => AppStrings.AssetTypeEquipment,
+        _ => AppStrings.AssetTypeOther
+    };
 
     private static string NormalizeDigits(string value)
     {
