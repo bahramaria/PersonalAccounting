@@ -1,5 +1,6 @@
 using System.Globalization;
 using Hesabyar.App.Resources.Strings;
+using Hesabyar.App.Services;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
 using Hesabyar.Localization;
