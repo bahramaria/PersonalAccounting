@@ -27,7 +27,7 @@ public sealed class DocumentAttachmentService(
         ArgumentNullException.ThrowIfNull(source);
         if ((transactionId.HasValue ? 1 : 0) + (physicalAssetId.HasValue ? 1 : 0) != 1)
             throw new ArgumentException("An attachment must belong to exactly one transaction or physical asset.");
-        var normalizedName = Path.GetFileName(fileName?.Trim().Replace('\\\\', '/'));
+        var normalizedName = Path.GetFileName(fileName?.Trim().Replace('\\', '/'));
         if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length > 180)
             throw new ArgumentException("File name is invalid.", nameof(fileName));
 
