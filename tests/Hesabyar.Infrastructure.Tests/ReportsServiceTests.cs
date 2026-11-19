@@ -116,7 +116,22 @@ public sealed class ReportsServiceTests
             var usdSalary = new DbAccount { Name = "USD salary", Type = AccountType.Income, Kind = AccountKind.Category, CurrencyCode = "USD" };
             var irrCash = new DbAccount { Name = "IRR wallet", Type = AccountType.Asset, Kind = AccountKind.Wallet, CurrencyCode = "IRR" };
             var irrFood = new DbAccount { Name = "IRR food", Type = AccountType.Expense, Kind = AccountKind.Category, CurrencyCode = "IRR" };
+            var usdAsset = new DbPhysicalAsset
+            {
+                Name = "USD gold", Type = PhysicalAssetType.Gold, Quantity = 1m,
+                CurrencyCode = "USD", AcquisitionCostMinor = 180
+            };
+            var irrAsset = new DbPhysicalAsset
+            {
+                Name = "IRR car", Type = PhysicalAssetType.Vehicle, Quantity = 1m,
+                CurrencyCode = "IRR", AcquisitionCostMinor = 2_000_000
+            };
             db.Accounts.AddRange(usdCash, usdFood, usdSalary, irrCash, irrFood);
+            db.PhysicalAssets.AddRange(usdAsset, irrAsset);
+            db.AssetValuations.Add(new DbAssetValuation
+            {
+                AssetId = usdAsset.Id, ValuationDate = date, ValueMinor = 220, CurrencyCode = "USD"
+            });
             var date = new DateOnly(2026, 11, 17);
             db.Transactions.AddRange(
                 new DbLedgerTransaction
@@ -159,9 +174,10 @@ public sealed class ReportsServiceTests
         Assert.Equal("USD", usd.CurrencyCode);
         Assert.Equal(150, usd.IncomeMinor);
         Assert.Equal(25, usd.ExpenseMinor);
-        Assert.Equal(125, usd.AssetsMinor);
+        Assert.Equal(345, usd.AssetsMinor);
         Assert.DoesNotContain(usd.Accounts, x => x.Name.Contains("IRR", StringComparison.Ordinal));
         Assert.Equal(900_000, irr.ExpenseMinor);
+        Assert.Equal(2_900_000, irr.AssetsMinor);
         var currencies = await service.GetCurrenciesAsync();
         Assert.Contains("USD", currencies);
         Assert.Contains("IRR", currencies);
