@@ -511,5 +511,16 @@ public static class AppStrings
     public static string ReportsLoadFailed => Get(nameof(ReportsLoadFailed));
     public static string ReportsExportFailed => Get(nameof(ReportsExportFailed));
 
+
+    public static string AssetEdit => Get(nameof(AssetEdit));
+    public static string AssetHistory => Get(nameof(AssetHistory));
+    public static string AssetTypeGold => Get(nameof(AssetTypeGold));
+    public static string AssetTypeForeignCurrency => Get(nameof(AssetTypeForeignCurrency));
+    public static string AssetTypeVehicle => Get(nameof(AssetTypeVehicle));
+    public static string AssetTypeProperty => Get(nameof(AssetTypeProperty));
+    public static string AssetTypeEquipment => Get(nameof(AssetTypeEquipment));
+    public static string AssetTypeOther => Get(nameof(AssetTypeOther));
+    public static string AssetHistoryEmpty => Get(nameof(AssetHistoryEmpty));
+
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
