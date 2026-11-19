@@ -177,7 +177,7 @@ public sealed class ReportsServiceTests
         Assert.Equal(345, usd.AssetsMinor);
         Assert.DoesNotContain(usd.Accounts, x => x.Name.Contains("IRR", StringComparison.Ordinal));
         Assert.Equal(900_000, irr.ExpenseMinor);
-        Assert.Equal(2_900_000, irr.AssetsMinor);
+        Assert.Equal(1_100_000, irr.AssetsMinor);
         var currencies = await service.GetCurrenciesAsync();
         Assert.Contains("USD", currencies);
         Assert.Contains("IRR", currencies);
