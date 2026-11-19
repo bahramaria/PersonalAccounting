@@ -17,8 +17,7 @@ public sealed class BackupService(
     string? attachmentsDirectory = null)
 {
     private readonly IBackupFileOperations _fileOperations = fileOperations ?? new BackupFileOperations();
-    private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1
-");
+    private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1\n");
     private const int FormatVersion = 3;
     private const int KdfIterations = 600_000;
     private const int SaltSize = 16;
