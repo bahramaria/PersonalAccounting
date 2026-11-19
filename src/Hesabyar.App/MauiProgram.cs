@@ -63,7 +63,8 @@ public static class MauiProgram
             provider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
             databasePath,
             provider.GetRequiredService<TimeProvider>(),
-            provider.GetRequiredService<IDatabaseKeyProvider>()));
+            provider.GetRequiredService<IDatabaseKeyProvider>(),
+            attachmentsDirectory: Path.Combine(FileSystem.AppDataDirectory, "attachments")));
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<StartupPage>();
         builder.Services.AddTransient<OnboardingPage>();
