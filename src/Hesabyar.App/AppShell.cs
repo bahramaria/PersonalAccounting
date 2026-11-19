@@ -27,7 +27,7 @@ public sealed class AppShell : Shell
         tabs.Items.Add(CreateTab(
             AppStrings.MoreTab,
             "more",
-            () => new NavigationPage(services.GetRequiredService<MorePage>())));
+            () => services.GetRequiredService<MorePage>()));
 
         Items.Add(tabs);
     }
