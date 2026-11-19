@@ -522,6 +522,12 @@ public static class AppStrings
     public static string AssetTypeEquipment => Get(nameof(AssetTypeEquipment));
     public static string AssetTypeOther => Get(nameof(AssetTypeOther));
     public static string AssetHistoryEmpty => Get(nameof(AssetHistoryEmpty));
+    public static string AssetAttachments => Get(nameof(AssetAttachments));
+    public static string AttachmentAdd => Get(nameof(AttachmentAdd));
+    public static string AttachmentOpen => Get(nameof(AttachmentOpen));
+    public static string AttachmentDelete => Get(nameof(AttachmentDelete));
+    public static string AttachmentEmpty => Get(nameof(AttachmentEmpty));
+    public static string AttachmentFailed => Get(nameof(AttachmentFailed));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
 }
