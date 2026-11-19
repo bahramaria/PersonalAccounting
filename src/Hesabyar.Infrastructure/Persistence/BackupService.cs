@@ -72,8 +72,8 @@ public sealed class BackupService(
                 await using (var entryStream = manifestEntry.Open())
                     await JsonSerializer.SerializeAsync(entryStream, manifest, JsonOptions, cancellationToken);
                 var databaseEntry = archive.CreateEntry(DatabaseEntryName, CompressionLevel.Optimal);
-                await using var databaseStream = databaseEntry.Open();
-                await databaseStream.WriteAsync(databaseBytes, cancellationToken);
+                await using (var databaseStream = databaseEntry.Open())
+                    await databaseStream.WriteAsync(databaseBytes, cancellationToken);
                 foreach (var attachment in attachmentFiles)
                 {
                     var entry = archive.CreateEntry(AttachmentEntryPrefix + attachment.Name, CompressionLevel.Optimal);
