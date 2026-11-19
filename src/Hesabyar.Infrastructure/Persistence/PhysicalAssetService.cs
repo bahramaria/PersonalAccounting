@@ -45,12 +45,19 @@ public sealed class PhysicalAssetService(IDbContextFactory<AppDbContext> context
         var valuations = await db.AssetValuations.AsNoTracking()
             .Where(x => ids.Contains(x.AssetId))
             .OrderByDescending(x => x.ValuationDate)
-            .ThenByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
+
+        var valuationsByAsset = valuations
+            .GroupBy(x => x.AssetId)
+            .ToDictionary(group => group.Key, group => group
+                .OrderByDescending(x => x.ValuationDate)
+                .ThenByDescending(x => x.CreatedAtUtc)
+                .ThenByDescending(x => x.Id)
+                .First());
 
         return assets.Select(asset =>
         {
-            var latest = valuations.FirstOrDefault(x => x.AssetId == asset.Id);
+            valuationsByAsset.TryGetValue(asset.Id, out var latest);
             return new PhysicalAssetSnapshot(
                 asset.Id, asset.Name, asset.Type, asset.Quantity, asset.Unit,
                 asset.CurrencyCode, asset.AcquiredOn, asset.AcquisitionCostMinor,
