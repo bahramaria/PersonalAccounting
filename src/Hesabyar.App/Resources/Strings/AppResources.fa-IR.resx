@@ -338,7 +338,11 @@
   <data name="SmsImportHistory" xml:space="preserve"><value>ورود پیامک‌های قبلی</value></data>
   <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>دسترسی به تاریخچه پیامک</value></data>
   <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>با اجازه صریح شما، حسابیار حداکثر ۵۰۰ پیام ۹۰ روز اخیر را بررسی می‌کند. فقط پیام‌هایی که احتمالاً مالی باشند در صف بررسی ذخیره می‌شوند و سایر پیام‌ها کنار گذاشته می‌شوند. این مجوز فقط برای همین ورود دستی استفاده می‌شود.</value></data>
-  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>بررسی‌شده: {0}\nافزوده‌شده به صف: {1}\nتکراری: {2}\nنادیده‌گرفته‌شده: {3}</value></data>\n
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>بررسی‌شده: {0}
+افزوده‌شده به صف: {1}
+تکراری: {2}
+نادیده‌گرفته‌شده: {3}</value></data>
+
   <data name="RemindersTab" xml:space="preserve"><value>یادآورها</value></data>
   <data name="RemindersHeading" xml:space="preserve"><value>مدیریت یادآورها</value></data>
   <data name="RemindersEmpty" xml:space="preserve"><value>هنوز یادآوری ثبت نشده است.</value></data>
@@ -498,5 +502,11 @@
   <data name="AssetTypeOther" xml:space="preserve"><value>سایر</value></data>
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>برای این دارایی هنوز ارزش‌گذاری ثبت نشده است.</value></data>
 
+  <data name="AssetAttachments" xml:space="preserve"><value>پیوست‌های دارایی</value></data>
+  <data name="AttachmentAdd" xml:space="preserve"><value>افزودن فایل</value></data>
+  <data name="AttachmentOpen" xml:space="preserve"><value>باز کردن</value></data>
+  <data name="AttachmentDelete" xml:space="preserve"><value>حذف پیوست</value></data>
+  <data name="AttachmentEmpty" xml:space="preserve"><value>فایلی پیوست نشده است.</value></data>
+  <data name="AttachmentFailed" xml:space="preserve"><value>عملیات پیوست فایل ناموفق بود.</value></data>
   <data name="AssetNotePrompt" xml:space="preserve"><value>یادداشت (اختیاری)</value></data>
 </root>
