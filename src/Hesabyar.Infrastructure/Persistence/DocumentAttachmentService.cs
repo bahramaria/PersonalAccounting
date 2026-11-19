@@ -106,11 +106,11 @@ public sealed class DocumentAttachmentService(
         var query = db.Set<DbDocumentAttachment>().AsNoTracking();
         query = transactionId is { } tx ? query.Where(x => x.TransactionId == tx) :
             query.Where(x => x.PhysicalAssetId == physicalAssetId);
-        return await query.OrderByDescending(x => x.CreatedAtUtc)
-            .Select(x => new DocumentAttachmentSnapshot(
+        var items = await query.Select(x => new DocumentAttachmentSnapshot(
                 x.Id, x.TransactionId, x.PhysicalAssetId, x.OriginalFileName,
                 x.ContentType, x.Length, x.CreatedAtUtc))
-            .ToArrayAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
+        return items.OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id).ToArray();
     }
 
     public async Task<byte[]> ReadAsync(Guid attachmentId, CancellationToken cancellationToken = default)
