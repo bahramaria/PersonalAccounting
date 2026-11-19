@@ -35,6 +35,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ILoanRepository, LoanRepository>();
         services.AddScoped<IPlanningRepository, PlanningRepository>();
         services.AddTransient<PhysicalAssetService>();
+        services.AddTransient<DocumentAttachmentService>();
         services.AddSingleton<DatabaseInitializer>();
         services.AddScoped<ReminderService>();
         services.AddScoped<RecurringOccurrenceScheduler>();
