@@ -27,6 +27,7 @@ public static class InfrastructureServiceCollectionExtensions
         });
 
         services.AddSingleton<BankSmsParser>();
+        // The service creates DbContext instances through the factory and keeps no scoped state.
         services.AddTransient<BankSmsInboxService>();
         services.AddScoped<IAccountingRepository, EfAccountingRepository>();
         services.AddScoped<IPeopleRepository, PeopleRepository>();
