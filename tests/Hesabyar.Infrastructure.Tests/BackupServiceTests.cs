@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Infrastructure.Persistence.Entities;
@@ -386,6 +387,45 @@ public sealed class BackupServiceTests
             }
 
             File.Move(sourcePath, destinationPath);
+        }
+    }
+
+    [Fact]
+    public async Task Backup_RestoresEncryptedAttachmentFilesAlongsideDatabase()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarBackupTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var databasePath = Path.Combine(directory, "hesabyar.db");
+        var backupPath = Path.Combine(directory, "with-attachments.hbak");
+        var attachmentsDirectory = Path.Combine(directory, "attachments");
+        Directory.CreateDirectory(attachmentsDirectory);
+        var storedName = Guid.NewGuid().ToString("N") + ".hatt";
+        var originalBytes = RandomNumberGenerator.GetBytes(4096);
+        var attachmentPath = Path.Combine(attachmentsDirectory, storedName);
+        await File.WriteAllBytesAsync(attachmentPath, originalBytes);
+        var connectionString = new SqliteConnectionStringBuilder
+        { DataSource = databasePath, ForeignKeys = true, Pooling = false }.ToString();
+        var factory = new TestDbContextFactory(connectionString);
+        var service = new BackupService(factory, databasePath, TimeProvider.System,
+            attachmentsDirectory: attachmentsDirectory);
+        try
+        {
+            await using (var db = factory.CreateDbContext())
+                await db.Database.MigrateAsync();
+
+            await service.CreateBackupAsync(backupPath, "attachment backup password");
+            await File.WriteAllBytesAsync(attachmentPath, RandomNumberGenerator.GetBytes(1024));
+
+            await service.RestoreBackupAsync(backupPath, "attachment backup password");
+
+            Assert.Equal(originalBytes, await File.ReadAllBytesAsync(attachmentPath));
+            var summary = await service.InspectBackupAsync(backupPath, "attachment backup password");
+            Assert.True(summary.BackupFileSizeBytes > 0);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
         }
     }
 
