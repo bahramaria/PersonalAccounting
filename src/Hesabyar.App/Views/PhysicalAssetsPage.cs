@@ -11,13 +11,15 @@ namespace Hesabyar.App.Views;
 public sealed class PhysicalAssetsPage : ContentPage
 {
     private readonly PhysicalAssetService _service;
+    private readonly DocumentAttachmentService _attachments;
     private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
     private readonly Label _status = new() { FontSize = 13 };
 
-    public PhysicalAssetsPage(PhysicalAssetService service, ILocalizationService localization, IDateCalendarService calendar)
+    public PhysicalAssetsPage(PhysicalAssetService service, DocumentAttachmentService attachments, ILocalizationService localization, IDateCalendarService calendar)
     {
         _service = service;
+        _attachments = attachments;
         _calendar = calendar;
         Title = AppStrings.AssetsHeading;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
@@ -146,8 +148,8 @@ public sealed class PhysicalAssetsPage : ContentPage
     private async Task OnAssetTappedAsync(PhysicalAssetSnapshot asset)
     {
         var actions = asset.IsArchived
-            ? new[] { AppStrings.AssetHistory }
-            : new[] { AppStrings.AssetEdit, AppStrings.AssetValuationAdd, AppStrings.AssetHistory, AppStrings.AssetArchive };
+            ? new[] { AppStrings.AssetHistory, AppStrings.AssetAttachments }
+            : new[] { AppStrings.AssetEdit, AppStrings.AssetValuationAdd, AppStrings.AssetHistory, AppStrings.AssetAttachments, AppStrings.AssetArchive };
         var action = await DisplayActionSheetAsync(asset.Name, AppStrings.Cancel, null, actions);
 
         if (action == AppStrings.AssetEdit)
@@ -212,6 +214,10 @@ public sealed class PhysicalAssetsPage : ContentPage
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AssetSaveFailed, AppStrings.Ok);
             }
         }
+        else if (action == AppStrings.AssetAttachments)
+        {
+            await ManageAttachmentsAsync(asset.Id);
+        }
         else if (action == AppStrings.AssetArchive)
         {
             var confirmed = await DisplayAlertAsync(AppStrings.AssetArchive, asset.Name,
@@ -220,6 +226,54 @@ public sealed class PhysicalAssetsPage : ContentPage
             {
                 await _service.SetArchivedAsync(asset.Id, true);
                 await LoadAsync();
+            }
+        }
+    }
+
+
+    private async Task ManageAttachmentsAsync(Guid assetId)
+    {
+        while (true)
+        {
+            try
+            {
+                var items = await _attachments.GetAsync(physicalAssetId: assetId);
+                var labels = items.Select(x => x.FileName).ToArray();
+                var choices = new[] { AppStrings.AttachmentAdd }.Concat(labels).ToArray();
+                var selected = await DisplayActionSheetAsync(AppStrings.AssetAttachments, AppStrings.Cancel, null, choices);
+                if (selected == AppStrings.Cancel || selected is null) return;
+                if (selected == AppStrings.AttachmentAdd)
+                {
+                    var file = await FilePicker.Default.PickAsync();
+                    if (file is null) continue;
+                    await using var input = await file.OpenReadAsync();
+                    await _attachments.AddAsync(input, file.FileName, physicalAssetId: assetId);
+                    continue;
+                }
+
+                var item = items.FirstOrDefault(x => x.FileName == selected);
+                if (item is null) continue;
+                var action = await DisplayActionSheetAsync(item.FileName, AppStrings.Cancel, null,
+                    AppStrings.AttachmentOpen, AppStrings.AttachmentDelete);
+                if (action == AppStrings.AttachmentOpen)
+                {
+                    var bytes = await _attachments.ReadAsync(item.Id);
+                    var extension = Path.GetExtension(item.FileName);
+                    var path = Path.Combine(FileSystem.CacheDirectory, $"attachment-{item.Id:N}{extension}");
+                    await File.WriteAllBytesAsync(path, bytes);
+                    await Launcher.Default.OpenAsync(new OpenFileRequest(item.FileName, new ReadOnlyFile(path)));
+                }
+                else if (action == AppStrings.AttachmentDelete)
+                {
+                    var confirmed = await DisplayAlertAsync(AppStrings.AttachmentDelete, item.FileName,
+                        AppStrings.AttachmentDelete, AppStrings.Cancel);
+                    if (confirmed) await _attachments.DeleteAsync(item.Id);
+                }
+            }
+            catch
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AttachmentFailed, AppStrings.Ok);
+                return;
             }
         }
     }
