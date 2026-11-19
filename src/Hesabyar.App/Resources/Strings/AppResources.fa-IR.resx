@@ -487,4 +487,15 @@
   <data name="AssetGainLabel" xml:space="preserve"><value>سود یا زیان تحقق‌نیافته</value></data>
   <data name="AssetSaveFailed" xml:space="preserve"><value>ذخیره یا دریافت اطلاعات دارایی ناموفق بود.</value></data>
 
+
+  <data name="AssetEdit" xml:space="preserve"><value>ویرایش مشخصات</value></data>
+  <data name="AssetHistory" xml:space="preserve"><value>سوابق ارزش‌گذاری</value></data>
+  <data name="AssetTypeGold" xml:space="preserve"><value>طلا</value></data>
+  <data name="AssetTypeForeignCurrency" xml:space="preserve"><value>ارز نقدی</value></data>
+  <data name="AssetTypeVehicle" xml:space="preserve"><value>خودرو</value></data>
+  <data name="AssetTypeProperty" xml:space="preserve"><value>ملک</value></data>
+  <data name="AssetTypeEquipment" xml:space="preserve"><value>تجهیزات</value></data>
+  <data name="AssetTypeOther" xml:space="preserve"><value>سایر</value></data>
+  <data name="AssetHistoryEmpty" xml:space="preserve"><value>برای این دارایی هنوز ارزش‌گذاری ثبت نشده است.</value></data>
+
 </root>
