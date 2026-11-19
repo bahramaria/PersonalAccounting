@@ -13,7 +13,8 @@ public sealed class BackupService(
     string databasePath,
     TimeProvider timeProvider,
     IDatabaseKeyProvider? keyProvider = null,
-    IBackupFileOperations? fileOperations = null,\n    string? attachmentsDirectory = null)
+    IBackupFileOperations? fileOperations = null,
+    string? attachmentsDirectory = null)
 {
     private readonly IBackupFileOperations _fileOperations = fileOperations ?? new BackupFileOperations();
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1
@@ -24,7 +25,9 @@ public sealed class BackupService(
     private const int NonceSize = 12;
     private const int TagSize = 16;
     private const int MaximumBackupSize = 512 * 1024 * 1024;
-    private const string DatabaseEntryName = "data.db";\n    private const string AttachmentEntryPrefix = "attachments/";\n    private readonly string? _attachmentsDirectory = attachmentsDirectory;
+    private const string DatabaseEntryName = "data.db";
+    private const string AttachmentEntryPrefix = "attachments/";
+    private readonly string? _attachmentsDirectory = attachmentsDirectory;
     private const string ManifestEntryName = "manifest.json";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
