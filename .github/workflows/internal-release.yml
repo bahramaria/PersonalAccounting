@@ -24,10 +24,12 @@ jobs:
         run: dotnet restore src/Hesabyar.App/Hesabyar.App.csproj -p:MauiTargetFramework=net10.0-android
       - name: Publish Android APK
         run: dotnet publish src/Hesabyar.App/Hesabyar.App.csproj -f net10.0-android -p:MauiTargetFramework=net10.0-android --no-restore --configuration Release -p:AndroidPackageFormat=apk
+      - name: List generated Android APKs
+        run: find src/Hesabyar.App/bin/Release/net10.0-android -type f -name '*.apk' -print
       - uses: actions/upload-artifact@v4
         with:
-          name: Hesabyar-Android-APK
-          path: src/Hesabyar.App/bin/Release/net10.0-android/**/*.apk
+          name: Hesabyar-Android-Signed-APK
+          path: src/Hesabyar.App/bin/Release/net10.0-android/**/*-Signed.apk
           if-no-files-found: error
           retention-days: 30
 
