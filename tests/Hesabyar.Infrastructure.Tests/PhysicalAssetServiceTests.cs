@@ -27,6 +27,12 @@ public sealed class PhysicalAssetServiceTests
         Assert.Equal(1_050_000_000, asset.CurrentValueMinor);
         Assert.Equal(150_000_000, asset.UnrealizedGainMinor);
         Assert.Equal(0, await CountLedgerTransactionsAsync(options));
+        var history = await service.GetValuationsAsync(assetId);
+        Assert.Single(history);
+        await service.UpdateAsync(assetId, "Investment gold", 13m, "gram", "Updated note");
+        var updated = Assert.Single(await service.GetAsync());
+        Assert.Equal("Investment gold", updated.Name);
+        Assert.Equal(13m, updated.Quantity);
     }
 
     [Fact]
