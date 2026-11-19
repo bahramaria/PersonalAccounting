@@ -27,7 +27,7 @@ public sealed class DocumentAttachmentService(
         ArgumentNullException.ThrowIfNull(source);
         if ((transactionId.HasValue ? 1 : 0) + (physicalAssetId.HasValue ? 1 : 0) != 1)
             throw new ArgumentException("An attachment must belong to exactly one transaction or physical asset.");
-        var normalizedName = Path.GetFileName(fileName?.Trim());
+        var normalizedName = Path.GetFileName(fileName?.Trim().Replace('\\\\', '/'));
         if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length > 180)
             throw new ArgumentException("File name is invalid.", nameof(fileName));
 
@@ -42,7 +42,7 @@ public sealed class DocumentAttachmentService(
             await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
         }
         var plaintext = buffer.ToArray();
-        var contentType = DetectContentType(plaintext);
+        var contentType = DetectContentType(plaintext);\n        var extension = Path.GetExtension(normalizedName).ToLowerInvariant();\n        var expectedExtension = contentType switch\n        {\n            "application/pdf" => ".pdf",\n            "image/jpeg" => ".jpg",\n            "image/png" => ".png",\n            "image/webp" => ".webp",\n            _ => ""\n        };\n        if (extension != expectedExtension && !(contentType == "image/jpeg" && extension == ".jpeg"))\n            throw new InvalidDataException("File extension does not match its content.");
         var id = Guid.CreateVersion7();
         var storedName = id.ToString("N") + ".hatt";
         Directory.CreateDirectory(storageDirectory);
