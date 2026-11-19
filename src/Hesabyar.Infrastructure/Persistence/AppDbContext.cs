@@ -30,6 +30,7 @@ public sealed class AppDbContext(
     public DbSet<DbSyncOutboxItem> SyncOutbox => Set<DbSyncOutboxItem>();
     public DbSet<DbPhysicalAsset> PhysicalAssets => Set<DbPhysicalAsset>();
     public DbSet<DbAssetValuation> AssetValuations => Set<DbAssetValuation>();
+    public DbSet<DbDocumentAttachment> DocumentAttachments => Set<DbDocumentAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,7 @@ public sealed class AppDbContext(
         ConfigurePlanningAndFiscalFeatures(modelBuilder);
         ConfigureSyncOutbox(modelBuilder);
         ConfigurePhysicalAssets(modelBuilder);
+        ConfigureDocumentAttachments(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -400,6 +402,29 @@ public sealed class AppDbContext(
         valuation.HasOne<DbPhysicalAsset>().WithMany(x => x.Valuations)
             .HasForeignKey(x => x.AssetId).OnDelete(DeleteBehavior.Restrict);
         valuation.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+
+    private static void ConfigureDocumentAttachments(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbDocumentAttachment>();
+        entity.ToTable("DocumentAttachments", table =>
+        {
+            table.HasCheckConstraint("CK_DocumentAttachments_ExactlyOneOwner",
+                "(TransactionId IS NOT NULL AND PhysicalAssetId IS NULL) OR (TransactionId IS NULL AND PhysicalAssetId IS NOT NULL)");
+            table.HasCheckConstraint("CK_DocumentAttachments_Length", "Length > 0 AND Length <= 15728640");
+        });
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.OriginalFileName).HasMaxLength(180).IsRequired();
+        entity.Property(x => x.StoredFileName).HasMaxLength(48).IsRequired();
+        entity.Property(x => x.ContentType).HasMaxLength(40).IsRequired();
+        entity.Property(x => x.Sha256).HasMaxLength(64).IsRequired();
+        entity.HasIndex(x => x.TransactionId);
+        entity.HasIndex(x => x.PhysicalAssetId);
+        entity.HasIndex(x => x.StoredFileName).IsUnique();
+        entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne<DbPhysicalAsset>().WithMany().HasForeignKey(x => x.PhysicalAssetId).OnDelete(DeleteBehavior.Restrict);
+        entity.HasQueryFilter(x => !x.IsDeleted);
     }
 
     private void PrepareSyncOutbox()
