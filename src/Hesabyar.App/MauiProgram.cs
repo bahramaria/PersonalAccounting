@@ -91,6 +91,7 @@ public static class MauiProgram
         builder.Services.AddTransient<PeoplePage>();
         builder.Services.AddTransient<TransactionService>();
         builder.Services.AddTransient<AccountsViewModel>();
+        builder.Services.AddTransient<PhysicalAssetsPage>();
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddSingleton<ReportsExportService>();
         builder.Services.AddTransient<ReportsPage>();
