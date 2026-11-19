@@ -471,4 +471,20 @@
   <data name="TagColorPrompt" xml:space="preserve"><value>رنگ (اختیاری، مانند #336699؛ برای بدون رنگ خالی بگذارید)</value></data>
   <data name="ArchiveTag" xml:space="preserve"><value>بایگانی برچسب</value></data>
   <data name="ArchiveTagConfirm" xml:space="preserve"><value>این برچسب بایگانی شود؟ ارتباط آن با تراکنش‌های قبلی حفظ می‌شود.</value></data>
+
+  <data name="AssetsHeading" xml:space="preserve"><value>دارایی‌های فیزیکی و سرمایه‌ای</value></data>
+  <data name="AssetsAdd" xml:space="preserve"><value>افزودن دارایی</value></data>
+  <data name="AssetsEmpty" xml:space="preserve"><value>هنوز دارایی‌ای ثبت نشده است.</value></data>
+  <data name="AssetNamePrompt" xml:space="preserve"><value>نام دارایی</value></data>
+  <data name="AssetTypePrompt" xml:space="preserve"><value>نوع دارایی</value></data>
+  <data name="AssetQuantityPrompt" xml:space="preserve"><value>مقدار</value></data>
+  <data name="AssetUnitPrompt" xml:space="preserve"><value>واحد (مثلاً گرم یا دستگاه)</value></data>
+  <data name="AssetCurrencyPrompt" xml:space="preserve"><value>کد ارز (سه حرف انگلیسی)</value></data>
+  <data name="AssetCostPrompt" xml:space="preserve"><value>بهای تمام‌شده به کوچک‌ترین واحد پول</value></data>
+  <data name="AssetValuationPrompt" xml:space="preserve"><value>ارزش فعلی به کوچک‌ترین واحد پول</value></data>
+  <data name="AssetValuationAdd" xml:space="preserve"><value>ثبت ارزش‌گذاری</value></data>
+  <data name="AssetArchive" xml:space="preserve"><value>بایگانی دارایی</value></data>
+  <data name="AssetGainLabel" xml:space="preserve"><value>سود یا زیان تحقق‌نیافته</value></data>
+  <data name="AssetSaveFailed" xml:space="preserve"><value>ذخیره یا دریافت اطلاعات دارایی ناموفق بود.</value></data>
+
 </root>
