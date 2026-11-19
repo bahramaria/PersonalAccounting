@@ -378,6 +378,56 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
         });
 
 
+
+        modelBuilder.Entity<DbPhysicalAsset>(entity =>
+        {
+            entity.ToTable("PhysicalAssets", table =>
+            {
+                table.HasCheckConstraint("CK_PhysicalAssets_Quantity_Positive", "Quantity > 0");
+                table.HasCheckConstraint("CK_PhysicalAssets_Cost_NonNegative", "AcquisitionCostMinor >= 0");
+                table.HasCheckConstraint("CK_PhysicalAssets_Currency_Length", "length(CurrencyCode) = 3");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.Type);
+            entity.Property(x => x.Quantity).HasColumnType("TEXT");
+            entity.Property(x => x.Unit).HasMaxLength(24);
+            entity.Property(x => x.CurrencyCode).IsRequired().HasMaxLength(3);
+            entity.Property(x => x.AcquiredOn).HasColumnType("TEXT");
+            entity.Property(x => x.AcquisitionCostMinor);
+            entity.Property(x => x.IsArchived);
+            entity.Property(x => x.Note).HasMaxLength(500);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.IsArchived, x.Name });
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DbAssetValuation>(entity =>
+        {
+            entity.ToTable("AssetValuations", table =>
+            {
+                table.HasCheckConstraint("CK_AssetValuations_Value_NonNegative", "ValueMinor >= 0");
+                table.HasCheckConstraint("CK_AssetValuations_Currency_Length", "length(CurrencyCode) = 3");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.AssetId).HasColumnType("TEXT");
+            entity.Property(x => x.ValuationDate).HasColumnType("TEXT");
+            entity.Property(x => x.ValueMinor);
+            entity.Property(x => x.CurrencyCode).IsRequired().HasMaxLength(3);
+            entity.Property(x => x.Note).HasMaxLength(300);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => new { x.AssetId, x.ValuationDate });
+            entity.HasOne<DbPhysicalAsset>().WithMany(x => x.Valuations)
+                .HasForeignKey(x => x.AssetId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbSyncOutboxItem>(entity =>
         {
             entity.ToTable("SyncOutbox");
