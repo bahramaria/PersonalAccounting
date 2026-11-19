@@ -28,6 +28,8 @@ public sealed class AppDbContext(
     public DbSet<DbFiscalPeriod> FiscalPeriods => Set<DbFiscalPeriod>();
     public DbSet<DbDocumentSequence> DocumentSequences => Set<DbDocumentSequence>();
     public DbSet<DbSyncOutboxItem> SyncOutbox => Set<DbSyncOutboxItem>();
+    public DbSet<DbPhysicalAsset> PhysicalAssets => Set<DbPhysicalAsset>();
+    public DbSet<DbAssetValuation> AssetValuations => Set<DbAssetValuation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,6 +44,7 @@ public sealed class AppDbContext(
         ConfigureRecurringTransactions(modelBuilder);
         ConfigurePlanningAndFiscalFeatures(modelBuilder);
         ConfigureSyncOutbox(modelBuilder);
+        ConfigurePhysicalAssets(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -361,6 +364,43 @@ public sealed class AppDbContext(
         sequence.HasQueryFilter(x => !x.IsDeleted);
     }
 
+
+
+    private static void ConfigurePhysicalAssets(ModelBuilder modelBuilder)
+    {
+        var asset = modelBuilder.Entity<DbPhysicalAsset>();
+        asset.ToTable("PhysicalAssets", table =>
+        {
+            table.HasCheckConstraint("CK_PhysicalAssets_Quantity_Positive", "Quantity > 0");
+            table.HasCheckConstraint("CK_PhysicalAssets_Cost_NonNegative", "AcquisitionCostMinor >= 0");
+            table.HasCheckConstraint("CK_PhysicalAssets_Currency_Length", "length(CurrencyCode) = 3");
+        });
+        asset.HasKey(x => x.Id);
+        asset.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        asset.Property(x => x.Type);
+        asset.Property(x => x.Quantity).HasColumnType("TEXT");
+        asset.Property(x => x.Unit).HasMaxLength(24);
+        asset.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
+        asset.Property(x => x.AcquiredOn).HasColumnType("TEXT");
+        asset.Property(x => x.Note).HasMaxLength(500);
+        asset.HasIndex(x => new { x.IsArchived, x.Name });
+        asset.HasQueryFilter(x => !x.IsDeleted);
+
+        var valuation = modelBuilder.Entity<DbAssetValuation>();
+        valuation.ToTable("AssetValuations", table =>
+        {
+            table.HasCheckConstraint("CK_AssetValuations_Value_NonNegative", "ValueMinor >= 0");
+            table.HasCheckConstraint("CK_AssetValuations_Currency_Length", "length(CurrencyCode) = 3");
+        });
+        valuation.HasKey(x => x.Id);
+        valuation.Property(x => x.ValuationDate).HasColumnType("TEXT");
+        valuation.Property(x => x.CurrencyCode).HasMaxLength(3).IsRequired();
+        valuation.Property(x => x.Note).HasMaxLength(300);
+        valuation.HasIndex(x => new { x.AssetId, x.ValuationDate });
+        valuation.HasOne<DbPhysicalAsset>().WithMany(x => x.Valuations)
+            .HasForeignKey(x => x.AssetId).OnDelete(DeleteBehavior.Restrict);
+        valuation.HasQueryFilter(x => !x.IsDeleted);
+    }
 
     private void PrepareSyncOutbox()
     {
