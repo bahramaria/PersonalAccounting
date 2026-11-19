@@ -12,6 +12,7 @@ namespace Hesabyar.App.Views;
 public partial class TransactionsPage : ContentPage
 {
     private readonly TransactionsViewModel _viewModel;
+    private readonly DocumentAttachmentService _attachments;
     private readonly IDateCalendarService _calendar;
     private string? _searchText;
     private DateOnly? _fromDate;
@@ -22,10 +23,11 @@ public partial class TransactionsPage : ContentPage
     private long? _maximumAmountMinor;
     private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
 
-    public TransactionsPage(TransactionsViewModel viewModel, ILocalizationService localization, IDateCalendarService calendar)
+    public TransactionsPage(TransactionsViewModel viewModel, DocumentAttachmentService attachments, ILocalizationService localization, IDateCalendarService calendar)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _attachments = attachments;
         _calendar = calendar;
         BindingContext = viewModel;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
@@ -185,10 +187,14 @@ public partial class TransactionsPage : ContentPage
             or TransactionKind.Transfer
             or TransactionKind.CurrencyExchange;
         var actions = supportsStandardActions
-            ? new[] { AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags }
-            : new[] { AppStrings.TransactionManageTags };
+            ? new[] { AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags, AppStrings.AssetAttachments }
+            : new[] { AppStrings.TransactionManageTags, AppStrings.AssetAttachments };
         var action = await DisplayActionSheetAsync(item.KindName, AppStrings.Cancel, null, actions);
-        if (action == AppStrings.TransactionManageTags)
+        if (action == AppStrings.AssetAttachments)
+        {
+            await ManageTransactionAttachmentsAsync(item.Id);
+        }
+        else if (action == AppStrings.TransactionManageTags)
         {
             var tags = await _viewModel.GetTagsAsync();
             var currentIds = await _viewModel.GetTransactionTagIdsAsync(item.Id);
@@ -222,6 +228,54 @@ public partial class TransactionsPage : ContentPage
                 if (!await _viewModel.DeleteAsync(item.Id))
                     await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
                 else await ReloadAsync();
+            }
+        }
+    }
+
+
+    private async Task ManageTransactionAttachmentsAsync(Guid transactionId)
+    {
+        while (true)
+        {
+            try
+            {
+                var items = await _attachments.GetAsync(transactionId: transactionId);
+                var labels = items.Select(x => x.FileName).ToArray();
+                var choices = new[] { AppStrings.AttachmentAdd }.Concat(labels).ToArray();
+                var selected = await DisplayActionSheetAsync(AppStrings.AssetAttachments, AppStrings.Cancel, null, choices);
+                if (selected == AppStrings.Cancel || selected is null) return;
+                if (selected == AppStrings.AttachmentAdd)
+                {
+                    var file = await FilePicker.Default.PickAsync();
+                    if (file is null) continue;
+                    await using var input = await file.OpenReadAsync();
+                    await _attachments.AddAsync(input, file.FileName, transactionId: transactionId);
+                    continue;
+                }
+
+                var item = items.FirstOrDefault(x => x.FileName == selected);
+                if (item is null) continue;
+                var action = await DisplayActionSheetAsync(item.FileName, AppStrings.Cancel, null,
+                    AppStrings.AttachmentOpen, AppStrings.AttachmentDelete);
+                if (action == AppStrings.AttachmentOpen)
+                {
+                    var bytes = await _attachments.ReadAsync(item.Id);
+                    var extension = Path.GetExtension(item.FileName);
+                    var path = Path.Combine(FileSystem.CacheDirectory, $"attachment-{item.Id:N}{extension}");
+                    await File.WriteAllBytesAsync(path, bytes);
+                    await Launcher.Default.OpenAsync(new OpenFileRequest(item.FileName, new ReadOnlyFile(path)));
+                }
+                else if (action == AppStrings.AttachmentDelete)
+                {
+                    var confirmed = await DisplayAlertAsync(AppStrings.AttachmentDelete, item.FileName,
+                        AppStrings.AttachmentDelete, AppStrings.Cancel);
+                    if (confirmed) await _attachments.DeleteAsync(item.Id);
+                }
+            }
+            catch
+            {
+                await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AttachmentFailed, AppStrings.Ok);
+                return;
             }
         }
     }
