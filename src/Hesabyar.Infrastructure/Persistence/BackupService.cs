@@ -13,17 +13,18 @@ public sealed class BackupService(
     string databasePath,
     TimeProvider timeProvider,
     IDatabaseKeyProvider? keyProvider = null,
-    IBackupFileOperations? fileOperations = null)
+    IBackupFileOperations? fileOperations = null,\n    string? attachmentsDirectory = null)
 {
     private readonly IBackupFileOperations _fileOperations = fileOperations ?? new BackupFileOperations();
-    private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1\n");
-    private const int FormatVersion = 2;
+    private static readonly byte[] Magic = Encoding.ASCII.GetBytes("HESABYAR-BAKUP-1
+");
+    private const int FormatVersion = 3;
     private const int KdfIterations = 600_000;
     private const int SaltSize = 16;
     private const int NonceSize = 12;
     private const int TagSize = 16;
     private const int MaximumBackupSize = 512 * 1024 * 1024;
-    private const string DatabaseEntryName = "data.db";
+    private const string DatabaseEntryName = "data.db";\n    private const string AttachmentEntryPrefix = "attachments/";\n    private readonly string? _attachmentsDirectory = attachmentsDirectory;
     private const string ManifestEntryName = "manifest.json";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -47,6 +48,7 @@ public sealed class BackupService(
                 throw new InvalidDataException("Database snapshot exceeds the maximum backup size.");
             var databaseBytes = await File.ReadAllBytesAsync(snapshotPath, cancellationToken);
             var schemaVersion = await GetSchemaVersionAsync(cancellationToken);
+            var attachmentFiles = await ReadAttachmentFilesForBackupAsync(cancellationToken);
             var manifest = new BackupManifest(
                 FormatVersion,
                 "0.1.0",
@@ -58,7 +60,9 @@ public sealed class BackupService(
                 DatabaseKey: keyProvider is not null && !string.IsNullOrEmpty(password)
                     ? keyProvider.GetDatabasePassword()
                     : null,
-                DeviceBound: keyProvider is not null && string.IsNullOrEmpty(password));
+                DeviceBound: keyProvider is not null && string.IsNullOrEmpty(password),
+                Attachments: attachmentFiles.Select(x => new BackupAttachment(
+                    x.Name, x.Bytes.LongLength, Convert.ToHexString(SHA256.HashData(x.Bytes)))).ToArray());
             using var archiveStream = new MemoryStream();
             using (var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -68,6 +72,12 @@ public sealed class BackupService(
                 var databaseEntry = archive.CreateEntry(DatabaseEntryName, CompressionLevel.Optimal);
                 await using var databaseStream = databaseEntry.Open();
                 await databaseStream.WriteAsync(databaseBytes, cancellationToken);
+                foreach (var attachment in attachmentFiles)
+                {
+                    var entry = archive.CreateEntry(AttachmentEntryPrefix + attachment.Name, CompressionLevel.Optimal);
+                    await using var entryStream = entry.Open();
+                    await entryStream.WriteAsync(attachment.Bytes, cancellationToken);
+                }
             }
 
             var archiveBytes = archiveStream.ToArray();
@@ -178,16 +188,37 @@ public sealed class BackupService(
         var restoreId = Guid.NewGuid().ToString("N");
         var replacementPath = Path.Combine(directory, $".{restoreId}.restore");
         var rollbackDatabasePath = Path.Combine(directory, $".{restoreId}.rollback");
+        var attachmentStagePath = _attachmentsDirectory is null ? null : _attachmentsDirectory + "." + restoreId + ".stage";
+        var attachmentRollbackPath = _attachmentsDirectory is null ? null : _attachmentsDirectory + "." + restoreId + ".rollback";
+        var attachmentsMovedToRollback = false;
+        var replacementAttachmentsInstalled = false;
         var rollbackSidecars = new List<(string OriginalPath, string RollbackPath)>();
         var databaseMovedToRollback = false;
         var replacementInstalled = false;
         try
         {
             await CreateRestoreDatabaseAsync(replacementPath, databaseBytes, sourceDatabasePassword, cancellationToken);
+            if (attachmentStagePath is not null)
+            {
+                Directory.CreateDirectory(attachmentStagePath);
+                foreach (var attachment in restoredAttachments)
+                    await File.WriteAllBytesAsync(Path.Combine(attachmentStagePath, attachment.Name), attachment.Bytes, cancellationToken);
+            }
             SqliteConnection.ClearAllPools();
 
             try
             {
+                if (_attachmentsDirectory is not null && attachmentStagePath is not null && attachmentRollbackPath is not null)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_attachmentsDirectory))!);
+                    if (Directory.Exists(_attachmentsDirectory))
+                    {
+                        Directory.Move(_attachmentsDirectory, attachmentRollbackPath);
+                        attachmentsMovedToRollback = true;
+                    }
+                    Directory.Move(attachmentStagePath, _attachmentsDirectory);
+                    replacementAttachmentsInstalled = true;
+                }
                 if (File.Exists(databasePath))
                 {
                     _fileOperations.Move(databasePath, rollbackDatabasePath);
@@ -212,6 +243,10 @@ public sealed class BackupService(
                 {
                     // Never delete the original database when the replacement was not installed.
                     if (replacementInstalled && File.Exists(databasePath)) File.Delete(databasePath);
+                    if (replacementAttachmentsInstalled && _attachmentsDirectory is not null && Directory.Exists(_attachmentsDirectory))
+                        Directory.Delete(_attachmentsDirectory, recursive: true);
+                    if (attachmentsMovedToRollback && attachmentRollbackPath is not null && Directory.Exists(attachmentRollbackPath))
+                        Directory.Move(attachmentRollbackPath, _attachmentsDirectory!);
 
                     foreach (var sidecar in rollbackSidecars.AsEnumerable().Reverse())
                     {
@@ -234,6 +269,8 @@ public sealed class BackupService(
 
             try
             {
+                if (attachmentRollbackPath is not null && Directory.Exists(attachmentRollbackPath))
+                    Directory.Delete(attachmentRollbackPath, recursive: true);
                 if (currentDatabaseBackupFailed && databaseMovedToRollback)
                 {
                     var preservedPath = Path.Combine(directory,
@@ -267,6 +304,8 @@ public sealed class BackupService(
         finally
         {
             if (File.Exists(replacementPath)) File.Delete(replacementPath);
+            if (attachmentStagePath is not null && Directory.Exists(attachmentStagePath))
+                Directory.Delete(attachmentStagePath, recursive: true);
         }
     }
 
@@ -435,13 +474,15 @@ public sealed class BackupService(
     private static async Task<BackupManifest> ReadManifestAsync(ZipArchive archive, CancellationToken cancellationToken)
     {
         var entries = archive.Entries;
-        if (entries.Count != 2 || entries.Count(x => x.FullName == ManifestEntryName) != 1 ||
-            entries.Count(x => x.FullName == DatabaseEntryName) != 1)
+        if (entries.Count(x => x.FullName == ManifestEntryName) != 1 ||
+            entries.Count(x => x.FullName == DatabaseEntryName) != 1 ||
+            entries.Any(x => x.FullName != ManifestEntryName && x.FullName != DatabaseEntryName &&
+                !x.FullName.StartsWith(AttachmentEntryPrefix, StringComparison.Ordinal)))
             throw new InvalidDataException("Backup archive contents are invalid.");
         var entry = archive.GetEntry(ManifestEntryName)!;
         await using var input = entry.Open();
         var manifest = await JsonSerializer.DeserializeAsync<BackupManifest>(input, JsonOptions, cancellationToken);
-        if (manifest is null || (manifest.FormatVersion != 1 && manifest.FormatVersion != FormatVersion) ||
+        if (manifest is null || (manifest.FormatVersion < 1 || manifest.FormatVersion > FormatVersion) ||
             manifest.DatabaseSizeBytes <= 0)
             throw new InvalidDataException("Backup manifest is invalid or unsupported.");
         return manifest;
@@ -465,6 +506,68 @@ public sealed class BackupService(
             throw new InvalidDataException("Backup database checksum validation failed.");
         return database;
     }
+
+    private async Task<IReadOnlyList<BackupAttachmentBytes>> ReadAttachmentEntriesAsync(
+        ZipArchive archive, BackupManifest manifest, CancellationToken cancellationToken)
+    {
+        var declared = manifest.Attachments ?? [];
+        if (declared.Count > 1000) throw new InvalidDataException("Backup contains too many attachments.");
+        var entries = archive.Entries.Where(x => x.FullName.StartsWith(AttachmentEntryPrefix, StringComparison.Ordinal)).ToArray();
+        if (entries.Length != declared.Count) throw new InvalidDataException("Backup attachment entries do not match the manifest.");
+        var result = new List<BackupAttachmentBytes>(declared.Count);
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        long totalBytes = 0;
+        foreach (var item in declared)
+        {
+            if (Path.GetFileName(item.StoredFileName) != item.StoredFileName ||
+                !item.StoredFileName.EndsWith(".hatt", StringComparison.Ordinal) ||
+                item.SizeBytes <= 0 || item.SizeBytes > 15 * 1024 * 1024 ||
+                !names.Add(item.StoredFileName))
+                throw new InvalidDataException("Backup attachment metadata is invalid.");
+            var entryName = AttachmentEntryPrefix + item.StoredFileName;
+            var entry = archive.GetEntry(entryName) ?? throw new InvalidDataException("Backup attachment is missing.");
+            if (entry.Length != item.SizeBytes || entry.Length > 15 * 1024 * 1024)
+                throw new InvalidDataException("Backup attachment size is invalid.");
+            await using var input = entry.Open();
+            using var output = new MemoryStream((int)entry.Length);
+            await input.CopyToAsync(output, cancellationToken);
+            var bytes = output.ToArray();
+            var hash = Convert.ToHexString(SHA256.HashData(bytes));
+            if (!CryptographicOperations.FixedTimeEquals(Convert.FromHexString(hash), Convert.FromHexString(item.Sha256)))
+                throw new InvalidDataException("Backup attachment checksum validation failed.");
+            totalBytes += bytes.LongLength;
+            if (totalBytes > MaximumBackupSize) throw new InvalidDataException("Backup attachments exceed the maximum size.");
+            result.Add(new BackupAttachmentBytes(item.StoredFileName, bytes));
+        }
+        return result;
+    }
+
+    private async Task<IReadOnlyList<BackupAttachmentBytes>> ReadAttachmentFilesForBackupAsync(CancellationToken cancellationToken)
+    {
+        if (_attachmentsDirectory is null || !Directory.Exists(_attachmentsDirectory))
+            return [];
+        var files = Directory.GetFiles(_attachmentsDirectory, "*.hatt");
+        if (files.Length > 1000) throw new InvalidDataException("Too many attachment files.");
+        var result = new List<BackupAttachmentBytes>(files.Length);
+        long total = 0;
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var name = Path.GetFileName(file);
+            if (Path.GetFileNameWithoutExtension(name).Length != 32)
+                throw new InvalidDataException("Attachment storage file name is invalid.");
+            var info = new FileInfo(file);
+            if (info.Length <= 0 || info.Length > 15 * 1024 * 1024)
+                throw new InvalidDataException("Attachment file size is invalid.");
+            total += info.Length;
+            if (total > MaximumBackupSize) throw new InvalidDataException("Attachments exceed the maximum backup size.");
+            result.Add(new BackupAttachmentBytes(name, await File.ReadAllBytesAsync(file, cancellationToken)));
+        }
+        return result;
+    }
+
+    private sealed record BackupAttachment(string StoredFileName, long SizeBytes, string Sha256);
+    private sealed record BackupAttachmentBytes(string Name, byte[] Bytes);
 
     private async Task ValidateDatabaseAsync(
         byte[] database, string expectedSchemaVersion, string? databasePassword,
@@ -546,7 +649,8 @@ public sealed class BackupService(
         string DatabaseSha256,
         bool DatabaseEncrypted = false,
         string? DatabaseKey = null,
-        bool DeviceBound = false);
+        bool DeviceBound = false,
+        IReadOnlyList<BackupAttachment>? Attachments = null);
 
     private sealed record BackupEnvelopeHeader(
         bool Encrypted,
