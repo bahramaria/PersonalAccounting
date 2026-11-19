@@ -147,6 +147,7 @@ public sealed class BackupService(
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var manifest = await ReadManifestAsync(archive, cancellationToken);
         var database = await ReadDatabaseAsync(archive, manifest, cancellationToken);
+        _ = await ReadAttachmentEntriesAsync(archive, manifest, cancellationToken);
         var databasePassword = ResolveDatabasePassword(manifest);
         await ValidateDatabaseAsync(database, manifest.SchemaVersion, databasePassword, cancellationToken);
         await ValidateSchemaVersionAsync(manifest.SchemaVersion, cancellationToken);
@@ -164,6 +165,7 @@ public sealed class BackupService(
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var manifest = await ReadManifestAsync(archive, cancellationToken);
         var databaseBytes = await ReadDatabaseAsync(archive, manifest, cancellationToken);
+        var restoredAttachments = await ReadAttachmentEntriesAsync(archive, manifest, cancellationToken);
         var sourceDatabasePassword = ResolveDatabasePassword(manifest);
         if (keyProvider is not null && sourceDatabasePassword is not null)
             restoredAttachments = restoredAttachments.Select(x => new BackupAttachmentBytes(
