@@ -512,6 +512,7 @@ public static class AppStrings
     public static string ReportsExportFailed => Get(nameof(ReportsExportFailed));
 
 
+    public static string AssetNotePrompt => Get(nameof(AssetNotePrompt));
     public static string AssetEdit => Get(nameof(AssetEdit));
     public static string AssetHistory => Get(nameof(AssetHistory));
     public static string AssetTypeGold => Get(nameof(AssetTypeGold));
