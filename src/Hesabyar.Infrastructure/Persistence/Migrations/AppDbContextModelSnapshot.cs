@@ -428,6 +428,34 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+        modelBuilder.Entity<DbDocumentAttachment>(entity =>
+        {
+            entity.ToTable("DocumentAttachments", table =>
+            {
+                table.HasCheckConstraint("CK_DocumentAttachments_ExactlyOneOwner",
+                    "(TransactionId IS NOT NULL AND PhysicalAssetId IS NULL) OR (TransactionId IS NULL AND PhysicalAssetId IS NOT NULL)");
+                table.HasCheckConstraint("CK_DocumentAttachments_Length", "Length > 0 AND Length <= 15728640");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.TransactionId).HasColumnType("TEXT");
+            entity.Property(x => x.PhysicalAssetId).HasColumnType("TEXT");
+            entity.Property(x => x.OriginalFileName).IsRequired().HasMaxLength(180);
+            entity.Property(x => x.StoredFileName).IsRequired().HasMaxLength(48);
+            entity.Property(x => x.ContentType).IsRequired().HasMaxLength(40);
+            entity.Property(x => x.Length);
+            entity.Property(x => x.Sha256).IsRequired().HasMaxLength(64);
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.HasIndex(x => x.TransactionId);
+            entity.HasIndex(x => x.PhysicalAssetId);
+            entity.HasIndex(x => x.StoredFileName).IsUnique();
+            entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbPhysicalAsset>().WithMany().HasForeignKey(x => x.PhysicalAssetId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbSyncOutboxItem>(entity =>
         {
             entity.ToTable("SyncOutbox");
