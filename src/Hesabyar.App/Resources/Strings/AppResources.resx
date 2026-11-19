@@ -498,4 +498,5 @@
   <data name="AssetTypeOther" xml:space="preserve"><value>Other</value></data>
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>No valuations have been recorded for this asset.</value></data>
 
+  <data name="AssetNotePrompt" xml:space="preserve"><value>Note (optional)</value></data>
 </root>
