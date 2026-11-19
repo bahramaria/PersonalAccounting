@@ -2,12 +2,16 @@ name: Internal release packages
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/personal-accounting-mvp
 
 permissions:
   contents: read
 
 jobs:
   android-package:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[internal-release]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +32,7 @@ jobs:
           retention-days: 30
 
   windows-package:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[internal-release]')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
