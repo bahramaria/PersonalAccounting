@@ -23,7 +23,7 @@ public sealed class DocumentAttachmentServiceTests
                 await db.Database.MigrateAsync();
                 db.PhysicalAssets.Add(new DbPhysicalAsset
                 {
-                    Name = "Gold", Type = Domain.Assets.PhysicalAssetType.Gold,
+                    Name = "Gold", Type = PhysicalAssetType.Gold,
                     Quantity = 1m, CurrencyCode = "IRR", AcquisitionCostMinor = 100
                 });
                 await db.SaveChangesAsync();
