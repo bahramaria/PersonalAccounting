@@ -534,4 +534,25 @@ public static class AppStrings
     public static string AttachmentFailed => Get(nameof(AttachmentFailed));
 
     private static string Get(string name) => ResourceManager.GetString(name, Culture) ?? name;
+    public static string CategorySuggestionRules => Get(nameof(CategorySuggestionRules));
+    public static string CategorySuggestionRulesDescription => Get(nameof(CategorySuggestionRulesDescription));
+    public static string CategorySuggestionTitle => Get(nameof(CategorySuggestionTitle));
+    public static string CategorySuggestionUse => Get(nameof(CategorySuggestionUse));
+    public static string CategorySuggestionKeep => Get(nameof(CategorySuggestionKeep));
+    public static string CategorySuggestionReason => Get(nameof(CategorySuggestionReason));
+    public static string CategoryRuleRememberTitle => Get(nameof(CategoryRuleRememberTitle));
+    public static string CategoryRuleRememberMessage => Get(nameof(CategoryRuleRememberMessage));
+    public static string CategoryRuleRemember => Get(nameof(CategoryRuleRemember));
+    public static string CategoryRulePhrasePrompt => Get(nameof(CategoryRulePhrasePrompt));
+    public static string CategoryRuleEdit => Get(nameof(CategoryRuleEdit));
+    public static string CategoryRuleEnable => Get(nameof(CategoryRuleEnable));
+    public static string CategoryRuleDisable => Get(nameof(CategoryRuleDisable));
+    public static string CategoryRuleDelete => Get(nameof(CategoryRuleDelete));
+    public static string CategoryRuleEmpty => Get(nameof(CategoryRuleEmpty));
+    public static string CategoryRuleLoadFailed => Get(nameof(CategoryRuleLoadFailed));
+    public static string CategoryRuleSaveFailed => Get(nameof(CategoryRuleSaveFailed));
+    public static string CategoryRuleEnabled => Get(nameof(CategoryRuleEnabled));
+    public static string CategoryRuleDisabled => Get(nameof(CategoryRuleDisabled));
+    public static string CategoryRuleAllAccounts => Get(nameof(CategoryRuleAllAccounts));
+    public static string CategoryRuleUsage => Get(nameof(CategoryRuleUsage));
 }

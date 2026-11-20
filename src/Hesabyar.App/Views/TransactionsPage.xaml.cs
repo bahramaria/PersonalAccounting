@@ -17,6 +17,7 @@ public partial class TransactionsPage : ContentPage
 {
     private readonly TransactionsViewModel _viewModel;
     private readonly DocumentAttachmentService _attachments;
+    private readonly CategorySuggestionService _categorySuggestions;
     private readonly IDateCalendarService _calendar;
     private string? _searchText;
     private DateOnly? _fromDate;
@@ -27,11 +28,12 @@ public partial class TransactionsPage : ContentPage
     private long? _maximumAmountMinor;
     private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
 
-    public TransactionsPage(TransactionsViewModel viewModel, DocumentAttachmentService attachments, ILocalizationService localization, IDateCalendarService calendar)
+    public TransactionsPage(TransactionsViewModel viewModel, DocumentAttachmentService attachments, CategorySuggestionService categorySuggestions, ILocalizationService localization, IDateCalendarService calendar)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _attachments = attachments;
+        _categorySuggestions = categorySuggestions;
         _calendar = calendar;
         BindingContext = viewModel;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
@@ -394,10 +396,62 @@ public partial class TransactionsPage : ContentPage
 
         var description = await DisplayPromptAsync(AppStrings.TransactionDescriptionPrompt, AppStrings.TransactionDescriptionPrompt,
             AppStrings.Save, AppStrings.Skip, initialValue: existing?.Description, maxLength: 500);
+        CategorySuggestion? suggestion = null;
+        var acceptedSuggestion = false;
+        if (kind is TransactionKind.Expense or TransactionKind.Income && secondId is Guid selectedCategoryId)
+        {
+            suggestion = await _categorySuggestions.SuggestAsync(description, kind.Value, accountId.Value, currencyCode);
+            if (suggestion is not null)
+            {
+                var confidence = Math.Round(suggestion.Confidence * 100).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var message = string.Format(AppStrings.CategorySuggestionReason, suggestion.MatchText, confidence);
+                var useSuggestion = await DisplayAlertAsync(
+                    $"{AppStrings.CategorySuggestionTitle}: {suggestion.CategoryName}",
+                    message,
+                    AppStrings.CategorySuggestionUse,
+                    AppStrings.CategorySuggestionKeep);
+                if (useSuggestion)
+                {
+                    secondId = suggestion.CategoryId;
+                    acceptedSuggestion = true;
+                }
+            }
+        }
+
         if (!await _viewModel.SaveAsync(existing?.Id, kind.Value, date, amount, accountId.Value, secondId, description,
                 counterAmountMinor: counterAmountMinor))
+        {
             await DisplayAlertAsync(AppStrings.ValidationError, _viewModel.StatusMessage, AppStrings.Ok);
-        else await ReloadAsync();
+            return;
+        }
+
+        if (acceptedSuggestion && suggestion is not null)
+            await _categorySuggestions.RecordAcceptedSuggestionAsync(suggestion.RuleId);
+
+        if (kind is TransactionKind.Expense or TransactionKind.Income &&
+            secondId is Guid finalCategoryId && !string.IsNullOrWhiteSpace(description))
+        {
+            var remember = await DisplayAlertAsync(AppStrings.CategoryRuleRememberTitle,
+                AppStrings.CategoryRuleRememberMessage, AppStrings.CategoryRuleRemember, AppStrings.Cancel);
+            if (remember)
+            {
+                var phrase = await DisplayPromptAsync(AppStrings.CategoryRuleRememberTitle,
+                    AppStrings.CategoryRulePhrasePrompt, AppStrings.Save, AppStrings.Cancel,
+                    initialValue: description, maxLength: 120);
+                if (!string.IsNullOrWhiteSpace(phrase))
+                {
+                    try
+                    {
+                        await _categorySuggestions.LearnAsync(phrase, kind.Value, finalCategoryId, accountId.Value);
+                    }
+                    catch
+                    {
+                        await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.CategoryRuleSaveFailed, AppStrings.Ok);
+                    }
+                }
+            }
+        }
+        await ReloadAsync();
     }
 
     private async Task<Guid?> SelectAsync(string title, IEnumerable<TransactionChoice> choices, Guid? selectedId)

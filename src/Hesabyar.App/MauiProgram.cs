@@ -93,6 +93,7 @@ public static class MauiProgram
         builder.Services.AddTransient<TransactionService>();
         builder.Services.AddTransient<AccountsViewModel>();
         builder.Services.AddTransient<PhysicalAssetsPage>();
+        builder.Services.AddTransient<CategorySuggestionRulesPage>();
         builder.Services.AddTransient(provider => new DocumentAttachmentService(
             provider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
             Path.Combine(FileSystem.AppDataDirectory, "attachments"),

@@ -513,4 +513,25 @@
   <data name="AttachmentEmpty" xml:space="preserve"><value>فایلی پیوست نشده است.</value></data>
   <data name="AttachmentFailed" xml:space="preserve"><value>عملیات پیوست فایل ناموفق بود.</value></data>
   <data name="AssetNotePrompt" xml:space="preserve"><value>یادداشت (اختیاری)</value></data>
+  <data name="CategorySuggestionRules" xml:space="preserve"><value>قواعد پیشنهاد دسته</value></data>
+  <data name="CategorySuggestionRulesDescription" xml:space="preserve"><value>قواعد محلی برای پیشنهاد دسته بر اساس شرح تراکنش. هیچ داده‌ای از دستگاه خارج نمی‌شود.</value></data>
+  <data name="CategorySuggestionTitle" xml:space="preserve"><value>پیشنهاد دسته محلی</value></data>
+  <data name="CategorySuggestionUse" xml:space="preserve"><value>استفاده از پیشنهاد</value></data>
+  <data name="CategorySuggestionKeep" xml:space="preserve"><value>حفظ دسته انتخاب‌شده</value></data>
+  <data name="CategorySuggestionReason" xml:space="preserve"><value>شرح با قاعده «{0}» مطابقت دارد. اطمینان تقریبی: {1}٪</value></data>
+  <data name="CategoryRuleRememberTitle" xml:space="preserve"><value>ذخیره قاعده محلی</value></data>
+  <data name="CategoryRuleRememberMessage" xml:space="preserve"><value>آیا این انتخاب برای شرح‌های مشابه در آینده به‌عنوان پیشنهاد ذخیره شود؟</value></data>
+  <data name="CategoryRuleRemember" xml:space="preserve"><value>ذخیره قاعده</value></data>
+  <data name="CategoryRulePhrasePrompt" xml:space="preserve"><value>عبارت یا نام فروشنده برای تشخیص تراکنش‌های مشابه</value></data>
+  <data name="CategoryRuleEdit" xml:space="preserve"><value>ویرایش قاعده</value></data>
+  <data name="CategoryRuleEnable" xml:space="preserve"><value>فعال‌سازی</value></data>
+  <data name="CategoryRuleDisable" xml:space="preserve"><value>غیرفعال‌سازی</value></data>
+  <data name="CategoryRuleDelete" xml:space="preserve"><value>حذف قاعده</value></data>
+  <data name="CategoryRuleEmpty" xml:space="preserve"><value>هنوز قاعده‌ای ثبت نشده است.</value></data>
+  <data name="CategoryRuleLoadFailed" xml:space="preserve"><value>بارگذاری قواعد ناموفق بود.</value></data>
+  <data name="CategoryRuleSaveFailed" xml:space="preserve"><value>ذخیره تغییرات قاعده ناموفق بود.</value></data>
+  <data name="CategoryRuleEnabled" xml:space="preserve"><value>فعال</value></data>
+  <data name="CategoryRuleDisabled" xml:space="preserve"><value>غیرفعال</value></data>
+  <data name="CategoryRuleAllAccounts" xml:space="preserve"><value>همه حساب‌ها</value></data>
+  <data name="CategoryRuleUsage" xml:space="preserve"><value>دفعات استفاده</value></data>
 </root>
