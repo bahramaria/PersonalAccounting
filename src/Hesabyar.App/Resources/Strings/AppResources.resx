@@ -477,6 +477,7 @@ Ignored: {3}</value></data>
   <data name="ArchiveTagConfirm" xml:space="preserve"><value>Archive this tag? Existing transaction links will be preserved.</value></data>
 
   <data name="AssetsHeading" xml:space="preserve"><value>Physical and investment assets</value></data>
+  <data name="AssetsSearch" xml:space="preserve"><value>Search assets</value></data>
   <data name="AssetsAdd" xml:space="preserve"><value>Add asset</value></data>
   <data name="AssetsEmpty" xml:space="preserve"><value>No assets have been added.</value></data>
   <data name="AssetNamePrompt" xml:space="preserve"><value>Asset name</value></data>
