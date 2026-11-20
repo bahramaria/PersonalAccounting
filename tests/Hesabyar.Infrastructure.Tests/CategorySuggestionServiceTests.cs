@@ -29,7 +29,7 @@ public sealed class CategorySuggestionServiceTests
         Assert.Equal(0, suggestion.UsageCount);
 
         Assert.True(await service.RecordAcceptedSuggestionAsync(suggestion.RuleId));
-        var rule = Assert.Single((await service.GetRulesAsync()).Where(x => x.MatchText == "snapp food"));
+        var rule = Assert.Single(await service.GetRulesAsync(), x => x.MatchText == "snapp food");
         Assert.Equal(1, rule.UsageCount);
     }
 
