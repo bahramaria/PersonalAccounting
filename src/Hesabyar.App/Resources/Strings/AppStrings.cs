@@ -548,6 +548,8 @@ public static class AppStrings
     public static string CategoryRuleEnable => Get(nameof(CategoryRuleEnable));
     public static string CategoryRuleDisable => Get(nameof(CategoryRuleDisable));
     public static string CategoryRuleDelete => Get(nameof(CategoryRuleDelete));
+    public static string CategoryRuleDeleteAll => Get(nameof(CategoryRuleDeleteAll));
+    public static string CategoryRuleDeleteAllConfirm => Get(nameof(CategoryRuleDeleteAllConfirm));
     public static string CategoryRuleEmpty => Get(nameof(CategoryRuleEmpty));
     public static string CategoryRuleLoadFailed => Get(nameof(CategoryRuleLoadFailed));
     public static string CategoryRuleSaveFailed => Get(nameof(CategoryRuleSaveFailed));
