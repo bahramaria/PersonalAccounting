@@ -14,6 +14,7 @@ public static class AppStrings
 
     public static string AssetsHeading => Get(nameof(AssetsHeading));
     public static string AssetsAdd => Get(nameof(AssetsAdd));
+    public static string AssetsSearch => Get(nameof(AssetsSearch));
     public static string AssetsEmpty => Get(nameof(AssetsEmpty));
     public static string AssetNamePrompt => Get(nameof(AssetNamePrompt));
     public static string AssetTypePrompt => Get(nameof(AssetTypePrompt));
