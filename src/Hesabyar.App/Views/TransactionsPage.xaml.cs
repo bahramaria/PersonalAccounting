@@ -1,4 +1,5 @@
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Hesabyar.App.Services;
@@ -291,14 +292,28 @@ public partial class TransactionsPage : ContentPage
                 var item = items.FirstOrDefault(x => labelsById[x.Id] == selected);
                 if (item is null) continue;
                 var action = await DisplayActionSheetAsync(item.FileName, AppStrings.Cancel, null,
-                    AppStrings.AttachmentOpen, AppStrings.AttachmentDelete);
-                if (action == AppStrings.AttachmentOpen)
+                    AppStrings.AttachmentOpen, AppStrings.AttachmentShare, AppStrings.AttachmentDelete);
+                if (action == AppStrings.AttachmentOpen || action == AppStrings.AttachmentShare)
                 {
                     var bytes = await _attachments.ReadAsync(item.Id);
                     var extension = Path.GetExtension(item.FileName);
                     var path = Path.Combine(FileSystem.CacheDirectory, $"attachment-{item.Id:N}{extension}");
-                    await File.WriteAllBytesAsync(path, bytes);
-                    await Launcher.Default.OpenAsync(new OpenFileRequest(item.FileName, new ReadOnlyFile(path)));
+                    try
+                    {
+                        await File.WriteAllBytesAsync(path, bytes);
+                        if (action == AppStrings.AttachmentOpen)
+                            await Launcher.Default.OpenAsync(new OpenFileRequest(item.FileName, new ReadOnlyFile(path)));
+                        else
+                            await Share.Default.RequestAsync(new ShareFileRequest
+                            {
+                                Title = item.FileName,
+                                File = new ShareFile(path)
+                            });
+                    }
+                    finally
+                    {
+                        Array.Clear(bytes);
+                    }
                 }
                 else if (action == AppStrings.AttachmentDelete)
                 {
