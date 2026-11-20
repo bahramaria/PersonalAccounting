@@ -242,17 +242,27 @@ public partial class TransactionsPage : ContentPage
 
     private async Task ManageTransactionAttachmentsAsync(Guid transactionId)
     {
+        var searchText = string.Empty;
         while (true)
         {
             try
             {
                 var items = await _attachments.GetAsync(transactionId: transactionId);
+                if (!string.IsNullOrWhiteSpace(searchText))
+                    items = items.Where(x => x.FileName.Contains(searchText, StringComparison.CurrentCultureIgnoreCase)).ToArray();
                 var labelsById = items.ToDictionary(
                     x => x.Id,
                     x => $"{x.FileName} · {x.Id.ToString("N")[..4]}");
-                var choices = new[] { AppStrings.AttachmentAdd }.Concat(labelsById.Values).ToArray();
+                var choices = new[] { AppStrings.AttachmentSearch, AppStrings.AttachmentAdd }.Concat(labelsById.Values).ToArray();
                 var selected = await DisplayActionSheetAsync(AppStrings.Attachments, AppStrings.Cancel, null, choices);
                 if (selected == AppStrings.Cancel || selected is null) return;
+                if (selected == AppStrings.AttachmentSearch)
+                {
+                    var filter = await DisplayPromptAsync(AppStrings.AttachmentSearch, AppStrings.AttachmentSearch,
+                        AppStrings.Save, AppStrings.Cancel, initialValue: searchText, maxLength: 120);
+                    if (filter is not null) searchText = filter.Trim();
+                    continue;
+                }
                 if (selected == AppStrings.AttachmentAdd)
                 {
                     var addChoice = await DisplayActionSheetAsync(AppStrings.AttachmentAdd, AppStrings.Cancel, null,
