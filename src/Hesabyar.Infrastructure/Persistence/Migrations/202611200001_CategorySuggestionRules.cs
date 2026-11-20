@@ -45,6 +45,10 @@ public sealed class CategorySuggestionRules : Migration
             table: "CategorySuggestionRules",
             columns: new[] { "TransactionKind", "IsEnabled", "NormalizedMatchText" });
         migrationBuilder.CreateIndex(
+            name: "IX_CategorySuggestionRules_CategoryId",
+            table: "CategorySuggestionRules",
+            column: "CategoryId");
+        migrationBuilder.CreateIndex(
             name: "IX_CategorySuggestionRules_AccountId",
             table: "CategorySuggestionRules",
             column: "AccountId");
