@@ -88,6 +88,36 @@ public sealed class CategorySuggestionServiceTests
     }
 
     [Fact]
+    public async Task Suggestion_RequiresWholePhraseAndIgnoresArchivedCategories()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var account = await fixture.AddAccountAsync("Bank", AccountType.Asset, AccountKind.Bank);
+        var category = await fixture.AddAccountAsync("Transport", AccountType.Expense, AccountKind.Category);
+        var service = fixture.CreateService();
+
+        await service.LearnAsync("car", TransactionKind.Expense, category, account);
+        Assert.Null(await service.SuggestAsync("carpet purchase", TransactionKind.Expense, account, "IRR"));
+
+        await fixture.ArchiveAccountAsync(category);
+        Assert.Null(await service.SuggestAsync("car repair", TransactionKind.Expense, account, "IRR"));
+    }
+
+    [Fact]
+    public async Task DeleteAll_RemovesEveryRule()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var account = await fixture.AddAccountAsync("Bank", AccountType.Asset, AccountKind.Bank);
+        var category = await fixture.AddAccountAsync("Food", AccountType.Expense, AccountKind.Category);
+        var service = fixture.CreateService();
+
+        await service.LearnAsync("market", TransactionKind.Expense, category, account);
+        await service.LearnAsync("grocery", TransactionKind.Expense, category);
+
+        Assert.Equal(2, await service.DeleteAllAsync());
+        Assert.Empty(await service.GetRulesAsync());
+    }
+
+    [Fact]
     public void NormalizeMatchText_NormalizesPersianArabicAndWhitespace()
     {
         Assert.Equal("کافه یاس 123", CategorySuggestionService.NormalizeMatchText("  كافه‌ياس ۱۲۳ "));
@@ -127,6 +157,14 @@ public sealed class CategorySuggestionServiceTests
             db.Accounts.Add(account);
             await db.SaveChangesAsync();
             return account.Id;
+        }
+
+        public async Task ArchiveAccountAsync(Guid accountId)
+        {
+            await using var db = new AppDbContext(_options);
+            var account = await db.Accounts.SingleAsync(x => x.Id == accountId);
+            account.IsArchived = true;
+            await db.SaveChangesAsync();
         }
 
         public CategorySuggestionService CreateService() =>
