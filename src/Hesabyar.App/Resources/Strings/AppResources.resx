@@ -509,6 +509,7 @@ Ignored: {3}</value></data>
   <data name="AttachmentCameraUnavailable" xml:space="preserve"><value>Camera capture is unavailable on this device or app version. You can choose an image file instead.</value></data>
   <data name="AttachmentAdd" xml:space="preserve"><value>Add file</value></data>
   <data name="AttachmentOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="AttachmentShare" xml:space="preserve"><value>Share</value></data>
   <data name="AttachmentDelete" xml:space="preserve"><value>Delete attachment</value></data>
   <data name="AttachmentEmpty" xml:space="preserve"><value>No files attached.</value></data>
   <data name="AttachmentFailed" xml:space="preserve"><value>Attachment operation failed.</value></data>
