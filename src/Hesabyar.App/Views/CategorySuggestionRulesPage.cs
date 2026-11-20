@@ -29,6 +29,7 @@ public sealed class CategorySuggestionRulesPage : ContentPage
                 {
                     new Label { Text = AppStrings.CategorySuggestionRules, FontSize = 24, FontAttributes = FontAttributes.Bold },
                     new Label { Text = AppStrings.CategorySuggestionRulesDescription, FontSize = 13 },
+                    new Button { Text = AppStrings.CategoryRuleDeleteAll, Command = new Command(async () => await DeleteAllAsync()) },
                     _status,
                     _items
                 }
@@ -39,6 +40,15 @@ public sealed class CategorySuggestionRulesPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await LoadAsync();
+    }
+
+    private async Task DeleteAllAsync()
+    {
+        var confirmed = await DisplayAlertAsync(AppStrings.CategoryRuleDeleteAll,
+            AppStrings.CategoryRuleDeleteAllConfirm, AppStrings.CategoryRuleDeleteAll, AppStrings.Cancel);
+        if (!confirmed) return;
+        await _service.DeleteAllAsync();
         await LoadAsync();
     }
 
@@ -96,7 +106,8 @@ public sealed class CategorySuggestionRulesPage : ContentPage
 
             var categories = (await _service.GetCategoriesAsync(rule.TransactionKind))
                 .Where(x => x.CurrencyCode == rule.CurrencyCode).ToArray();
-            var labels = categories.Select(x => $"{x.Name} ({x.CurrencyCode})").ToArray();
+            var labelsById = categories.ToDictionary(x => x.Id, x => $"{x.Name} ({x.CurrencyCode}) · {x.Id.ToString("N")[..4]}");
+            var labels = categories.Select(x => labelsById[x.Id]).ToArray();
             if (labels.Length == 0)
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.CategoryRuleSaveFailed, AppStrings.Ok);
@@ -105,7 +116,7 @@ public sealed class CategorySuggestionRulesPage : ContentPage
             var selected = await DisplayActionSheetAsync(AppStrings.TransactionCategoryPrompt,
                 AppStrings.Cancel, null, labels);
             if (selected == AppStrings.Cancel || selected is null) return;
-            var category = categories.FirstOrDefault(x => $"{x.Name} ({x.CurrencyCode})" == selected);
+            var category = categories.FirstOrDefault(x => labelsById[x.Id] == selected);
             if (category is null || !await _service.UpdateRuleAsync(rule.Id, phrase, category.Id))
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.CategoryRuleSaveFailed, AppStrings.Ok);
