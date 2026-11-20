@@ -41,7 +41,7 @@ public sealed class CategorySuggestionRules : Migration
                 table.ForeignKey("FK_CategorySuggestionRules_Accounts_AccountId", x => x.AccountId, "Accounts", "Id", onDelete: ReferentialAction.Restrict);
             });
         migrationBuilder.CreateIndex(
-            name: "IX_CategorySuggestionRules_TransactionKind_IsEnabled_NormalizedMatchText",
+            name: "IX_CategorySuggestionRules_Kind_Enabled_Text",
             table: "CategorySuggestionRules",
             columns: new[] { "TransactionKind", "IsEnabled", "NormalizedMatchText" });
         migrationBuilder.CreateIndex(

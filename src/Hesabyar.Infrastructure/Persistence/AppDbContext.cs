@@ -444,7 +444,8 @@ public sealed class AppDbContext(
         entity.Property(x => x.NormalizedMatchText).HasMaxLength(120).IsRequired();
         entity.Property(x => x.TransactionKind).HasConversion<string>().HasMaxLength(12);
         entity.Property(x => x.LastUsedAtUtc).HasColumnType("TEXT");
-        entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText });
+        entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText })
+            .HasDatabaseName("IX_CategorySuggestionRules_Kind_Enabled_Text");
         entity.HasIndex(x => x.CategoryId);
         entity.HasIndex(x => x.AccountId);
         entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);

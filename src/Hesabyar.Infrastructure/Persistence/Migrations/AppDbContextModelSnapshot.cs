@@ -478,7 +478,8 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.Property(x => x.IsDeleted);
             entity.Property(x => x.IsEnabled);
             entity.Property(x => x.UsageCount);
-            entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText });
+            entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText })
+                .HasDatabaseName("IX_CategorySuggestionRules_Kind_Enabled_Text");
             entity.HasIndex(x => x.CategoryId);
             entity.HasIndex(x => x.AccountId);
             entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
