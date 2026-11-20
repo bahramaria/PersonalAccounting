@@ -531,6 +531,7 @@ public static class AppStrings
     public static string AttachmentAdd => Get(nameof(AttachmentAdd));
     public static string AttachmentOpen => Get(nameof(AttachmentOpen));
     public static string AttachmentShare => Get(nameof(AttachmentShare));
+    public static string AttachmentSearch => Get(nameof(AttachmentSearch));
     public static string AttachmentDelete => Get(nameof(AttachmentDelete));
     public static string AttachmentEmpty => Get(nameof(AttachmentEmpty));
     public static string AttachmentFailed => Get(nameof(AttachmentFailed));
