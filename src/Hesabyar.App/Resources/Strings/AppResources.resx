@@ -503,6 +503,10 @@ Ignored: {3}</value></data>
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>No valuations have been recorded for this asset.</value></data>
 
   <data name="AssetAttachments" xml:space="preserve"><value>Asset attachments</value></data>
+  <data name="Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="AttachmentChooseFile" xml:space="preserve"><value>Choose file</value></data>
+  <data name="AttachmentCapturePhoto" xml:space="preserve"><value>Take photo</value></data>
+  <data name="AttachmentCameraUnavailable" xml:space="preserve"><value>Camera capture is unavailable on this device or app version. You can choose an image file instead.</value></data>
   <data name="AttachmentAdd" xml:space="preserve"><value>Add file</value></data>
   <data name="AttachmentOpen" xml:space="preserve"><value>Open</value></data>
   <data name="AttachmentDelete" xml:space="preserve"><value>Delete attachment</value></data>
