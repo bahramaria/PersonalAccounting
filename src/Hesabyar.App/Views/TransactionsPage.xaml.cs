@@ -191,10 +191,10 @@ public partial class TransactionsPage : ContentPage
             or TransactionKind.Transfer
             or TransactionKind.CurrencyExchange;
         var actions = supportsStandardActions
-            ? new[] { AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags, AppStrings.AssetAttachments }
-            : new[] { AppStrings.TransactionManageTags, AppStrings.AssetAttachments };
+            ? new[] { AppStrings.TransactionEdit, AppStrings.TransactionDuplicate, AppStrings.TransactionDelete, AppStrings.TransactionManageTags, AppStrings.Attachments }
+            : new[] { AppStrings.TransactionManageTags, AppStrings.Attachments };
         var action = await DisplayActionSheetAsync(item.KindName, AppStrings.Cancel, null, actions);
-        if (action == AppStrings.AssetAttachments)
+        if (action == AppStrings.Attachments)
         {
             await ManageTransactionAttachmentsAsync(item.Id);
         }
