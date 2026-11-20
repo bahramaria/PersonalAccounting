@@ -256,7 +256,7 @@ public sealed class PhysicalAssetsPage : ContentPage
                         var file = await FilePicker.Default.PickAsync();
                         if (file is null) continue;
                         await using var input = await file.OpenReadAsync();
-                        await _attachments.AddAsync(input, file.FileName, assetId: assetId);
+                        await _attachments.AddAsync(input, file.FileName, physicalAssetId: assetId);
                     }
                     else if (addChoice == AppStrings.AttachmentCapturePhoto)
                     {
@@ -265,7 +265,7 @@ public sealed class PhysicalAssetsPage : ContentPage
                             var photo = await MediaPicker.Default.CapturePhotoAsync();
                             if (photo is null) continue;
                             await using var input = await photo.OpenReadAsync();
-                            await _attachments.AddAsync(input, photo.FileName, assetId: assetId);
+                            await _attachments.AddAsync(input, photo.FileName, physicalAssetId: assetId);
                         }
                         catch (FeatureNotSupportedException)
                         {
