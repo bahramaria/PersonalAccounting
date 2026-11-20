@@ -52,6 +52,49 @@ public sealed class DocumentAttachmentServiceTests
     }
 
     [Fact]
+    public async Task Attachment_ReadRejectsTamperedAndMissingFiles()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "HesabyarAttachments", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        try
+        {
+            await using (var db = new AppDbContext(options))
+            {
+                await db.Database.MigrateAsync();
+                db.PhysicalAssets.Add(new DbPhysicalAsset
+                {
+                    Name = "Gold", Type = PhysicalAssetType.Gold,
+                    Quantity = 1m, CurrencyCode = "IRR", AcquisitionCostMinor = 100
+                });
+                await db.SaveChangesAsync();
+            }
+
+            var assetId = await GetAssetIdAsync(options);
+            var service = new DocumentAttachmentService(new SharedFactory(options), directory, new TestKeyProvider());
+            var id = await service.AddAsync(
+                new MemoryStream("%PDF-1.7\\nreceipt\\n%%EOF"u8.ToArray()),
+                "receipt.pdf", physicalAssetId: assetId);
+            var stored = Assert.Single(Directory.GetFiles(directory));
+            var encrypted = await File.ReadAllBytesAsync(stored);
+            encrypted[^1] ^= 0x01;
+            await File.WriteAllBytesAsync(stored, encrypted);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => service.ReadAsync(id));
+
+            File.Delete(stored);
+            await Assert.ThrowsAsync<FileNotFoundException>(() => service.ReadAsync(id));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public async Task Attachment_RejectsInvalidOwnerAndUnsupportedFile()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HesabyarAttachments", Guid.NewGuid().ToString("N"));
