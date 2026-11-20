@@ -17,6 +17,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Maui.Storage;
 using Microsoft.EntityFrameworkCore;
 using Hesabyar.Infrastructure.Security;
+using TesseractOcrMaui;
 
 namespace Hesabyar.App;
 
@@ -28,6 +29,7 @@ public static class MauiProgram
         SQLitePCL.Batteries_V2.Init();
         builder.UseMauiApp<App>();
         builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+        builder.Services.AddTesseractOcr(files => files.AddFile("fas.traineddata"));
         builder.Services.AddSingleton<IClock, SystemClock>();
         builder.Services.AddSingleton<ILocalizationService, CultureLocalizationService>();
         builder.Services.AddSingleton<ICalendarService, PersianCalendarService>();
