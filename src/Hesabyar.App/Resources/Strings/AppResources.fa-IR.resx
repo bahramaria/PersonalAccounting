@@ -503,6 +503,10 @@
   <data name="AssetHistoryEmpty" xml:space="preserve"><value>برای این دارایی هنوز ارزش‌گذاری ثبت نشده است.</value></data>
 
   <data name="AssetAttachments" xml:space="preserve"><value>پیوست‌های دارایی</value></data>
+  <data name="Attachments" xml:space="preserve"><value>پیوست‌ها</value></data>
+  <data name="AttachmentChooseFile" xml:space="preserve"><value>انتخاب فایل</value></data>
+  <data name="AttachmentCapturePhoto" xml:space="preserve"><value>گرفتن عکس با دوربین</value></data>
+  <data name="AttachmentCameraUnavailable" xml:space="preserve"><value>دوربین در این دستگاه یا نسخه برنامه در دسترس نیست. می‌توانید فایل تصویر را انتخاب کنید.</value></data>
   <data name="AttachmentAdd" xml:space="preserve"><value>افزودن فایل</value></data>
   <data name="AttachmentOpen" xml:space="preserve"><value>باز کردن</value></data>
   <data name="AttachmentDelete" xml:space="preserve"><value>حذف پیوست</value></data>
