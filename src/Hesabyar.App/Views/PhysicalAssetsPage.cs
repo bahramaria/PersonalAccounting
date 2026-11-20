@@ -151,8 +151,8 @@ public sealed class PhysicalAssetsPage : ContentPage
     private async Task OnAssetTappedAsync(PhysicalAssetSnapshot asset)
     {
         var actions = asset.IsArchived
-            ? new[] { AppStrings.AssetHistory, AppStrings.AssetAttachments }
-            : new[] { AppStrings.AssetEdit, AppStrings.AssetValuationAdd, AppStrings.AssetHistory, AppStrings.AssetAttachments, AppStrings.AssetArchive };
+            ? new[] { AppStrings.AssetHistory, AppStrings.Attachments }
+            : new[] { AppStrings.AssetEdit, AppStrings.AssetValuationAdd, AppStrings.AssetHistory, AppStrings.Attachments, AppStrings.AssetArchive };
         var action = await DisplayActionSheetAsync(asset.Name, AppStrings.Cancel, null, actions);
 
         if (action == AppStrings.AssetEdit)
@@ -217,7 +217,7 @@ public sealed class PhysicalAssetsPage : ContentPage
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AssetSaveFailed, AppStrings.Ok);
             }
         }
-        else if (action == AppStrings.AssetAttachments)
+        else if (action == AppStrings.Attachments)
         {
             await ManageAttachmentsAsync(asset.Id);
         }
