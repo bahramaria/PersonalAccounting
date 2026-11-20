@@ -83,7 +83,7 @@ public sealed class CategorySuggestionService(
         var bestAccountSpecificity = matches[0].AccountSpecific;
         var best = matches.Where(x =>
             x.Rule.NormalizedMatchText.Length == bestLength &&
-            x.AccountSpecific == bestAccountSpecific).ToArray();
+            x.AccountSpecific == bestAccountSpecificity).ToArray();
         if (best.Select(x => x.Rule.CategoryId).Distinct().Count() != 1)
             return null;
 
