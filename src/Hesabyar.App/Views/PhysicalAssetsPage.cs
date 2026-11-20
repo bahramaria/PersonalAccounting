@@ -19,6 +19,8 @@ public sealed class PhysicalAssetsPage : ContentPage
     private readonly IDateCalendarService _calendar;
     private readonly VerticalStackLayout _items = new() { Spacing = 10 };
     private readonly Label _status = new() { FontSize = 13 };
+    private readonly SearchBar _search = new() { Placeholder = AppStrings.AssetsSearch };
+    private string _searchText = string.Empty;
 
     public PhysicalAssetsPage(PhysicalAssetService service, DocumentAttachmentService attachments, ILocalizationService localization, IDateCalendarService calendar)
     {
@@ -32,6 +34,11 @@ public sealed class PhysicalAssetsPage : ContentPage
 
         var add = new Button { Text = AppStrings.AssetsAdd };
         add.Clicked += OnAddClicked;
+        _search.TextChanged += (_, args) =>
+        {
+            _searchText = args.NewTextValue?.Trim() ?? string.Empty;
+            _ = LoadAsync();
+        };
         var content = new VerticalStackLayout
         {
             Padding = new Thickness(20, 24),
@@ -39,6 +46,7 @@ public sealed class PhysicalAssetsPage : ContentPage
             Children =
             {
                 new Label { Text = AppStrings.AssetsHeading, FontSize = 24, FontAttributes = FontAttributes.Bold },
+                _search,
                 add,
                 _status,
                 _items
@@ -58,6 +66,14 @@ public sealed class PhysicalAssetsPage : ContentPage
         try
         {
             var assets = await _service.GetAsync();
+            if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                assets = assets.Where(asset =>
+                    asset.Name.Contains(_searchText, StringComparison.CurrentCultureIgnoreCase) ||
+                    (asset.Unit?.Contains(_searchText, StringComparison.CurrentCultureIgnoreCase) ?? false) ||
+                    asset.CurrencyCode.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                    GetTypeName(asset.Type).Contains(_searchText, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+            }
             _items.Clear();
             foreach (var asset in assets)
             {
