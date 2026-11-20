@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="HomeTab" xml:space="preserve"><value>Home</value></data>
+  <data name="TransactionsTab" xml:space="preserve"><value>Transactions</value></data>
+  <data name="AccountsTab" xml:space="preserve"><value>Accounts</value></data>
+  <data name="ReportsTab" xml:space="preserve"><value>Reports</value></data>
+  <data name="MoreTab" xml:space="preserve"><value>More</value></data>
+  <data name="HomeHeading" xml:space="preserve"><value>Personal accounting</value></data>
+  <data name="HomeDescription" xml:space="preserve"><value>Your offline-first financial workspace.</value></data>
+  <data name="BalanceUnavailable" xml:space="preserve"><value>Account balances will appear after the local database is initialized.</value></data>
+  <data name="TransactionsPlaceholder" xml:space="preserve"><value>Transaction workflows will be added in the next implementation stage.</value></data>
+  <data name="AccountsPlaceholder" xml:space="preserve"><value>Account management will be added in the next implementation stage.</value></data>
+  <data name="ReportsPlaceholder" xml:space="preserve"><value>Reports will be added after the transaction workflows.</value></data>
+  <data name="MorePlaceholder" xml:space="preserve"><value>Settings and additional features will be added in later stages.</value></data>
+  <data name="StartupInitializing" xml:space="preserve"><value>Preparing the local database...</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>The database could not be initialized. Check available storage and try again.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="AccountsHeading" xml:space="preserve"><value>My accounts</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="AccountNamePrompt" xml:space="preserve"><value>Enter the account name</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AccountKindPrompt" xml:space="preserve"><value>Choose an account type</value></data>
+  <data name="AccountKindCash" xml:space="preserve"><value>Cash</value></data>
+  <data name="AccountKindBank" xml:space="preserve"><value>Bank</value></data>
+  <data name="AccountKindCard" xml:space="preserve"><value>Bank card</value></data>
+  <data name="AccountKindWallet" xml:space="preserve"><value>Wallet</value></data>
+  <data name="AccountKindCreditCard" xml:space="preserve"><value>Credit card</value></data>
+  <data name="OpeningBalance" xml:space="preserve"><value>Opening balance</value></data>
+  <data name="OpeningBalancePrompt" xml:space="preserve"><value>Opening balance in IRR (enter zero if none)</value></data>
+  <data name="Skip" xml:space="preserve"><value>Skip</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Validation error</value></data>
+  <data name="OpeningBalanceInvalid" xml:space="preserve"><value>Opening balance must be a non-negative whole number.</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="CurrencyRial" xml:space="preserve"><value>IRR</value></data>
+  <data name="AccountsLoadFailed" xml:space="preserve"><value>Could not load accounts.</value></data>
+  <data name="AccountsEmpty" xml:space="preserve"><value>No accounts have been added yet.</value></data>
+  <data name="AccountCreateFailed" xml:space="preserve"><value>Could not create the account.</value></data>
+  <data name="EditAccount" xml:space="preserve"><value>Edit account</value></data>
+  <data name="ArchiveAccount" xml:space="preserve"><value>Archive account</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Show archived</value></data>
+  <data name="ShowActive" xml:space="preserve"><value>Show active</value></data>
+  <data name="RestoreAccount" xml:space="preserve"><value>Restore account</value></data>
+  <data name="RestoreCategory" xml:space="preserve"><value>Restore category</value></data>
+  <data name="AccountRestoreFailed" xml:space="preserve"><value>Could not restore the account.</value></data>
+  <data name="CategoryRestoreFailed" xml:space="preserve"><value>Could not restore the category.</value></data>
+  <data name="ArchiveAccountConfirmation" xml:space="preserve"><value>This account will be removed from the active list while its financial history is preserved. Continue?</value></data>
+  <data name="AccountUpdateFailed" xml:space="preserve"><value>Could not update the account.</value></data>
+  <data name="AccountArchiveFailed" xml:space="preserve"><value>Could not archive the account.</value></data>
+  <data name="CategoriesTab" xml:space="preserve"><value>Categories</value></data>
+  <data name="CategoriesHeading" xml:space="preserve"><value>Manage categories</value></data>
+  <data name="AddCategory" xml:space="preserve"><value>Add category</value></data>
+  <data name="CategoryTypePrompt" xml:space="preserve"><value>Choose a category type</value></data>
+  <data name="ExpenseCategory" xml:space="preserve"><value>Expense</value></data>
+  <data name="IncomeCategory" xml:space="preserve"><value>Income</value></data>
+  <data name="CategoryEdit" xml:space="preserve"><value>Edit category</value></data>
+  <data name="CategoryArchive" xml:space="preserve"><value>Archive category</value></data>
+  <data name="CategoryArchiveConfirmation" xml:space="preserve"><value>This category will be removed from the active list. Existing transaction history will be preserved. Continue?</value></data>
+  <data name="CategoriesEmpty" xml:space="preserve"><value>No categories have been added yet.</value></data>
+  <data name="CategoriesLoadFailed" xml:space="preserve"><value>Could not load categories.</value></data>
+  <data name="CategoryCreateFailed" xml:space="preserve"><value>Could not create the category.</value></data>
+  <data name="CategoryUpdateFailed" xml:space="preserve"><value>Could not update the category.</value></data>
+  <data name="CategoryArchiveFailed" xml:space="preserve"><value>Could not archive the category.</value></data>
+  <data name="TransactionsHeading" xml:space="preserve"><value>Transactions</value></data>
+  <data name="AddTransaction" xml:space="preserve"><value>Add transaction</value></data>
+  <data name="TransactionAmountPrompt" xml:space="preserve"><value>Amount in IRR</value></data>
+  <data name="TransactionAccountPrompt" xml:space="preserve"><value>Select account</value></data>
+  <data name="TransactionDestinationPrompt" xml:space="preserve"><value>Select destination account</value></data>
+  <data name="TransactionCategoryPrompt" xml:space="preserve"><value>Select category</value></data>
+  <data name="TransactionDescriptionPrompt" xml:space="preserve"><value>Description (optional)</value></data>
+  <data name="TransactionDatePrompt" xml:space="preserve"><value>Date (selected calendar, YYYY/MM/DD)</value></data>
+  <data name="TransactionDateFormat" xml:space="preserve"><value>YYYY/MM/DD</value></data>
+  <data name="TransactionsEmpty" xml:space="preserve"><value>No transactions have been recorded.</value></data>
+  <data name="TransactionLoadFailed" xml:space="preserve"><value>Could not load transactions.</value></data>
+  <data name="TransactionCreateFailed" xml:space="preserve"><value>Could not save the transaction.</value></data>
+  <data name="TransactionDelete" xml:space="preserve"><value>Delete transaction</value></data>
+  <data name="TransactionDeleteConfirmation" xml:space="preserve"><value>This transaction will be removed from active records. Continue?</value></data>
+  <data name="TransactionEdit" xml:space="preserve"><value>Edit transaction</value></data>
+  <data name="TransactionDuplicate" xml:space="preserve"><value>Duplicate transaction</value></data>
+  <data name="Expense" xml:space="preserve"><value>Expense</value></data>
+  <data name="Income" xml:space="preserve"><value>Income</value></data>
+  <data name="Transfer" xml:space="preserve"><value>Transfer</value></data>
+  <data name="TransactionSearchPlaceholder" xml:space="preserve"><value>Search transaction descriptions</value></data>
+  <data name="TransactionAmountInvalid" xml:space="preserve"><value>Amount must be a positive whole number.</value></data>
+  <data name="TransactionDateInvalid" xml:space="preserve"><value>Enter a valid date in the selected calendar using YYYY/MM/DD.</value></data>
+  <data name="UnknownAccount" xml:space="preserve"><value>Unknown account</value></data>
+  <data name="TransactionFilters" xml:space="preserve"><value>Filters</value></data>
+  <data name="TransactionFilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="TransactionFromDate" xml:space="preserve"><value>From date (selected calendar, blank for any)</value></data>
+  <data name="TransactionToDate" xml:space="preserve"><value>To date (selected calendar, blank for any)</value></data>
+  <data name="TransactionAccountFilter" xml:space="preserve"><value>Filter by account</value></data>
+  <data name="TransactionCategoryFilter" xml:space="preserve"><value>Filter by category</value></data>
+  <data name="TransactionMinimumAmount" xml:space="preserve"><value>Minimum amount (IRR, blank for any)</value></data>
+  <data name="TransactionMaximumAmount" xml:space="preserve"><value>Maximum amount (IRR, blank for any)</value></data>
+  <data name="TransactionDateRangeInvalid" xml:space="preserve"><value>From date must not be later than to date.</value></data>
+  <data name="TransactionAmountRangeInvalid" xml:space="preserve"><value>Minimum amount must not exceed maximum amount.</value></data>
+  <data name="TransactionSort" xml:space="preserve"><value>Sort</value></data>
+  <data name="TransactionSortNewest" xml:space="preserve"><value>Newest first</value></data>
+  <data name="TransactionSortOldest" xml:space="preserve"><value>Oldest first</value></data>
+  <data name="TransactionClearFilters" xml:space="preserve"><value>Clear filters</value></data>
+  <data name="DashboardAssets" xml:space="preserve"><value>Assets</value></data>
+  <data name="DashboardLiabilities" xml:space="preserve"><value>Liabilities</value></data>
+  <data name="DashboardNetWorth" xml:space="preserve"><value>Net worth</value></data>
+  <data name="DashboardRecentTransactions" xml:space="preserve"><value>Recent transactions</value></data>
+  <data name="DashboardQuickAdd" xml:space="preserve"><value>Quick add transaction</value></data>
+  <data name="DashboardLoadFailed" xml:space="preserve"><value>Dashboard data could not be loaded.</value></data>
+  <data name="SettingsTab" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="SettingsLanguagePersian" xml:space="preserve"><value>Persian</value></data>
+  <data name="SettingsLanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>Appearance</value></data>
+  <data name="SettingsThemeSystem" xml:space="preserve"><value>System default</value></data>
+  <data name="SettingsThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="SettingsThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="SettingsCalendar" xml:space="preserve"><value>Calendar</value></data>
+  <data name="SettingsCalendarPersian" xml:space="preserve"><value>Persian (Jalali)</value></data>
+  <data name="SettingsCalendarGregorian" xml:space="preserve"><value>Gregorian</value></data>
+  <data name="PinSettings" xml:space="preserve"><value>App lock</value></data>
+  <data name="PinManage" xml:space="preserve"><value>Manage PIN</value></data>
+  <data name="PinEnable" xml:space="preserve"><value>Enable PIN</value></data>
+  <data name="PinChange" xml:space="preserve"><value>Change PIN</value></data>
+  <data name="PinDisable" xml:space="preserve"><value>Disable PIN</value></data>
+  <data name="PinSetupWarning" xml:space="preserve"><value>Experimental security feature</value></data>
+  <data name="PinRecoveryUnavailable" xml:space="preserve"><value>There is no PIN reset or bypass. To regain access, reinstall the app and restore a backup created before you forgot the PIN. Changes made after that backup will be lost. Continue?</value></data>
+  <data name="PinEnterCurrent" xml:space="preserve"><value>Enter current PIN</value></data>
+  <data name="PinEnterNew" xml:space="preserve"><value>Enter a new 4–8 digit PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>Confirm the PIN</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>The PIN entries do not match.</value></data>
+  <data name="PinInvalid" xml:space="preserve"><value>The PIN is incorrect.</value></data>
+  <data name="PinInvalidFormat" xml:space="preserve"><value>PIN must contain 4 to 8 digits.</value></data>
+  <data name="PinEnabled" xml:space="preserve"><value>PIN lock enabled.</value></data>
+  <data name="PinChanged" xml:space="preserve"><value>PIN changed.</value></data>
+  <data name="PinDisabled" xml:space="preserve"><value>PIN lock disabled.</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>Unlock Hesabyar</value></data>
+  <data name="PinUnlockPrompt" xml:space="preserve"><value>Enter PIN</value></data>
+  <data name="PinUnlockDescription" xml:space="preserve"><value>Enter your PIN to access your accounts and transactions.</value></data>
+  <data name="PinUnlockButton" xml:space="preserve"><value>Unlock</value></data>
+  <data name="PinLockedForSeconds" xml:space="preserve"><value>Too many attempts. Try again in {0} seconds.</value></data>
+  <data name="PinAutoLock" xml:space="preserve"><value>Auto-lock</value></data>
+  <data name="PinAutoLockImmediate" xml:space="preserve"><value>Immediately</value></data>
+  <data name="PinAutoLock30Seconds" xml:space="preserve"><value>After 30 seconds</value></data>
+  <data name="PinAutoLock1Minute" xml:space="preserve"><value>After 1 minute</value></data>
+  <data name="PinAutoLock5Minutes" xml:space="preserve"><value>After 5 minutes</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="BackupHeading" xml:space="preserve"><value>Backup and restore</value></data>
+  <data name="BackupCreate" xml:space="preserve"><value>Create backup</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Restore backup</value></data>
+  <data name="BackupPasswordHint" xml:space="preserve"><value>Enter at least 8 characters for a portable backup. Leave blank for a backup tied to this device. A password cannot be recovered.</value></data>
+  <data name="BackupPasswordPrompt" xml:space="preserve"><value>Backup password (leave empty for an unencrypted file)</value></data>
+  <data name="BackupPasswordConfirm" xml:space="preserve"><value>Confirm backup password</value></data>
+  <data name="BackupPasswordMismatch" xml:space="preserve"><value>The passwords do not match.</value></data>
+  <data name="BackupUnencryptedWarning" xml:space="preserve"><value>Without a password, the database remains encrypted with this device's key. This backup can only be restored on this device. Use a password to transfer it to another device. Continue?</value></data>
+  <data name="BackupCreated" xml:space="preserve"><value>Backup created. You can now share or save the file.</value></data>
+  <data name="BackupRestorePreview" xml:space="preserve"><value>Backup details</value></data>
+  <data name="BackupRestoreConfirmation" xml:space="preserve"><value>Restoring replaces the current database. A safety backup of the current data will be created first. Continue?</value></data>
+  <data name="BackupRestored" xml:space="preserve"><value>Backup restored. The application will reload.</value></data>
+  <data name="BackupInvalid" xml:space="preserve"><value>The selected file is not a valid or supported Hesabyar backup.</value></data>
+  <data name="BackupWrongPassword" xml:space="preserve"><value>The password is missing or incorrect, or the backup file has been modified.</value></data>
+  <data name="BackupFailed" xml:space="preserve"><value>The backup operation failed. Check available storage and try again.</value></data>
+  <data name="BackupNoFileSelected" xml:space="preserve"><value>No backup file was selected.</value></data>
+  <data name="BackupSummaryFormat" xml:space="preserve"><value>Created: {0}&#10;App version: {1}&#10;Database schema: {2}&#10;Database size: {3} MB&#10;Encryption: {4}</value></data>
+  <data name="BackupEncrypted" xml:space="preserve"><value>Encrypted</value></data>
+  <data name="BackupNotEncrypted" xml:space="preserve"><value>Not encrypted</value></data>
+  <data name="BackupDeviceBound" xml:space="preserve"><value>Device-bound (no password)</value></data>
+
+  <data name="OnboardingTitle" xml:space="preserve"><value>Set up personal accounting</value></data>
+  <data name="OnboardingDescription" xml:space="preserve"><value>Create your first account to get started. This should take less than a minute.</value></data>
+  <data name="OnboardingAccountName" xml:space="preserve"><value>Account name</value></data>
+  <data name="OnboardingAccountType" xml:space="preserve"><value>Account type</value></data>
+  <data name="OnboardingOpeningBalance" xml:space="preserve"><value>Opening balance in IRR (optional)</value></data>
+  <data name="OnboardingEnablePin" xml:space="preserve"><value>Enable app PIN lock</value></data>
+  <data name="OnboardingCreateAccount" xml:space="preserve"><value>Create account and continue</value></data>
+  <data name="OnboardingFirstTransaction" xml:space="preserve"><value>Account created</value></data>
+  <data name="OnboardingFirstTransactionPrompt" xml:space="preserve"><value>Your account is ready. Would you like to record your first income or expense?</value></data>
+  <data name="OnboardingInvalidAmount" xml:space="preserve"><value>Opening balance must be a non-negative whole number.</value></data>
+  <data name="OnboardingAccountFailed" xml:space="preserve"><value>Could not create the account. Check the details and try again.</value></data>
+  <data name="OnboardingPinInvalid" xml:space="preserve"><value>The PIN must contain 4 to 8 matching digits. Your account was created; you can enable the lock later in Settings.</value></data>
+  <data name="OnboardingSmsNote" xml:space="preserve"><value>You can paste or share a bank message. Optional automatic reception of new SMS messages is also available.</value></data>
+  <data name="OnboardingDefaultAccountName" xml:space="preserve"><value>Cash wallet</value></data>
+
+  <data name="SettingsAmountsHidden" xml:space="preserve"><value>Amounts: hidden</value></data>
+  <data name="SettingsAmountsVisible" xml:space="preserve"><value>Amounts: visible</value></data>
+  <data name="AmountHidden" xml:space="preserve"><value>••••••</value></data>
+  <data name="PeopleTab" xml:space="preserve"><value>People</value></data>
+  <data name="PeopleHeading" xml:space="preserve"><value>People and balances</value></data>
+  <data name="PeopleEmpty" xml:space="preserve"><value>No people have been added yet.</value></data>
+  <data name="PeopleLoadFailed" xml:space="preserve"><value>Could not load people.</value></data>
+  <data name="PersonAdd" xml:space="preserve"><value>Add person</value></data>
+  <data name="PersonName" xml:space="preserve"><value>Person name</value></data>
+  <data name="PersonPhone" xml:space="preserve"><value>Phone number (optional)</value></data>
+  <data name="PersonEdit" xml:space="preserve"><value>Edit person</value></data>
+  <data name="PersonArchive" xml:space="preserve"><value>Archive person</value></data>
+  <data name="PersonArchiveConfirm" xml:space="preserve"><value>Archive this person? Financial history will be preserved.</value></data>
+  <data name="PersonLend" xml:space="preserve"><value>I lent money</value></data>
+  <data name="PersonBorrow" xml:space="preserve"><value>I borrowed money</value></data>
+  <data name="PersonRepay" xml:space="preserve"><value>Record repayment</value></data>
+  <data name="PersonTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
+  <data name="PersonIOweThem" xml:space="preserve"><value>I owe them</value></data>
+  <data name="PersonSettled" xml:space="preserve"><value>Settled</value></data>
+  <data name="PersonNoAccount" xml:space="preserve"><value>Create a cash, bank or wallet account before recording a debt.</value></data>
+  <data name="PersonHistory" xml:space="preserve"><value>Transaction history</value></data>
+  <data name="PersonShare" xml:space="preserve"><value>Share statement</value></data>
+  <data name="PersonHistoryEmpty" xml:space="preserve"><value>No debt or repayment history.</value></data>
+  <data name="PersonStatementTitle" xml:space="preserve"><value>Person account statement</value></data>
+  <data name="PersonExcessRepaymentPrompt" xml:space="preserve"><value>The amount exceeds the outstanding balance. Settle the current balance and record the excess as a new debt in the opposite direction?</value></data>
+  <data name="PersonExcessRepaymentNote" xml:space="preserve"><value>Excess repayment recorded as a new debt in the opposite direction.</value></data>
+
+  <data name="PersonDueDatePrompt" xml:space="preserve"><value>Due date (optional, e.g. 2026/12/16)</value></data>
+  <data name="PersonDueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="PersonDueDateInvalid" xml:space="preserve"><value>The due date is invalid.</value></data>
+  <data name="PersonDueReminder" xml:space="preserve"><value>Upcoming or overdue: {0} · {1}</value></data>
+  <data name="PersonDueReminders" xml:space="preserve"><value>Outstanding due dates</value></data>
+  <data name="ChequesTab" xml:space="preserve"><value>Cheques</value></data>
+  <data name="ChequesHeading" xml:space="preserve"><value>Cheque management</value></data>
+  <data name="ChequeAdd" xml:space="preserve"><value>Add cheque</value></data>
+  <data name="ChequeReceived" xml:space="preserve"><value>Received cheque</value></data>
+  <data name="ChequeIssued" xml:space="preserve"><value>Issued cheque</value></data>
+  <data name="ChequeBank" xml:space="preserve"><value>Bank</value></data>
+  <data name="ChequeSerial" xml:space="preserve"><value>Serial number</value></data>
+  <data name="ChequeSayad" xml:space="preserve"><value>Sayad ID (optional)</value></data>
+  <data name="ChequeDueDate" xml:space="preserve"><value>Due date (year/month/day)</value></data>
+  <data name="ChequePerson" xml:space="preserve"><value>Person (optional)</value></data>
+  <data name="ChequeAmount" xml:space="preserve"><value>Amount</value></data>
+   <data name="ChequeCurrency" xml:space="preserve"><value>Cheque currency</value></data>
+  <data name="ChequeNote" xml:space="preserve"><value>Note</value></data>
+  <data name="ChequePending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ChequeCleared" xml:space="preserve"><value>Cleared / paid</value></data>
+  <data name="ChequeReturned" xml:space="preserve"><value>Returned</value></data>
+  <data name="ChequeSpent" xml:space="preserve"><value>Spent</value></data>
+  <data name="ChequeVoided" xml:space="preserve"><value>Voided</value></data>
+  <data name="ChequeDueSoon" xml:space="preserve"><value>Due within 7 days</value></data>
+  <data name="ChequeDueMonth" xml:space="preserve"><value>Due within 30 days</value></data>
+  <data name="ChequeCalendar" xml:space="preserve"><value>Cheque due-date calendar</value></data>
+  <data name="ChequeCalendarEmpty" xml:space="preserve"><value>No cheques are due in the next 30 days.</value></data>
+  <data name="ChequeDueToday" xml:space="preserve"><value>Due today</value></data>
+  <data name="ChequeDueInOneDay" xml:space="preserve"><value>Due tomorrow</value></data>
+  <data name="ChequeDueInThreeDays" xml:space="preserve"><value>Due in three days</value></data>
+  <data name="ChequeEdit" xml:space="preserve"><value>Edit cheque</value></data>
+  <data name="ChequeDelete" xml:space="preserve"><value>Delete cheque</value></data>
+  <data name="ChequeDeleteConfirm" xml:space="preserve"><value>Remove this cheque from the active list while preserving its financial history?</value></data>
+  <data name="ChequeChangeStatus" xml:space="preserve"><value>Change status</value></data>
+  <data name="ChequeEmpty" xml:space="preserve"><value>No cheques have been added.</value></data>
+  <data name="ChequeInvalid" xml:space="preserve"><value>Cheque details are invalid. Amount and due date must be valid.</value></data>
+  <data name="ChequeAccountRequired" xml:space="preserve"><value>Select the bank account used to clear or pay this cheque.</value></data>
+  <data name="ChequeTransitionInvalid" xml:space="preserve"><value>This status transition is not allowed.</value></data>
+  <data name="ChequeLoadFailed" xml:space="preserve"><value>Could not load cheques.</value></data>
+  <data name="ChequeDuplicate" xml:space="preserve"><value>A cheque with this bank and serial or Sayad ID already exists.</value></data>
+  <data name="LoansTab" xml:space="preserve"><value>Loans</value></data>
+  <data name="LoansHeading" xml:space="preserve"><value>Loans and installments</value></data>
+  <data name="LoansEmpty" xml:space="preserve"><value>No loans have been added.</value></data>
+  <data name="LoansLoadFailed" xml:space="preserve"><value>Could not load loans.</value></data>
+  <data name="LoanAdd" xml:space="preserve"><value>Add loan</value></data>
+  <data name="LoanGiven" xml:space="preserve"><value>Money lent</value></data>
+  <data name="LoanReceived" xml:space="preserve"><value>Money borrowed</value></data>
+  <data name="LoanDirectionPrompt" xml:space="preserve"><value>Choose loan direction</value></data>
+  <data name="LoanName" xml:space="preserve"><value>Loan name</value></data>
+  <data name="LoanStartDate" xml:space="preserve"><value>Loan start date (year/month/day)</value></data>
+  <data name="LoanSchedulePrompt" xml:space="preserve"><value>Installment schedule method</value></data>
+  <data name="LoanAnnuity" xml:space="preserve"><value>Equal installments with annual interest</value></data>
+  <data name="LoanManual" xml:space="preserve"><value>Manual installment schedule</value></data>
+  <data name="LoanInstallmentCount" xml:space="preserve"><value>Number of installments</value></data>
+  <data name="LoanAnnualRate" xml:space="preserve"><value>Annual interest rate (%)</value></data>
+  <data name="LoanPerson" xml:space="preserve"><value>Related person (optional)</value></data>
+  <data name="LoanNote" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="LoanNoAccount" xml:space="preserve"><value>Create an active cash or bank account before adding a loan.</value></data>
+  <data name="LoanInvalid" xml:space="preserve"><value>The amount, date, or installment schedule is invalid.</value></data>
+  <data name="LoanSaveFailed" xml:space="preserve"><value>Could not save the loan. Check the selected account or person.</value></data>
+  <data name="LoanPaymentFailed" xml:space="preserve"><value>Payment failed. The amount may exceed the balance or the account is unavailable.</value></data>
+  <data name="LoanPay" xml:space="preserve"><value>Record installment payment</value></data>
+  <data name="LoanSchedule" xml:space="preserve"><value>View installment schedule</value></data>
+  <data name="LoanPaymentAmount" xml:space="preserve"><value>Payment amount in IRR</value></data>
+  <data name="LoanDueDate" xml:space="preserve"><value>Due date (year/month/day)</value></data>
+  <data name="LoanInstallmentNumber" xml:space="preserve"><value>Installment</value></data>
+  <data name="LoanInstallmentPrincipal" xml:space="preserve"><value>Principal portion in IRR</value></data>
+  <data name="LoanInstallmentInterest" xml:space="preserve"><value>Interest portion in IRR</value></data>
+  <data name="LoanOverdueDays" xml:space="preserve"><value>{0} days overdue</value></data>
+  <data name="LoanNextDue" xml:space="preserve"><value>Next installment</value></data>
+  <data name="LoanClosed" xml:space="preserve"><value>Settled</value></data>
+  <data name="LoanSettled" xml:space="preserve"><value>No outstanding balance</value></data>
+  <data name="LoanOpeningTransaction" xml:space="preserve"><value>Loan opened</value></data>
+  <data name="LoanPaymentTransaction" xml:space="preserve"><value>Loan payment</value></data>
+  <data name="SmsTab" xml:space="preserve"><value>SMS</value></data>
+  <data name="SmsHeading" xml:space="preserve"><value>Bank SMS inbox</value></data>
+  <data name="SmsPaste" xml:space="preserve"><value>Paste or share a bank SMS</value></data>
+  <data name="SmsPrivacyNote" xml:space="preserve"><value>Paste and share import work without SMS permission. Automatic reception of new messages is optional and is enabled only after your separate consent. No message is posted to the ledger without your confirmation.</value></data>
+  <data name="SmsBodyPrompt" xml:space="preserve"><value>Paste the complete SMS text</value></data>
+  <data name="SmsSenderPrompt" xml:space="preserve"><value>Sender name or number (optional)</value></data>
+  <data name="SmsAdded" xml:space="preserve"><value>Message added to the review queue.</value></data>
+  <data name="SmsDuplicate" xml:space="preserve"><value>This message has already been imported or queued.</value></data>
+  <data name="SmsBodyInvalid" xml:space="preserve"><value>Enter a valid SMS message (up to 4,000 characters).</value></data>
+  <data name="SmsLoadFailed" xml:space="preserve"><value>Could not load the SMS inbox.</value></data>
+  <data name="SmsEmpty" xml:space="preserve"><value>There are no messages waiting for review.</value></data>
+  <data name="SmsUnknownSender" xml:space="preserve"><value>Unknown sender</value></data>
+  <data name="SmsAmountUnknown" xml:space="preserve"><value>Amount not detected</value></data>
+  <data name="SmsReviewAndConfirm" xml:space="preserve"><value>Review and confirm</value></data>
+  <data name="SmsIgnore" xml:space="preserve"><value>Ignore</value></data>
+  <data name="SmsTransactionTypePrompt" xml:space="preserve"><value>Choose transaction type</value></data>
+  <data name="SmsConfirmFailed" xml:space="preserve"><value>The message could not be confirmed. Check the account, category and amount.</value></data>
+  <data name="SmsImported" xml:space="preserve"><value>The transaction was added to the ledger.</value></data>
+  <data name="SmsTypeUnknown" xml:space="preserve"><value>Unknown type</value></data>
+  <data name="SmsParsed" xml:space="preserve"><value>Parsed</value></data>
+  <data name="SmsNeedsReview" xml:space="preserve"><value>Needs review</value></data>
+  <data name="SmsUnsupported" xml:space="preserve"><value>Unsupported</value></data>
+  <data name="SmsAutoImport" xml:space="preserve"><value>Enable automatic SMS import</value></data>
+  <data name="SmsDisableAutoImport" xml:space="preserve"><value>Disable automatic SMS import</value></data>
+  <data name="SmsPermissionTitle" xml:space="preserve"><value>SMS permission</value></data>
+  <data name="SmsPermissionExplain" xml:space="preserve"><value>With your permission, new incoming messages are added to the review queue in the background. No message is posted to the ledger without your confirmation. This permission is used only to receive new messages.</value></data>
+  <data name="SmsEnable" xml:space="preserve"><value>Enable</value></data>
+  <data name="SmsPermissionDenied" xml:space="preserve"><value>SMS permission was not granted. You can still paste or share messages.</value></data>
+  <data name="SmsAutoImportEnabled" xml:space="preserve"><value>Automatic SMS import is enabled. Messages will still wait in the review queue.</value></data>
+  <data name="SmsAutoImportDisabled" xml:space="preserve"><value>Automatic SMS import is disabled. You can also revoke the Android permission in system settings.</value></data>
+  <data name="SmsAndroidOnly" xml:space="preserve"><value>Automatic SMS reception is supported on Android only.</value></data>
+  <data name="SmsPossibleDuplicateTitle" xml:space="preserve"><value>Possible duplicate transaction</value></data>
+  <data name="SmsPossibleDuplicateMessage" xml:space="preserve"><value>A manual transaction with the same account, category, amount and date already exists. Import this SMS anyway?</value></data>
+  <data name="SmsConfirmAnyway" xml:space="preserve"><value>Import anyway</value></data>
+  <data name="SmsBalance" xml:space="preserve"><value>SMS balance</value></data>
+  <data name="SmsCardLastFour" xml:space="preserve"><value>Card suffix</value></data>
+  <data name="SmsTransactionDate" xml:space="preserve"><value>SMS date</value></data>
+  <data name="SmsTransactionTime" xml:space="preserve"><value>SMS time</value></data>
+  <data name="SmsUnitUnknown" xml:space="preserve"><value>Amount unit is unknown. Enter the amount in rials.</value></data>
+  <data name="SmsBalanceMismatchTitle" xml:space="preserve"><value>Balance mismatch</value></data>
+  <data name="SmsBalanceMismatchMessage" xml:space="preserve"><value>SMS balance: {0} IRR&#10;Ledger balance: {1} IRR&#10;Difference: {2} IRR&#10;Create an adjustment transaction?</value></data>
+  <data name="SmsCreateAdjustment" xml:space="preserve"><value>Create adjustment</value></data>
+  <data name="SmsAdjustmentCreated" xml:space="preserve"><value>The adjustment transaction was created and the account balance now matches the SMS.</value></data>
+  <data name="SmsAdjustmentFailed" xml:space="preserve"><value>The adjustment could not be created. Review the account balance and related transactions.</value></data>
+  <data name="SmsIgnored" xml:space="preserve"><value>Non-financial or verification-code SMS was ignored.</value></data>
+  <data name="SmsConfirmSelected" xml:space="preserve"><value>Confirm selected messages</value></data>
+  <data name="SmsSelectForBatch" xml:space="preserve"><value>Select for batch confirmation</value></data>
+  <data name="SmsBatchRequiresKnownAmounts" xml:space="preserve"><value>Batch confirmation requires a known transaction type and a verified currency unit for every selected message.</value></data>
+  <data name="SmsBatchSameTypeRequired" xml:space="preserve"><value>Select messages of the same transaction type for batch confirmation.</value></data>
+  <data name="SmsBatchConfirmFailed" xml:space="preserve"><value>The batch could not be confirmed. No selected transaction was imported.</value></data>
+  <data name="SmsBatchImported" xml:space="preserve"><value>{0} messages were imported successfully.</value></data>
+  <data name="SmsImportHistory" xml:space="preserve"><value>Import recent SMS history</value></data>
+  <data name="SmsHistoryPermissionTitle" xml:space="preserve"><value>SMS history access</value></data>
+  <data name="SmsHistoryPermissionExplain" xml:space="preserve"><value>With your explicit permission, Hesabyar will inspect up to 500 messages from the last 90 days. Only messages recognized as potentially financial are saved in the review queue; other messages are discarded. This permission is used only for this manual import.</value></data>
+  <data name="SmsHistoryImportSummary" xml:space="preserve"><value>Scanned: {0}
+Added to review: {1}
+Duplicates: {2}
+Ignored: {3}</value></data>
+
+  <data name="RemindersTab" xml:space="preserve"><value>Reminders</value></data>
+  <data name="RemindersHeading" xml:space="preserve"><value>Reminders</value></data>
+  <data name="RemindersEmpty" xml:space="preserve"><value>No reminders have been added.</value></data>
+  <data name="RemindersLoadFailed" xml:space="preserve"><value>Reminders could not be loaded.</value></data>
+  <data name="ReminderAdd" xml:space="preserve"><value>Add reminder</value></data>
+  <data name="ReminderEdit" xml:space="preserve"><value>Edit reminder</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ReminderKind" xml:space="preserve"><value>Reminder type</value></data>
+  <data name="ReminderKindGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="ReminderKindBill" xml:space="preserve"><value>Bill</value></data>
+  <data name="ReminderKindDebt" xml:space="preserve"><value>Debt</value></data>
+  <data name="ReminderKindCheque" xml:space="preserve"><value>Cheque</value></data>
+  <data name="ReminderKindInstallment" xml:space="preserve"><value>Installment</value></data>
+  <data name="ReminderDueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="ReminderDateFormat" xml:space="preserve"><value>Enter date as year/month/day in the selected calendar</value></data>
+  <data name="ReminderDateInvalid" xml:space="preserve"><value>Enter a valid date using the selected calendar.</value></data>
+  <data name="ReminderNotifyTime" xml:space="preserve"><value>Notification time (optional)</value></data>
+  <data name="ReminderNotifyTimeFormat" xml:space="preserve"><value>24-hour time, HH:mm</value></data>
+  <data name="ReminderTimeInvalid" xml:space="preserve"><value>Enter notification time in HH:mm format.</value></data>
+  <data name="ReminderNote" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="ReminderComplete" xml:space="preserve"><value>Mark complete</value></data>
+  <data name="ReminderReopen" xml:space="preserve"><value>Reopen</value></data>
+  <data name="ReminderArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ReminderArchiveConfirm" xml:space="preserve"><value>This reminder will be removed from the active list. Continue?</value></data>
+  <data name="ReminderActionFailed" xml:space="preserve"><value>The reminder could not be updated.</value></data>
+  <data name="ReminderInvalid" xml:space="preserve"><value>Check the reminder details and try again.</value></data>
+
+
+  <data name="RecurringTab" xml:space="preserve"><value>Recurring</value></data>
+  <data name="RecurringHeading" xml:space="preserve"><value>Recurring transactions</value></data>
+  <data name="RecurringEmpty" xml:space="preserve"><value>No recurring schedules have been added.</value></data>
+  <data name="RecurringLoadFailed" xml:space="preserve"><value>Recurring schedules could not be loaded.</value></data>
+  <data name="RecurringAdd" xml:space="preserve"><value>Add schedule</value></data>
+  <data name="RecurringTitle" xml:space="preserve"><value>Schedule title</value></data>
+  <data name="RecurringKind" xml:space="preserve"><value>Transaction type</value></data>
+  <data name="RecurringStartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="RecurringEndDate" xml:space="preserve"><value>End date (optional)</value></data>
+  <data name="RecurringEndDateOptional" xml:space="preserve"><value>Leave empty for no end date</value></data>
+  <data name="RecurringEndDateInvalid" xml:space="preserve"><value>End date must be valid and cannot be earlier than the start date.</value></data>
+  <data name="RecurringInterval" xml:space="preserve"><value>Repeat every</value></data>
+  <data name="RecurringIntervalFormat" xml:space="preserve"><value>Enter a positive whole number</value></data>
+  <data name="RecurringIntervalInvalid" xml:space="preserve"><value>Repeat interval must be a positive whole number.</value></data>
+  <data name="RecurringIntervalUnit" xml:space="preserve"><value>Interval unit</value></data>
+  <data name="RecurringDaily" xml:space="preserve"><value>Day(s)</value></data>
+  <data name="RecurringWeekly" xml:space="preserve"><value>Week(s)</value></data>
+  <data name="RecurringMonthly" xml:space="preserve"><value>Month(s)</value></data>
+  <data name="RecurringYearly" xml:space="preserve"><value>Year(s)</value></data>
+  <data name="RecurringPause" xml:space="preserve"><value>Pause schedule</value></data>
+  <data name="RecurringResume" xml:space="preserve"><value>Resume schedule</value></data>
+  <data name="RecurringOccurrences" xml:space="preserve"><value>Occurrences</value></data>
+  <data name="RecurringPrepareDue" xml:space="preserve"><value>Prepare due occurrences</value></data>
+  <data name="RecurringPreparedCount" xml:space="preserve"><value>{0} pending occurrence(s) prepared.</value></data>
+  <data name="RecurringNoOccurrences" xml:space="preserve"><value>No occurrences have been prepared yet.</value></data>
+  <data name="RecurringPending" xml:space="preserve"><value>Pending</value></data>
+  <data name="RecurringGenerated" xml:space="preserve"><value>Transaction generated</value></data>
+  <data name="RecurringAlreadyGenerated" xml:space="preserve"><value>This occurrence has already been generated.</value></data>
+  <data name="RecurringGenerate" xml:space="preserve"><value>Generate transaction</value></data>
+  <data name="RecurringGenerateConfirm" xml:space="preserve"><value>Create a confirmed ledger transaction dated {0}?</value></data>
+  <data name="RecurringActionFailed" xml:space="preserve"><value>The recurring transaction action could not be completed.</value></data>
+  <data name="RecurringInvalid" xml:space="preserve"><value>Check the schedule details and try again.</value></data>
+  <data name="RecurringNoAccount" xml:space="preserve"><value>No eligible account is available for this transaction type.</value></data>
+  <data name="RecurringNoCategory" xml:space="preserve"><value>No matching category is available for the selected currency.</value></data>
+
+  <data name="ReminderNotificationBody" xml:space="preserve"><value>A reminder is due.</value></data>
+  <data name="ReminderNotificationChannel" xml:space="preserve"><value>Hesabyar reminders</value></data>
+  <data name="ReportsHeading" xml:space="preserve"><value>Financial reports</value></data>
+  <data name="ReportsRange" xml:space="preserve"><value>Date range</value></data>
+  <data name="ReportsFromDate" xml:space="preserve"><value>From date</value></data>
+  <data name="ReportsToDate" xml:space="preserve"><value>To date</value></data>
+  <data name="ReportsDateInvalid" xml:space="preserve"><value>Enter a valid date range. The start date must not be after the end date.</value></data>
+  <data name="ReportsIncome" xml:space="preserve"><value>Income</value></data>
+  <data name="ReportsExpenses" xml:space="preserve"><value>Expenses</value></data>
+  <data name="ReportsNetCashFlow" xml:space="preserve"><value>Net cash flow</value></data>
+  <data name="ReportsAssets" xml:space="preserve"><value>Assets</value></data>
+  <data name="ReportsLiabilities" xml:space="preserve"><value>Liabilities</value></data>
+  <data name="ReportsNetWorth" xml:space="preserve"><value>Net worth</value></data>
+  <data name="ReportsByCategory" xml:space="preserve"><value>Expenses by category</value></data>
+  <data name="ReportsMonthlyTrend" xml:space="preserve"><value>Monthly income and expenses</value></data>
+  <data name="ReportsAccounts" xml:space="preserve"><value>Account balances</value></data>
+  <data name="ReportsPeople" xml:space="preserve"><value>People balances</value></data>
+  <data name="ReportsExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="ReportsExportExcel" xml:space="preserve"><value>Export Excel</value></data>
+  <data name="ReportsEmpty" xml:space="preserve"><value>There is no data for this section in the selected period.</value></data>
+  <data name="ReportsLoadFailed" xml:space="preserve"><value>Financial reports could not be loaded.</value></data>
+  <data name="ReportsExportFailed" xml:space="preserve"><value>The report could not be exported.</value></data>
+  <data name="ReportsTheyOweMe" xml:space="preserve"><value>They owe me</value></data>
+  <data name="ReportsIOweThem" xml:space="preserve"><value>I owe them</value></data>
+  <data name="ReportsPeriodChange" xml:space="preserve"><value>Period change</value></data>
+  <data name="ReportsActivityCount" xml:space="preserve"><value>Activities</value></data>
+  <data name="BiometricUnlockButton" xml:space="preserve"><value>Use biometrics</value></data>
+  <data name="BiometricUnlockTitle" xml:space="preserve"><value>Biometric verification</value></data>
+  <data name="BiometricUnlockReason" xml:space="preserve"><value>Verify your identity to unlock Hesabyar.</value></data>
+  <data name="BiometricUnlockFailed" xml:space="preserve"><value>Biometric verification was not completed. Use your PIN.</value></data>
+  <data name="PlanningTab" xml:space="preserve"><value>Planning</value></data>
+  <data name="PlanningHeading" xml:space="preserve"><value>Budgets, tags and fiscal periods</value></data>
+  <data name="BudgetsHeading" xml:space="preserve"><value>Budgets</value></data>
+  <data name="AddBudget" xml:space="preserve"><value>Add budget</value></data>
+  <data name="BudgetCategoryPrompt" xml:space="preserve"><value>Select expense category</value></data>
+  <data name="BudgetStartPrompt" xml:space="preserve"><value>Budget start date</value></data>
+  <data name="BudgetEndPrompt" xml:space="preserve"><value>Budget end date</value></data>
+  <data name="BudgetLimitPrompt" xml:space="preserve"><value>Budget limit</value></data>
+  <data name="BudgetEmpty" xml:space="preserve"><value>No budgets have been defined.</value></data>
+  <data name="BudgetSaveFailed" xml:space="preserve"><value>Budget could not be saved.</value></data>
+  <data name="TagsHeading" xml:space="preserve"><value>Tags</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Add tag</value></data>
+  <data name="TagNamePrompt" xml:space="preserve"><value>Enter a tag name</value></data>
+  <data name="TagSaveFailed" xml:space="preserve"><value>Tag could not be saved.</value></data>
+  <data name="FiscalPeriodsHeading" xml:space="preserve"><value>Fiscal periods</value></data>
+  <data name="AddFiscalPeriod" xml:space="preserve"><value>Add fiscal period</value></data>
+  <data name="FiscalPeriodNamePrompt" xml:space="preserve"><value>Fiscal period name (for example 1406)</value></data>
+  <data name="FiscalPeriodStartPrompt" xml:space="preserve"><value>Fiscal period start date</value></data>
+  <data name="FiscalPeriodEndPrompt" xml:space="preserve"><value>Fiscal period end date</value></data>
+  <data name="FiscalPeriodClose" xml:space="preserve"><value>Close period</value></data>
+  <data name="FiscalPeriodClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="FiscalPeriodSaveFailed" xml:space="preserve"><value>Fiscal period could not be saved.</value></data>
+  <data name="PlanningLoadFailed" xml:space="preserve"><value>Planning data could not be loaded.</value></data>
+  <data name="CurrencyCodePrompt" xml:space="preserve"><value>Enter ISO 4217 currency code (IRR, USD, EUR)</value></data>
+  <data name="TransactionManageTags" xml:space="preserve"><value>Manage tags</value></data>
+  <data name="TransactionTagsPrompt" xml:space="preserve"><value>Enter tag names separated by commas (leave empty to clear)</value></data>
+  <data name="CurrencyExchange" xml:space="preserve"><value>Currency exchange</value></data>
+  <data name="TransactionExchangeDestinationAmountPrompt" xml:space="preserve"><value>Amount received in destination currency</value></data>
+  <data name="BudgetEdit" xml:space="preserve"><value>Edit limit</value></data>
+  <data name="BudgetDeactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="BudgetActivate" xml:space="preserve"><value>Activate</value></data>
+  <data name="BudgetDeactivateConfirm" xml:space="preserve"><value>Deactivate this budget? It will remain in the list and can be activated again.</value></data>
+  <data name="BudgetInactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="ReportsCurrency" xml:space="preserve"><value>Report currency</value></data>
+  <data name="DashboardCurrency" xml:space="preserve"><value>Balance currency</value></data>
+  <data name="EditTag" xml:space="preserve"><value>Edit tag</value></data>
+  <data name="TagColorPrompt" xml:space="preserve"><value>Color (optional, e.g. #336699; blank for none)</value></data>
+  <data name="ArchiveTag" xml:space="preserve"><value>Archive tag</value></data>
+  <data name="ArchiveTagConfirm" xml:space="preserve"><value>Archive this tag? Existing transaction links will be preserved.</value></data>
+
+  <data name="AssetsHeading" xml:space="preserve"><value>Physical and investment assets</value></data>
+  <data name="AssetsSearch" xml:space="preserve"><value>Search assets</value></data>
+  <data name="AssetsAdd" xml:space="preserve"><value>Add asset</value></data>
+  <data name="AssetsEmpty" xml:space="preserve"><value>No assets have been added.</value></data>
+  <data name="AssetNamePrompt" xml:space="preserve"><value>Asset name</value></data>
+  <data name="AssetTypePrompt" xml:space="preserve"><value>Asset type</value></data>
+  <data name="AssetQuantityPrompt" xml:space="preserve"><value>Quantity</value></data>
+  <data name="AssetUnitPrompt" xml:space="preserve"><value>Unit (e.g. gram or item)</value></data>
+  <data name="AssetCurrencyPrompt" xml:space="preserve"><value>Currency code (three ASCII letters)</value></data>
+  <data name="AssetCostPrompt" xml:space="preserve"><value>Acquisition cost in minor currency units</value></data>
+  <data name="AssetValuationPrompt" xml:space="preserve"><value>Current value in minor currency units</value></data>
+  <data name="AssetValuationAdd" xml:space="preserve"><value>Add valuation</value></data>
+  <data name="AssetArchive" xml:space="preserve"><value>Archive asset</value></data>
+  <data name="AssetGainLabel" xml:space="preserve"><value>Unrealized gain or loss</value></data>
+  <data name="AssetSaveFailed" xml:space="preserve"><value>Could not save or load asset information.</value></data>
+
+
+  <data name="AssetEdit" xml:space="preserve"><value>Edit details</value></data>
+  <data name="AssetHistory" xml:space="preserve"><value>Valuation history</value></data>
+  <data name="AssetTypeGold" xml:space="preserve"><value>Gold</value></data>
+  <data name="AssetTypeForeignCurrency" xml:space="preserve"><value>Cash currency</value></data>
+  <data name="AssetTypeVehicle" xml:space="preserve"><value>Vehicle</value></data>
+  <data name="AssetTypeProperty" xml:space="preserve"><value>Property</value></data>
+  <data name="AssetTypeEquipment" xml:space="preserve"><value>Equipment</value></data>
+  <data name="AssetTypeOther" xml:space="preserve"><value>Other</value></data>
+  <data name="AssetHistoryEmpty" xml:space="preserve"><value>No valuations have been recorded for this asset.</value></data>
+
+  <data name="AssetAttachments" xml:space="preserve"><value>Asset attachments</value></data>
+  <data name="Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="AttachmentChooseFile" xml:space="preserve"><value>Choose file</value></data>
+  <data name="AttachmentCapturePhoto" xml:space="preserve"><value>Take photo</value></data>
+  <data name="AttachmentCameraUnavailable" xml:space="preserve"><value>Camera capture is unavailable on this device or app version. You can choose an image file instead.</value></data>
+  <data name="AttachmentAdd" xml:space="preserve"><value>Add file</value></data>
+  <data name="AttachmentOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="AttachmentSearch" xml:space="preserve"><value>Search attachments</value></data>
+  <data name="AttachmentShare" xml:space="preserve"><value>Share</value></data>
+  <data name="AttachmentDelete" xml:space="preserve"><value>Delete attachment</value></data>
+  <data name="AttachmentEmpty" xml:space="preserve"><value>No files attached.</value></data>
+  <data name="AttachmentFailed" xml:space="preserve"><value>Attachment operation failed.</value></data>
+  <data name="AssetNotePrompt" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="CategorySuggestionRules" xml:space="preserve"><value>Category suggestion rules</value></data>
+  <data name="CategorySuggestionRulesDescription" xml:space="preserve"><value>Local rules suggest categories from transaction descriptions. No data leaves this device.</value></data>
+  <data name="CategorySuggestionTitle" xml:space="preserve"><value>Local category suggestion</value></data>
+  <data name="CategorySuggestionUse" xml:space="preserve"><value>Use suggestion</value></data>
+  <data name="CategorySuggestionKeep" xml:space="preserve"><value>Keep selected category</value></data>
+  <data name="CategorySuggestionReason" xml:space="preserve"><value>Description matches rule “{0}”. Approximate match strength: {1}%</value></data>
+  <data name="CategoryRuleRememberTitle" xml:space="preserve"><value>Save local rule</value></data>
+  <data name="CategoryRuleRememberMessage" xml:space="preserve"><value>Save this choice as a suggestion for similar descriptions in the future?</value></data>
+  <data name="CategoryRuleRemember" xml:space="preserve"><value>Save rule</value></data>
+  <data name="CategoryRulePhrasePrompt" xml:space="preserve"><value>Phrase or merchant name to match similar transactions</value></data>
+  <data name="CategoryRuleEdit" xml:space="preserve"><value>Edit rule</value></data>
+  <data name="CategoryRuleEnable" xml:space="preserve"><value>Enable</value></data>
+  <data name="CategoryRuleDisable" xml:space="preserve"><value>Disable</value></data>
+  <data name="CategoryRuleDelete" xml:space="preserve"><value>Delete rule</value></data>
+  <data name="CategoryRuleDeleteAll" xml:space="preserve"><value>Delete all rules</value></data>
+  <data name="CategoryRuleDeleteAllConfirm" xml:space="preserve"><value>Delete all category rules? This action cannot be undone.</value></data>
+  <data name="CategoryRuleEmpty" xml:space="preserve"><value>No rules have been created yet.</value></data>
+  <data name="CategoryRuleLoadFailed" xml:space="preserve"><value>Could not load category rules.</value></data>
+  <data name="CategoryRuleSaveFailed" xml:space="preserve"><value>Could not save the category rule.</value></data>
+  <data name="CategoryRuleEnabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="CategoryRuleDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="CategoryRuleAllAccounts" xml:space="preserve"><value>All accounts</value></data>
+  <data name="CategoryRuleUsage" xml:space="preserve"><value>Uses</value></data>
+</root>

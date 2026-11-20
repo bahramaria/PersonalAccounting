@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Hesabyar.Domain/Hesabyar.Domain.csproj" />
+    <EmbeddedResource Include="Sms/bank-sms-rules.json" LogicalName="Hesabyar.Application.Sms.bank-sms-rules.json" />
+  </ItemGroup>
+</Project>

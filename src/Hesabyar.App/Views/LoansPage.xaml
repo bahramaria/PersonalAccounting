@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:Hesabyar.App.ViewModels"
+             xmlns:strings="clr-namespace:Hesabyar.App.Resources.Strings"
+             x:Class="Hesabyar.App.Views.LoansPage"
+             x:DataType="viewModels:LoansViewModel">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="{x:Static strings:AppStrings.LoansHeading}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="{x:Static strings:AppStrings.LoanAdd}" Clicked="OnAddClicked" />
+        </Grid>
+        <Label Grid.Row="1" Text="{Binding StatusMessage}" FontSize="13" />
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Loans}" SelectionMode="Single" SelectionChanged="OnLoanSelected">
+            <CollectionView.EmptyView>
+                <Label Text="{x:Static strings:AppStrings.LoansEmpty}" HorizontalOptions="Center" VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:LoanListItem">
+                    <Border Padding="12" Margin="0,4" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}" StrokeThickness="1">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                            <Label Grid.Column="1" Text="{Binding DirectionText}" FontSize="12" />
+                            <Label Grid.Row="1" Text="{Binding PersonName}" FontSize="12" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding RemainingText}" FontAttributes="Bold" />
+                            <Label Grid.Row="2" Text="{Binding AccountName}" FontSize="12" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding StateText}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource WarningLightColor}, Dark={StaticResource WarningDarkColor}}" />
+                            <Label Grid.Row="3" Text="{Binding NextDueText}" FontSize="12" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding NextAmountText}" FontSize="12" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

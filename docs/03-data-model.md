@@ -12,11 +12,12 @@
 
 ## ۳. Value Objectها
 ```csharp
-public readonly record struct CurrencyCode(string Value);              // MVP: فقط "IRR"
-public readonly record struct Money(long Minor, CurrencyCode Currency); // ریال = کوچک‌ترین واحد
+public readonly record struct CurrencyCode(string Value);              // Three-letter currency code
+public readonly record struct Money(long Minor, CurrencyCode Currency); // Integer count of the currency's smallest supported unit
 ```
-- ذخیره همیشه ریال؛ «تومان» فقط تنظیم نمایش (`÷10`).
-- حساب‌ها فیلد `CurrencyCode` دارند (آماده چندارزی)، ولی MVP رابط انتخاب ارز ندارد و جدول نرخ ارز ساخته نمی‌شود.
+- هر Posting با کد ارز همان حساب ذخیره می‌شود؛ مبالغ ارزهای متفاوت هرگز با هم جمع نمی‌شوند.
+- دقت واحد خرد از `CurrencyPrecision` گرفته می‌شود: IRR/JPY صفر، USD/EUR دو، KWD سه و CLF چهار رقم اعشار؛ کدهای دیگر پیش‌فرض دو رقم هستند.
+- «تومان» فقط تنظیم نمایش برای IRR است (`÷10`)، نه ارز مستقل؛ جدول نرخ ارز ساخته نمی‌شود.
 
 ## ۴. موجودیت‌های MVP
 
