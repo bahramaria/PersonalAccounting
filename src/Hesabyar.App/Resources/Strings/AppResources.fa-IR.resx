@@ -509,6 +509,7 @@
   <data name="AttachmentCameraUnavailable" xml:space="preserve"><value>دوربین در این دستگاه یا نسخه برنامه در دسترس نیست. می‌توانید فایل تصویر را انتخاب کنید.</value></data>
   <data name="AttachmentAdd" xml:space="preserve"><value>افزودن فایل</value></data>
   <data name="AttachmentOpen" xml:space="preserve"><value>باز کردن</value></data>
+  <data name="AttachmentShare" xml:space="preserve"><value>اشتراک‌گذاری</value></data>
   <data name="AttachmentDelete" xml:space="preserve"><value>حذف پیوست</value></data>
   <data name="AttachmentEmpty" xml:space="preserve"><value>فایلی پیوست نشده است.</value></data>
   <data name="AttachmentFailed" xml:space="preserve"><value>عملیات پیوست فایل ناموفق بود.</value></data>
