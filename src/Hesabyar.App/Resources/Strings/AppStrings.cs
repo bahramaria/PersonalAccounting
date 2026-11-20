@@ -523,6 +523,10 @@ public static class AppStrings
     public static string AssetTypeOther => Get(nameof(AssetTypeOther));
     public static string AssetHistoryEmpty => Get(nameof(AssetHistoryEmpty));
     public static string AssetAttachments => Get(nameof(AssetAttachments));
+    public static string Attachments => Get(nameof(Attachments));
+    public static string AttachmentChooseFile => Get(nameof(AttachmentChooseFile));
+    public static string AttachmentCapturePhoto => Get(nameof(AttachmentCapturePhoto));
+    public static string AttachmentCameraUnavailable => Get(nameof(AttachmentCameraUnavailable));
     public static string AttachmentAdd => Get(nameof(AttachmentAdd));
     public static string AttachmentOpen => Get(nameof(AttachmentOpen));
     public static string AttachmentDelete => Get(nameof(AttachmentDelete));
