@@ -447,7 +447,7 @@ public partial class TransactionsPage : ContentPage
                             currentAccountName, AppStrings.CategoryRuleAllAccounts);
                         if (scope != AppStrings.Cancel && scope is not null)
                         {
-                            var ruleAccountId = scope == AppStrings.CategoryRuleAllAccounts ? null : accountId.Value;
+                            Guid? ruleAccountId = scope == AppStrings.CategoryRuleAllAccounts ? null : accountId.Value;
                             await _categorySuggestions.LearnAsync(phrase, kind.Value, finalCategoryId, ruleAccountId);
                         }
                     }
