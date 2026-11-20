@@ -1,4 +1,5 @@
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Hesabyar.App.Services;
 using Hesabyar.App.Resources.Strings;
@@ -243,20 +244,49 @@ public partial class TransactionsPage : ContentPage
             try
             {
                 var items = await _attachments.GetAsync(transactionId: transactionId);
-                var labels = items.Select(x => x.FileName).ToArray();
-                var choices = new[] { AppStrings.AttachmentAdd }.Concat(labels).ToArray();
-                var selected = await DisplayActionSheetAsync(AppStrings.AssetAttachments, AppStrings.Cancel, null, choices);
+                var labelsById = items.ToDictionary(
+                    x => x.Id,
+                    x => $"{x.FileName} · {x.Id.ToString("N")[..4]}");
+                var choices = new[] { AppStrings.AttachmentAdd }.Concat(labelsById.Values).ToArray();
+                var selected = await DisplayActionSheetAsync(AppStrings.Attachments, AppStrings.Cancel, null, choices);
                 if (selected == AppStrings.Cancel || selected is null) return;
                 if (selected == AppStrings.AttachmentAdd)
                 {
-                    var file = await FilePicker.Default.PickAsync();
-                    if (file is null) continue;
-                    await using var input = await file.OpenReadAsync();
-                    await _attachments.AddAsync(input, file.FileName, transactionId: transactionId);
+                    var addChoice = await DisplayActionSheetAsync(AppStrings.AttachmentAdd, AppStrings.Cancel, null,
+                        AppStrings.AttachmentChooseFile, AppStrings.AttachmentCapturePhoto);
+                    if (addChoice == AppStrings.AttachmentChooseFile)
+                    {
+                        var file = await FilePicker.Default.PickAsync();
+                        if (file is null) continue;
+                        await using var input = await file.OpenReadAsync();
+                        await _attachments.AddAsync(input, file.FileName, transactionId: transactionId);
+                    }
+                    else if (addChoice == AppStrings.AttachmentCapturePhoto)
+                    {
+                        try
+                        {
+                            var photo = await MediaPicker.Default.CapturePhotoAsync();
+                            if (photo is null) continue;
+                            await using var input = await photo.OpenReadAsync();
+                            await _attachments.AddAsync(input, photo.FileName, transactionId: transactionId);
+                        }
+                        catch (FeatureNotSupportedException)
+                        {
+                            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AttachmentCameraUnavailable, AppStrings.Ok);
+                        }
+                        catch (FeatureNotEnabledException)
+                        {
+                            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AttachmentCameraUnavailable, AppStrings.Ok);
+                        }
+                        catch (PermissionException)
+                        {
+                            await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.AttachmentCameraUnavailable, AppStrings.Ok);
+                        }
+                    }
                     continue;
                 }
 
-                var item = items.FirstOrDefault(x => x.FileName == selected);
+                var item = items.FirstOrDefault(x => labelsById[x.Id] == selected);
                 if (item is null) continue;
                 var action = await DisplayActionSheetAsync(item.FileName, AppStrings.Cancel, null,
                     AppStrings.AttachmentOpen, AppStrings.AttachmentDelete);
