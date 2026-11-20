@@ -73,8 +73,8 @@ public sealed class CategorySuggestionService(
 
         var matches = candidates
             .Where(x => (" " + normalized + " ").Contains(" " + x.Rule.NormalizedMatchText + " ", StringComparison.Ordinal))
-            .OrderByDescending(x => x.Rule.NormalizedMatchText.Length)
-            .ThenByDescending(x => x.AccountSpecific)
+            .OrderByDescending(x => x.AccountSpecific)
+            .ThenByDescending(x => x.Rule.NormalizedMatchText.Length)
             .ThenByDescending(x => x.Rule.UsageCount)
             .ToArray();
         if (matches.Length == 0)
