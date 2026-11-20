@@ -58,6 +58,7 @@ public sealed class CategorySuggestionService(
             from rule in db.CategorySuggestionRules.AsNoTracking()
             join category in db.Accounts.AsNoTracking() on rule.CategoryId equals category.Id
             where rule.IsEnabled &&
+                  !category.IsArchived &&
                   rule.TransactionKind == transactionKind &&
                   category.Kind == AccountKind.Category &&
                   category.Type == expectedCategoryType &&
@@ -71,7 +72,7 @@ public sealed class CategorySuggestionService(
             }).ToListAsync(cancellationToken);
 
         var matches = candidates
-            .Where(x => normalized.Contains(x.Rule.NormalizedMatchText, StringComparison.Ordinal))
+            .Where(x => (" " + normalized + " ").Contains(" " + x.Rule.NormalizedMatchText + " ", StringComparison.Ordinal))
             .OrderByDescending(x => x.Rule.NormalizedMatchText.Length)
             .ThenByDescending(x => x.AccountSpecific)
             .ThenByDescending(x => x.Rule.UsageCount)
@@ -113,9 +114,12 @@ public sealed class CategorySuggestionService(
         if (transactionKind is not (TransactionKind.Expense or TransactionKind.Income))
             throw new ArgumentOutOfRangeException(nameof(transactionKind));
 
+        if (string.IsNullOrWhiteSpace(matchText) || matchText.Trim().Length > 120)
+            throw new ArgumentException("A rule phrase must contain between 3 and 120 characters.", nameof(matchText));
+
         var normalized = NormalizeMatchText(matchText);
-        if (normalized.Length is < 3 or > 120)
-            throw new ArgumentException("A rule phrase must contain between 3 and 120 normalized characters.", nameof(matchText));
+        if (normalized.Length < 3)
+            throw new ArgumentException("A rule phrase must contain at least 3 normalized characters.", nameof(matchText));
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var category = await db.Accounts.SingleOrDefaultAsync(
@@ -244,7 +248,7 @@ public sealed class CategorySuggestionService(
         if (rule.AccountId is Guid accountId)
         {
             var account = await db.Accounts.SingleOrDefaultAsync(
-                x => x.Id == accountId && !x.IsArchived && x.CurrencyCode == category.CurrencyCode,
+                x => x.Id == accountId && !x.IsArchived && x.Kind != AccountKind.Category && x.CurrencyCode == category.CurrencyCode,
                 cancellationToken);
             if (account is null)
                 return false;
@@ -277,6 +281,16 @@ public sealed class CategorySuggestionService(
         rule.IsDeleted = true;
         await db.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    public async Task<int> DeleteAllAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rules = await db.CategorySuggestionRules.ToListAsync(cancellationToken);
+        foreach (var rule in rules)
+            rule.IsDeleted = true;
+        await db.SaveChangesAsync(cancellationToken);
+        return rules.Count;
     }
 
     public static string NormalizeMatchText(string value)
