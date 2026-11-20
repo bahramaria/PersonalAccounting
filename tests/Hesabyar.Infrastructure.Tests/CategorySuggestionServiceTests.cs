@@ -34,6 +34,24 @@ public sealed class CategorySuggestionServiceTests
     }
 
     [Fact]
+    public async Task Suggestion_PrefersAccountSpecificRuleOverLongerGlobalRule()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var account = await fixture.AddAccountAsync("Bank", AccountType.Asset, AccountKind.Bank);
+        var globalCategory = await fixture.AddAccountAsync("Food", AccountType.Expense, AccountKind.Category);
+        var specificCategory = await fixture.AddAccountAsync("Transport", AccountType.Expense, AccountKind.Category);
+        var service = fixture.CreateService();
+
+        await service.LearnAsync("snapp food", TransactionKind.Expense, globalCategory);
+        await service.LearnAsync("snapp", TransactionKind.Expense, specificCategory, account);
+
+        var suggestion = await service.SuggestAsync("snapp food", TransactionKind.Expense, account, "IRR");
+
+        Assert.NotNull(suggestion);
+        Assert.Equal(specificCategory, suggestion.CategoryId);
+    }
+
+    [Fact]
     public async Task Suggestion_ReturnsNullWhenBestMatchesConflict()
     {
         await using var fixture = await Fixture.CreateAsync();
