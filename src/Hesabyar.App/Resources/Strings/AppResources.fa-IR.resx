@@ -527,6 +527,8 @@
   <data name="CategoryRuleEnable" xml:space="preserve"><value>فعال‌سازی</value></data>
   <data name="CategoryRuleDisable" xml:space="preserve"><value>غیرفعال‌سازی</value></data>
   <data name="CategoryRuleDelete" xml:space="preserve"><value>حذف قاعده</value></data>
+  <data name="CategoryRuleDeleteAll" xml:space="preserve"><value>حذف همه قواعد</value></data>
+  <data name="CategoryRuleDeleteAllConfirm" xml:space="preserve"><value>تمام قواعد دسته‌بندی حذف شوند؟ این عملیات قابل بازگشت نیست.</value></data>
   <data name="CategoryRuleEmpty" xml:space="preserve"><value>هنوز قاعده‌ای ثبت نشده است.</value></data>
   <data name="CategoryRuleLoadFailed" xml:space="preserve"><value>بارگذاری قواعد ناموفق بود.</value></data>
   <data name="CategoryRuleSaveFailed" xml:space="preserve"><value>ذخیره تغییرات قاعده ناموفق بود.</value></data>
