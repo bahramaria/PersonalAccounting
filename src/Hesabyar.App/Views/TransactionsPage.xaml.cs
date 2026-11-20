@@ -403,7 +403,7 @@ public partial class TransactionsPage : ContentPage
             suggestion = await _categorySuggestions.SuggestAsync(description, kind.Value, accountId.Value, currencyCode);
             if (suggestion is not null)
             {
-                var confidence = Math.Round(suggestion.Confidence * 100).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var confidence = Math.Round(suggestion.MatchStrength * 100).ToString(System.Globalization.CultureInfo.InvariantCulture);
                 var message = string.Format(AppStrings.CategorySuggestionReason, suggestion.MatchText, confidence);
                 var useSuggestion = await DisplayAlertAsync(
                     $"{AppStrings.CategorySuggestionTitle}: {suggestion.CategoryName}",
