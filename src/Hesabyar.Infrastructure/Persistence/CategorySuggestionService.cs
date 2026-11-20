@@ -228,8 +228,10 @@ public sealed class CategorySuggestionService(
         Guid categoryId,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(matchText) || matchText.Trim().Length > 120)
+            return false;
         var normalized = NormalizeMatchText(matchText);
-        if (normalized.Length is < 3 or > 120)
+        if (normalized.Length < 3)
             return false;
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
