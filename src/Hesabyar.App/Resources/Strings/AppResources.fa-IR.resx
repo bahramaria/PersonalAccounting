@@ -518,7 +518,7 @@
   <data name="CategorySuggestionTitle" xml:space="preserve"><value>پیشنهاد دسته محلی</value></data>
   <data name="CategorySuggestionUse" xml:space="preserve"><value>استفاده از پیشنهاد</value></data>
   <data name="CategorySuggestionKeep" xml:space="preserve"><value>حفظ دسته انتخاب‌شده</value></data>
-  <data name="CategorySuggestionReason" xml:space="preserve"><value>شرح با قاعده «{0}» مطابقت دارد. اطمینان تقریبی: {1}٪</value></data>
+  <data name="CategorySuggestionReason" xml:space="preserve"><value>شرح با قاعده «{0}» مطابقت دارد. قدرت تطبیق تقریبی: {1}٪</value></data>
   <data name="CategoryRuleRememberTitle" xml:space="preserve"><value>ذخیره قاعده محلی</value></data>
   <data name="CategoryRuleRememberMessage" xml:space="preserve"><value>آیا این انتخاب برای شرح‌های مشابه در آینده به‌عنوان پیشنهاد ذخیره شود؟</value></data>
   <data name="CategoryRuleRemember" xml:space="preserve"><value>ذخیره قاعده</value></data>
