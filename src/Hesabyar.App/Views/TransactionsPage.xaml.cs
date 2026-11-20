@@ -445,9 +445,11 @@ public partial class TransactionsPage : ContentPage
                         var currentAccountName = _viewModel.Accounts.First(x => x.Id == accountId.Value).Name;
                         var scope = await DisplayActionSheetAsync(AppStrings.CategoryRuleRememberTitle, AppStrings.Cancel, null,
                             currentAccountName, AppStrings.CategoryRuleAllAccounts);
-                        if (scope == AppStrings.Cancel || scope is null) return;
-                        var ruleAccountId = scope == AppStrings.CategoryRuleAllAccounts ? null : accountId.Value;
-                        await _categorySuggestions.LearnAsync(phrase, kind.Value, finalCategoryId, ruleAccountId);
+                        if (scope != AppStrings.Cancel && scope is not null)
+                        {
+                            var ruleAccountId = scope == AppStrings.CategoryRuleAllAccounts ? null : accountId.Value;
+                            await _categorySuggestions.LearnAsync(phrase, kind.Value, finalCategoryId, ruleAccountId);
+                        }
                     }
                     catch
                     {
