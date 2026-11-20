@@ -12,7 +12,7 @@ public sealed record CategorySuggestion(
     Guid CategoryId,
     string CategoryName,
     string MatchText,
-    double Confidence,
+    double MatchStrength,
     string Reason,
     int UsageCount);
 
@@ -90,7 +90,7 @@ public sealed class CategorySuggestionService(
 
         var selected = best[0];
         var exact = normalized == selected.Rule.NormalizedMatchText;
-        var confidence = exact ? 0.95 : Math.Min(0.9, 0.78 + selected.Rule.NormalizedMatchText.Length / 100d);
+        var matchStrength = exact ? 0.95 : Math.Min(0.9, 0.78 + selected.Rule.NormalizedMatchText.Length / 100d);
         var scope = selected.AccountSpecific ? "for this account" : "for all accounts";
         var reason = $"Description matches '{selected.Rule.MatchText}' ({scope}).";
 
@@ -99,7 +99,7 @@ public sealed class CategorySuggestionService(
             selected.Rule.CategoryId,
             selected.CategoryName,
             selected.Rule.MatchText,
-            confidence,
+            matchStrength,
             reason,
             selected.Rule.UsageCount);
     }
