@@ -518,7 +518,7 @@ Ignored: {3}</value></data>
   <data name="CategorySuggestionTitle" xml:space="preserve"><value>Local category suggestion</value></data>
   <data name="CategorySuggestionUse" xml:space="preserve"><value>Use suggestion</value></data>
   <data name="CategorySuggestionKeep" xml:space="preserve"><value>Keep selected category</value></data>
-  <data name="CategorySuggestionReason" xml:space="preserve"><value>Description matches rule “{0}”. Approximate confidence: {1}%</value></data>
+  <data name="CategorySuggestionReason" xml:space="preserve"><value>Description matches rule “{0}”. Approximate match strength: {1}%</value></data>
   <data name="CategoryRuleRememberTitle" xml:space="preserve"><value>Save local rule</value></data>
   <data name="CategoryRuleRememberMessage" xml:space="preserve"><value>Save this choice as a suggestion for similar descriptions in the future?</value></data>
   <data name="CategoryRuleRemember" xml:space="preserve"><value>Save rule</value></data>
