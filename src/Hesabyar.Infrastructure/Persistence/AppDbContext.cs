@@ -31,6 +31,7 @@ public sealed class AppDbContext(
     public DbSet<DbPhysicalAsset> PhysicalAssets => Set<DbPhysicalAsset>();
     public DbSet<DbAssetValuation> AssetValuations => Set<DbAssetValuation>();
     public DbSet<DbDocumentAttachment> DocumentAttachments => Set<DbDocumentAttachment>();
+    public DbSet<DbCategorySuggestionRule> CategorySuggestionRules => Set<DbCategorySuggestionRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +48,7 @@ public sealed class AppDbContext(
         ConfigureSyncOutbox(modelBuilder);
         ConfigurePhysicalAssets(modelBuilder);
         ConfigureDocumentAttachments(modelBuilder);
+        ConfigureCategorySuggestionRules(modelBuilder);
     }
 
     public override int SaveChanges()
@@ -424,6 +426,28 @@ public sealed class AppDbContext(
         entity.HasIndex(x => x.StoredFileName).IsUnique();
         entity.HasOne<DbLedgerTransaction>().WithMany().HasForeignKey(x => x.TransactionId).OnDelete(DeleteBehavior.Restrict);
         entity.HasOne<DbPhysicalAsset>().WithMany().HasForeignKey(x => x.PhysicalAssetId).OnDelete(DeleteBehavior.Restrict);
+        entity.HasQueryFilter(x => !x.IsDeleted);
+    }
+
+    private static void ConfigureCategorySuggestionRules(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<DbCategorySuggestionRule>();
+        entity.ToTable("CategorySuggestionRules", table =>
+        {
+            table.HasCheckConstraint("CK_CategorySuggestionRules_Kind", "TransactionKind IN ('Expense', 'Income')");
+            table.HasCheckConstraint("CK_CategorySuggestionRules_MatchText_Length", "length(MatchText) BETWEEN 3 AND 120");
+            table.HasCheckConstraint("CK_CategorySuggestionRules_Normalized_Length", "length(NormalizedMatchText) BETWEEN 3 AND 120");
+            table.HasCheckConstraint("CK_CategorySuggestionRules_UsageCount", "UsageCount >= 0");
+        });
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.MatchText).HasMaxLength(120).IsRequired();
+        entity.Property(x => x.NormalizedMatchText).HasMaxLength(120).IsRequired();
+        entity.Property(x => x.TransactionKind).HasConversion<string>().HasMaxLength(12);
+        entity.Property(x => x.LastUsedAtUtc).HasColumnType("TEXT");
+        entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText });
+        entity.HasIndex(x => x.AccountId);
+        entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
         entity.HasQueryFilter(x => !x.IsDeleted);
     }
 

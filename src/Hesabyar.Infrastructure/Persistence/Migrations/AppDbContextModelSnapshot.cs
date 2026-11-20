@@ -456,6 +456,35 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
             entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
+        modelBuilder.Entity<DbCategorySuggestionRule>(entity =>
+        {
+            entity.ToTable("CategorySuggestionRules", table =>
+            {
+                table.HasCheckConstraint("CK_CategorySuggestionRules_Kind", "TransactionKind IN ('Expense', 'Income')");
+                table.HasCheckConstraint("CK_CategorySuggestionRules_MatchText_Length", "length(MatchText) BETWEEN 3 AND 120");
+                table.HasCheckConstraint("CK_CategorySuggestionRules_Normalized_Length", "length(NormalizedMatchText) BETWEEN 3 AND 120");
+                table.HasCheckConstraint("CK_CategorySuggestionRules_UsageCount", "UsageCount >= 0");
+            });
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnType("TEXT");
+            entity.Property(x => x.MatchText).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.NormalizedMatchText).IsRequired().HasMaxLength(120);
+            entity.Property(x => x.TransactionKind).HasConversion<string>().HasMaxLength(12);
+            entity.Property(x => x.CategoryId).HasColumnType("TEXT");
+            entity.Property(x => x.AccountId).HasColumnType("TEXT");
+            entity.Property(x => x.LastUsedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.CreatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnType("TEXT");
+            entity.Property(x => x.IsDeleted);
+            entity.Property(x => x.IsEnabled);
+            entity.Property(x => x.UsageCount);
+            entity.HasIndex(x => new { x.TransactionKind, x.IsEnabled, x.NormalizedMatchText });
+            entity.HasIndex(x => x.AccountId);
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<DbAccount>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
         modelBuilder.Entity<DbSyncOutboxItem>(entity =>
         {
             entity.ToTable("SyncOutbox");
