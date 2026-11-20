@@ -477,6 +477,7 @@
   <data name="ArchiveTagConfirm" xml:space="preserve"><value>این برچسب بایگانی شود؟ ارتباط آن با تراکنش‌های قبلی حفظ می‌شود.</value></data>
 
   <data name="AssetsHeading" xml:space="preserve"><value>دارایی‌های فیزیکی و سرمایه‌ای</value></data>
+  <data name="AssetsSearch" xml:space="preserve"><value>جستجوی دارایی‌ها</value></data>
   <data name="AssetsAdd" xml:space="preserve"><value>افزودن دارایی</value></data>
   <data name="AssetsEmpty" xml:space="preserve"><value>هنوز دارایی‌ای ثبت نشده است.</value></data>
   <data name="AssetNamePrompt" xml:space="preserve"><value>نام دارایی</value></data>
