@@ -13,7 +13,8 @@ public sealed record DocumentAttachmentSnapshot(
 public sealed class DocumentAttachmentService(
     IDbContextFactory<AppDbContext> contextFactory,
     string storageDirectory,
-    IDatabaseKeyProvider keyProvider)
+    IDatabaseKeyProvider keyProvider,
+    TimeProvider timeProvider)
 {
     public const int MaximumFileSize = 15 * 1024 * 1024;
     private const int NonceSize = 12;
@@ -156,7 +157,8 @@ public sealed class DocumentAttachmentService(
         foreach (var file in Directory.EnumerateFiles(storageDirectory, "*.hatt"))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) < TimeSpan.FromHours(1)) continue;
+            var lastWriteUtc = new DateTimeOffset(File.GetLastWriteTimeUtc(file), TimeSpan.Zero);
+            if (timeProvider.GetUtcNow() - lastWriteUtc < TimeSpan.FromHours(1)) continue;
             if (!known.Contains(Path.GetFileName(file), StringComparer.Ordinal))
             {
                 File.Delete(file);
