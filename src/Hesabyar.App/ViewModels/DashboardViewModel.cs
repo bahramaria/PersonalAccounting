@@ -8,7 +8,6 @@ using Hesabyar.App.Resources.Strings;
 using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Domain.Ledger;
-using Hesabyar.Infrastructure.Persistence;
 using Hesabyar.Localization;
 using Hesabyar.Localization.Calendar;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,10 +55,7 @@ public sealed class DashboardViewModel(
             if (!accountResult.IsSuccess || accountResult.Value is null)
                 throw new InvalidOperationException("Account balances could not be loaded.");
 
-            var physicalAssets = await scope.ServiceProvider.GetRequiredService<PhysicalAssetService>()
-                .GetAsync(cancellationToken: cancellationToken);
             _currencyCodes = accountResult.Value.Select(x => x.Account.CurrencyCode)
-                .Concat(physicalAssets.Select(x => x.CurrencyCode))
                 .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToArray();
             if (!_currencyCodes.Contains(_currencyCode, StringComparer.OrdinalIgnoreCase))
                 _currencyCode = _currencyCodes.FirstOrDefault() ?? "IRR";
@@ -74,9 +70,7 @@ public sealed class DashboardViewModel(
                 .GetLoansAsync(cancellationToken)).Where(x => x.CurrencyCode == _currencyCode).ToArray();
             var assets = included.Where(x => x.Account.Type == AccountType.Asset).Sum(x => (decimal)x.BalanceMinor)
                 + people.Where(x => x.BalanceMinor > 0).Sum(x => (decimal)x.BalanceMinor)
-                + loans.Where(x => x.Direction == LoanDirection.Given).Sum(x => (decimal)x.RemainingPrincipalMinor)
-                + physicalAssets.Where(x => x.CurrencyCode == _currencyCode)
-                    .Sum(x => (decimal)(x.CurrentValueMinor ?? x.AcquisitionCostMinor));
+                + loans.Where(x => x.Direction == LoanDirection.Given).Sum(x => (decimal)x.RemainingPrincipalMinor);
             var liabilities = included.Where(x => x.Account.Type == AccountType.Liability).Sum(x => Math.Abs((decimal)x.BalanceMinor))
                 + people.Where(x => x.BalanceMinor < 0).Sum(x => Math.Abs((decimal)x.BalanceMinor))
                 + loans.Where(x => x.Direction == LoanDirection.Received).Sum(x => (decimal)x.RemainingMinor);
