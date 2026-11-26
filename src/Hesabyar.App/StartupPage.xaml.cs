@@ -18,11 +18,12 @@ public partial class StartupPage : ContentPage
     private readonly AppLockService _appLock;
     private readonly BackupService _backupService;
     private readonly IDatabaseKeyInitializer _databaseKeyInitializer;
+    private readonly TimeProvider _timeProvider;
     private bool _isInitializing;
 
     public StartupPage(DatabaseInitializer databaseInitializer, IServiceProvider services,
         ILocalizationService localization, AppLockService appLock, BackupService backupService,
-        IDatabaseKeyInitializer databaseKeyInitializer)
+        IDatabaseKeyInitializer databaseKeyInitializer, TimeProvider timeProvider)
     {
         InitializeComponent();
         _databaseInitializer = databaseInitializer;
@@ -30,6 +31,7 @@ public partial class StartupPage : ContentPage
         _appLock = appLock;
         _backupService = backupService;
         _databaseKeyInitializer = databaseKeyInitializer;
+        _timeProvider = timeProvider;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft : Microsoft.Maui.FlowDirection.LeftToRight;
         StatusLabel.Text = AppStrings.StartupInitializing;
@@ -60,7 +62,7 @@ public partial class StartupPage : ContentPage
             try
             {
                 await _services.GetRequiredService<RecurringTransactionService>()
-                    .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(DateTime.Today));
+                    .PrepareDueOccurrencesAsync(DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime));
                 await _services.GetRequiredService<ReminderNotificationSyncService>().SyncAsync();
             }
             catch
@@ -80,15 +82,9 @@ public partial class StartupPage : ContentPage
             var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
             if (window is null) throw new InvalidOperationException("The application window is not available.");
 
-            var onboardingCompleted = Preferences.Get("onboarding.completed", false);
-            if (!onboardingCompleted)
-            {
-                onboardingCompleted = await HasUserAccountsAsync();
-                if (onboardingCompleted)
-                    Preferences.Set("onboarding.completed", true);
-            }
-
-            if (!onboardingCompleted)
+            // The database is the source of truth; a stale device preference must not skip onboarding.
+            var hasUserAccounts = await HasUserAccountsAsync();
+            if (!hasUserAccounts)
                 window.Page = _services.GetRequiredService<OnboardingPage>();
             else
                 window.Page = await _appLock.IsPinEnabledAsync()
@@ -110,8 +106,11 @@ public partial class StartupPage : ContentPage
         using var scope = _services.CreateScope();
         var accountService = scope.ServiceProvider.GetRequiredService<AccountService>();
         var result = await accountService.GetAccountsAsync(includeArchived: true);
-        return result.IsSuccess && result.Value?.Any(item =>
+        if (!result.IsSuccess || result.Value is null)
+            throw new InvalidOperationException("The existing account state could not be verified.");
+
+        return result.Value.Any(item =>
             item.Account.Kind is AccountKind.Cash or AccountKind.Bank or AccountKind.Card
-                or AccountKind.Wallet or AccountKind.CreditCard) == true;
+                or AccountKind.Wallet or AccountKind.CreditCard);
     }
 }
