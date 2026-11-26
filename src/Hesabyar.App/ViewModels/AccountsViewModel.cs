@@ -12,13 +12,15 @@ namespace Hesabyar.App.ViewModels;
 public sealed class AccountsViewModel : ObservableObject
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly TimeProvider _timeProvider;
     private bool _isBusy;
     private bool _includeArchived;
     private string _statusMessage = string.Empty;
 
-    public AccountsViewModel(IServiceScopeFactory scopeFactory)
+    public AccountsViewModel(IServiceScopeFactory scopeFactory, TimeProvider timeProvider)
     {
         _scopeFactory = scopeFactory;
+        _timeProvider = timeProvider;
     }
 
     public ObservableCollection<AccountListItem> Accounts { get; } = [];
@@ -106,7 +108,7 @@ public sealed class AccountsViewModel : ObservableObject
                 kind,
                 CurrencyCode: currencyCode,
                 OpeningBalanceMinor: openingBalanceMinor,
-                OpeningDate: openingBalanceMinor > 0 ? DateOnly.FromDateTime(DateTime.Today) : null);
+                OpeningDate: openingBalanceMinor > 0 ? DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime) : null);
 
             var result = await service.CreateAsync(request, cancellationToken);
             if (!result.IsSuccess)
