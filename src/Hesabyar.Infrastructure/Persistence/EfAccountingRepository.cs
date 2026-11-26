@@ -62,6 +62,13 @@ public sealed class EfAccountingRepository(AppDbContext db) : IAccountingReposit
         return db.Postings.AnyAsync(x => x.AccountId == accountId, cancellationToken);
     }
 
+    public Task<bool> HasActiveChildCategoriesAsync(Guid parentCategoryId, CancellationToken cancellationToken)
+    {
+        return db.Accounts.AnyAsync(
+            x => x.ParentId == parentCategoryId && x.Kind == AccountKind.Category && !x.IsArchived,
+            cancellationToken);
+    }
+
     public async Task<Guid> GetOrCreateOpeningAccountAsync(CurrencyCode currency, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var existing = await db.Accounts
