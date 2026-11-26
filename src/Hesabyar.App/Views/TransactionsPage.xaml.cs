@@ -20,6 +20,7 @@ public partial class TransactionsPage : ContentPage
     private readonly DocumentAttachmentService _attachments;
     private readonly CategorySuggestionService _categorySuggestions;
     private readonly IDateCalendarService _calendar;
+    private readonly TimeProvider _timeProvider;
     private string? _searchText;
     private DateOnly? _fromDate;
     private DateOnly? _toDate;
@@ -29,13 +30,14 @@ public partial class TransactionsPage : ContentPage
     private long? _maximumAmountMinor;
     private TransactionSortOrder _sortOrder = TransactionSortOrder.NewestFirst;
 
-    public TransactionsPage(TransactionsViewModel viewModel, DocumentAttachmentService attachments, CategorySuggestionService categorySuggestions, ILocalizationService localization, IDateCalendarService calendar)
+    public TransactionsPage(TransactionsViewModel viewModel, DocumentAttachmentService attachments, CategorySuggestionService categorySuggestions, ILocalizationService localization, IDateCalendarService calendar, TimeProvider timeProvider)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _attachments = attachments;
         _categorySuggestions = categorySuggestions;
         _calendar = calendar;
+        _timeProvider = timeProvider;
         BindingContext = viewModel;
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft : Microsoft.Maui.FlowDirection.LeftToRight;
@@ -410,7 +412,7 @@ public partial class TransactionsPage : ContentPage
             counterAmountMinor = destinationAmount;
         }
 
-        var defaultGregorian = existing?.BusinessDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var defaultGregorian = existing?.BusinessDate ?? DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
         var defaultDate = _calendar.Format(defaultGregorian);
         var dateText = await DisplayPromptAsync(AppStrings.TransactionDatePrompt, "YYYY/MM/DD", AppStrings.Save, AppStrings.Cancel, initialValue: defaultDate);
         if (dateText is null || !_calendar.TryParse(dateText, out var date))
