@@ -25,7 +25,7 @@ public interface IDateFormatter
 public enum CalendarKind { Persian, Gregorian /* آینده: HijriQamari */ }
 public enum DigitStyle { Persian, Latin }
 ```
-- پیاده‌سازی بر پایه `System.Globalization.PersianCalendar` **یا** الگوریتم داخلی؛ **الزامی**: جدول مرجع تست (سال‌های ۱۲۰۰–۱۵۰۰) + FsCheck رفت‌وبرگشت (`ToGregorian(ToPersian(d)) == d`) + بررسی کبیسه‌ها. اگر باگ/انحراف یافت شد، پیاده‌سازی داخلی جایگزین شود (ADR ثبت شود).
+- پیاده‌سازی بر پایه `System.Globalization.PersianCalendar` **یا** الگوریتم داخلی؛ **الزامی**: آزمون جامع روزبه‌روز برای تمام تاریخ‌های سال‌های ۱۲۰۰–۱۵۰۰، مقایسه با جدول مرجع مستقل مبتنی بر الگوریتم Borkowski (1996)، بررسی کبیسه و رفت‌وبرگشت `ToGregorian(ToPersian(d)) == d`. Fixture مرجع در `tests/Hesabyar.Localization.Tests/PersianCalendarReferenceTests.cs` قرار دارد. منبع الگوریتم: [مقاله Borkowski (1996)](https://www.astro.uni.torun.pl/~kb/Papers/EMP/PersianC-EMP.htm) و پیاده‌سازی مستقل [jalaali-js](https://github.com/jalaali/jalaali-js) با مجوز MIT. اگر انحراف یافت شد، پیاده‌سازی داخلی جایگزین شود و ADR ثبت گردد.
 - ماه‌ها: فروردین … اسفند؛ نام ماه از Resource (برای زبان‌های آینده).
 - **تعطیلات رسمی** وابسته به رویدادهای قمری و تصمیم رسمی‌اند: دادهٔ جدا و به‌روزرسانی‌پذیر (`holidays.json` با نسخه) — نه محاسبه ثابت.
 - تکرار ماهانه شمسی با روز ۳۱ در ماه‌های ۳۰/۲۹ روزه: سیاست `Clamp` (آخرین روز ماه) پیش‌فرض.

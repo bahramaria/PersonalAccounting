@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:Hesabyar.App.ViewModels"
+             xmlns:strings="clr-namespace:Hesabyar.App.Resources.Strings"
+             x:Class="Hesabyar.App.Views.DashboardPage"
+             x:DataType="viewModels:DashboardViewModel">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+            <Label Text="{x:Static strings:AppStrings.HomeHeading}" FontSize="28" FontAttributes="Bold" />
+            <Button Text="{x:Static strings:AppStrings.DashboardCurrency}" Clicked="OnCurrencyClicked" />
+            <Border Padding="18" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{x:Static strings:AppStrings.DashboardAssets}" FontSize="13" />
+                    <Label Text="{Binding AssetsMessage}" FontSize="21" FontAttributes="Bold" />
+                    <Label Text="{x:Static strings:AppStrings.DashboardLiabilities}" FontSize="13" />
+                    <Label Text="{Binding LiabilitiesMessage}" FontSize="21" FontAttributes="Bold" />
+                    <Label Text="{x:Static strings:AppStrings.DashboardNetWorth}" FontSize="13" />
+                    <Label Text="{Binding NetWorthMessage}" FontSize="21" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static strings:AppStrings.DashboardRecentTransactions}" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="{x:Static strings:AppStrings.TransactionsTab}" Clicked="OnTransactionsClicked" />
+            </Grid>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentTransactions}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:DashboardTransactionItem">
+                        <Border Padding="12" Stroke="{AppThemeBinding Light={StaticResource BorderLightColor}, Dark={StaticResource BorderDarkColor}}" StrokeThickness="1">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <Label Text="{Binding Kind}" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding AmountText}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Text="{Binding Description}" FontSize="12" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding DateText}" FontSize="11" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Label Text="{Binding StatusMessage}" FontSize="12" />
+            <Button Text="{x:Static strings:AppStrings.DashboardQuickAdd}" Clicked="OnQuickAddClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

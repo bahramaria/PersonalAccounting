@@ -2,18 +2,19 @@
 
 ## ۱. ساختار Solution
 ```
-Hesabyar.sln
+Hesabyar.slnx
+Hesabyar.Core.slnx           # Core-only solution for Linux tests without MAUI workloads
 Directory.Build.props        # RootNamespace, Nullable, TreatWarningsAsErrors, LangVersion
 Directory.Packages.props     # Central Package Management
-global.json                  # قفل SDK
+global.json                  # .NET 10 SDK band
 src/
   Hesabyar.Domain/           # Entities, ValueObjects, Domain Services, Events — بدون وابستگی
   Hesabyar.Application/      # Feature Services, Interfaces (Ports), DTOs, Validation
-  Hesabyar.Infrastructure/   # EF Core+SQLCipher, SMS (Android), Backup, Excel/CSV export, KeyProvider
-  Hesabyar.Localization/     # ICalendarService, Jalali, NumberNormalizer, Formatters, .resx
-  Hesabyar.App/              # MAUI: Views, ViewModels, Shell, Resources, Platforms
-  Hesabyar.Sync.Contracts/   # (فاز بعد) DTOهای مشترک کلاینت/سرور
-  Hesabyar.Server/           # (فاز بعد) ASP.NET Core Sync API
+  Hesabyar.Infrastructure/   # EF Core + SQLite development provider, SMS, Backup, export, KeyProvider
+  Hesabyar.Localization/     # ICalendarService, ILocalizationService, Jalali, NumberNormalizer, .resx
+  Hesabyar.App/              # MAUI Android/Windows: Views, ViewModels, Shell, Resources, Platforms
+  Hesabyar.Sync.Contracts/   # قراردادهای نسخه‌دار و مستقل از UI برای Sync کلاینت/سرور
+  Hesabyar.Server/           # ASP.NET Core Sync API (بسته بعدی دهک ۹)
 tests/
   Hesabyar.Domain.Tests/  Hesabyar.Application.Tests/
   Hesabyar.Infrastructure.Tests/  Hesabyar.Localization.Tests/
@@ -42,32 +43,45 @@ public interface IEntitlementService { bool IsEnabled(FeatureKey key); }   // MV
 سایر Interfaceها (`IFileStore`, `IOcrEngine`, `IReportExporter`, `IPurchaseProvider`, `ICrashReporter`…) **فقط وقتی ساخته می‌شوند که دومین پیاده‌سازی یا نیاز واقعی پیدا شد.**
 
 ## ۴. Presentation (MAUI)
-- **MVVM**: `CommunityToolkit.Mvvm` (`[ObservableProperty]`, `[RelayCommand]`)؛ ViewModelها `partial` و بدون ارجاع به View.
-- **Shell**: ناوبری با Route ثبت‌شده و پارامتر Type-safe (`INavigationService` پوششی).
-- **تب‌ها**: خانه، تراکنش‌ها، حساب‌ها، گزارش‌ها، بیشتر (وام، چک، تکرارشونده، واردات، تنظیمات). دکمه شناور افزودن سریع.
-- **DI**: `MauiProgram` فقط ثبت می‌کند؛ ثبت هر ماژول در `AddXxxModule(this IServiceCollection)`.
-- **DesignTokens**: `ResourceDictionary` برای رنگ، فاصله، تایپوگرافی (فونت Vazirmatn)، Light/Dark.
-- **کنترل‌های سفارشی**: `JalaliDatePicker`, `MoneyEntry`, `AmountLabel` (Bidi-safe), `PersianCalendarView`.
-- **State**: ViewModelها `Transient`؛ سرویس‌های حالت (Workspace فعال، تنظیمات) `Singleton` با `WeakReferenceMessenger`.
+- **MVVM**: `CommunityToolkit.Mvvm` (`[ObservableProperty]`, `[RelayCommand]`); ViewModelها `partial` و بدون ارجاع به View.
+- **Shell**: ناوبری با Route ثبت‌شده؛ تب‌های خانه، تراکنش‌ها، حساب‌ها، گزارش‌ها و بیشتر. در این مرحله فقط خانه عملیاتی است و تب‌های دیگر Placeholder هستند.
+- **DI**: `MauiProgram` نقطه Composition Root است؛ ثبت سرویس‌های زیرساخت از `AddHesabyarInfrastructure` انجام می‌شود.
+- **RTL**: `ILocalizationService.FlowDirection` جهت Shell و هر Page را تعیین می‌کند؛ متن‌ها از `.resx` می‌آیند. Android با `supportsRtl=true` ساخته می‌شود. این اسکلت، رفتار RTL روی دستگاه را تأیید نمی‌کند.
+- **DesignTokens**: `ResourceDictionary` برای رنگ و سبک پایه؛ فونت Vazirmatn و Light/Dark کامل هنوز باید اضافه و ارزیابی شوند.
+- **State**: ViewModelها `Transient`؛ سرویس‌های پایدار در صورت نیاز `Singleton`.
 
 ## ۵. Persistence
-- `AppDbContext` (EF Core, SQLite + SQLCipher) با `IDbContextFactory<AppDbContext>`.
-- **یک نویسنده**: صف نوشتن (`IWriteQueue`/SemaphoreSlim) چون SQLite تک‌نویسنده است؛ `PRAGMA journal_mode=WAL`, `foreign_keys=ON`, `busy_timeout`.
-- **Migrations** هنگام راه‌اندازی با اتصال کلید؛ قبل از Migrate، بکاپ خودکار فایل (محافظ).
-- **Interceptor ها**: یک `AuditInterceptor` ساده (CreatedAt/UpdatedAt) و `SoftDeleteInterceptor`.
-- **Value Converter**: `Money` ← دو ستون (`AmountMinor` INTEGER, `Currency` TEXT)؛ `DateOnly`/`DateTimeOffset` ← ISO/Unix ms.
-- تراز حساب با SUM روی Postingهای ایندکس‌شده؛ در صورت نیاز Snapshot ماهانه (بهینه‌سازی بعدی، نه حالا).
+- `AppDbContext` با `IDbContextFactory<AppDbContext>` و Migrationهای EF Core.
+- در اسکلت فعلی، Provider برابر Microsoft EF Core SQLite و **بدون رمزنگاری** است؛ SQLCipher و کلید امن تا تکمیل Spike S1 فعال نمی‌شوند.
+- `StartupPage` پیش از نمایش Shell، `DatabaseInitializer` را اجرا می‌کند: وجود Migration معوق را بررسی، در صورت وجود دیتابیس فایل‌محور از آن نسخه پشتیبان می‌گیرد و سپس `MigrateAsync` را اجرا می‌کند.
+- تا قبل از پیاده‌سازی بکاپ رمزنگاری‌شده، Android `allowBackup=false` دارد تا دیتابیس محلیِ فعلاً بدون رمزنگاری وارد Android Auto Backup نشود.
+- `SqliteConnectionPragmaInterceptor`: `journal_mode=WAL`, `foreign_keys=ON`, `busy_timeout=5000`.
+- زمان Audit از `TimeProvider` تزریق‌شده گرفته می‌شود؛ تاریخ‌های حسابداری همچنان `DateOnly` میلادی‌اند.
+- **یک نویسنده**: صف نوشتن (`IWriteQueue`/SemaphoreSlim) باید پیش از هم‌زمانی نوشتن از چند Feature اضافه شود.
+- **Interceptorها**: Soft Delete و قواعد Audit توسعه‌یافته در مرحله بعد؛ فعلاً فیلدهای پایه هنگام SaveChanges مقداردهی می‌شوند.
+- تراز حساب با SUM روی Postingهای ایندکس‌شده؛ Snapshot ماهانه (بهینه‌سازی بعدی، نه حالا).
 
 ## ۶. جریان‌های متقاطع
 | موضوع | راهکار |
 |---|---|
-| خطا | `Result<T>` + کدهای خطای ثابت (`Errors.Ledger.Unbalanced`)؛ ترجمه در UI |
+| خطا | `Result<T>` + کدهای خطای ثابت (`Errors.Ledger.Unbalanced`); ترجمه در UI |
 | اعتبارسنجی | در Service (قوانین کاربردی) و Aggregate (Invariant دامنه) |
-| Logging | `ILogger` + فایل چرخشی محلی؛ بدون PII؛ سطح قابل تغییر |
+| Logging | `ILogger`؛ بدون PII؛ سطح قابل تغییر |
 | کار پس‌زمینه | MAUI قابلیت قابل‌اتکا ندارد؛ کارهای دوره‌ای (تکرارشونده، یادآور) **در شروع برنامه و Resume** اجرا + اعلان محلی |
-| Concurrency | یک نویسنده؛ Optimistic با `Version` |
+| Concurrency | SQLite تک‌نویسنده؛ صف نوشتن هنوز پیاده نشده است |
 | Eventها | Domain Event درون‌فرایندی (ساده)، برای بروزرسانی گزارش/یادآور |
 
 ## ۷. گزینه‌های بررسی‌شده
 - *Prism*: ماژولار قوی ولی هزینه یادگیری/وابستگی بالاتر؛ Shell+DI کافی است.
 - *Hexagonal کامل با CQRS Event Store*: برای نیاز فعلی Over-engineering؛ دفترداری دوطرفه خودش Audit می‌دهد.
+
+
+## ۸. معماری همگام‌سازی (دهک ۹)
+
+- قراردادهای مشترک در پروژه مستقل `Hesabyar.Sync.Contracts` قرار دارند؛ این پروژه به MAUI، EF Core، دیتابیس و روش احراز هویت وابسته نیست.
+- هر تغییر با `ChangeId` یکتا، شناسه Aggregate، نوع عملیات، نسخه Schema و مهر نسخه شامل زمان UTC، شناسه دستگاه و شماره ترتیبی همان دستگاه منتقل می‌شود.
+- تغییرات یک Aggregate به‌صورت یک واحد همگام می‌شوند؛ به‌ویژه تراکنش مالی و تمام Postingهای آن نباید جداگانه اعمال شوند.
+- ادغام فیلدها مستقل است و بر اساس مهر نسخه با ترتیب قطعی انجام می‌شود؛ حذف با Tombstone مستقل از حذف فیزیکی نمایش داده می‌شود.
+- Push دارای شناسه تغییر idempotent و ترتیب افزایشی شماره دستگاه است؛ Pull با Cursor و صفحه‌بندی محدود انجام می‌شود.
+- احراز هویت و مالکیت داده از Claim معتبر سرور به دست می‌آید؛ هیچ `UserId` ارسالی از کلاینت مرجع مالکیت نیست.
+- قرارداد فعلی صرفاً پروتکل و اعتبارسنجی مستقل را پیاده‌سازی می‌کند؛ انتقال شبکه، ذخیره ChangeLog سمت سرور، احراز هویت و ادغام پایگاه داده در بسته‌های بعدی دهک ۹ اضافه می‌شوند.

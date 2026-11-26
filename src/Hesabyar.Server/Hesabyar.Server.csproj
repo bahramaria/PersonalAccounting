@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <ProjectReference Include="../Hesabyar.Application/Hesabyar.Application.csproj" />
+    <ProjectReference Include="../Hesabyar.Sync.Contracts/Hesabyar.Sync.Contracts.csproj" />
+  </ItemGroup>
+</Project>

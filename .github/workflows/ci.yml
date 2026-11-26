@@ -1,0 +1,80 @@
+name: Core and MAUI CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  test-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore core
+        run: dotnet restore Hesabyar.Core.slnx
+      - name: Build core
+        run: dotnet build Hesabyar.Core.slnx --no-restore --configuration Release
+      - name: Test core
+        run: dotnet test Hesabyar.Core.slnx --no-build --configuration Release --filter "FullyQualifiedName!~RefreshTokenServiceIntegrationTests&FullyQualifiedName!~SyncServiceIntegrationTests"
+
+  test-server:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Your_password123!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Your_password123!' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore server tests
+        run: dotnet restore tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj
+      - name: Build server tests
+        run: dotnet build tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj --no-restore --configuration Release
+      - name: Test server
+        run: dotnet test tests/Hesabyar.Server.Tests/Hesabyar.Server.Tests.csproj --no-build --configuration Release
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Android workload
+        run: dotnet workload install maui-android
+      - name: Restore Android
+        run: dotnet restore src/Hesabyar.App/Hesabyar.App.csproj -p:MauiTargetFramework=net10.0-android
+      - name: Build Android
+        run: dotnet build src/Hesabyar.App/Hesabyar.App.csproj -p:MauiTargetFramework=net10.0-android --no-restore --configuration Release
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui-windows --skip-manifest-update
+      - name: Restore Windows
+        run: dotnet restore src/Hesabyar.App/Hesabyar.App.csproj -p:MauiTargetFramework=net10.0-windows10.0.19041.0 -r win-x64
+      - name: Build Windows
+        run: dotnet build src/Hesabyar.App/Hesabyar.App.csproj -p:MauiTargetFramework=net10.0-windows10.0.19041.0 -r win-x64 --no-restore --configuration Release
