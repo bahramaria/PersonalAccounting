@@ -145,6 +145,14 @@ public sealed class AccountService(IAccountingRepository repository, IClock cloc
         if (account.IsArchived)
             return Result<bool>.Success(true);
 
+        if (account.Kind == AccountKind.Category &&
+            await repository.HasActiveChildCategoriesAsync(accountId, cancellationToken))
+        {
+            return Result<bool>.Failure(
+                "account.category.has_active_children",
+                "Active child categories must be archived before archiving their parent.");
+        }
+
         await repository.ArchiveAccountAsync(accountId, clock.UtcNow, cancellationToken);
         return Result<bool>.Success(true);
     }
