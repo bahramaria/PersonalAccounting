@@ -26,7 +26,6 @@ public sealed class MorePage : ContentPage
         });
 
         AddNavigationButton(content, AppStrings.AccountsTab, () => services.GetRequiredService<AccountsPage>());
-        AddNavigationButton(content, AppStrings.AssetsHeading, () => services.GetRequiredService<PhysicalAssetsPage>());
         AddNavigationButton(content, AppStrings.CategorySuggestionRules, () => services.GetRequiredService<CategorySuggestionRulesPage>());
         AddNavigationButton(content, AppStrings.CategoriesTab, () => services.GetRequiredService<CategoriesPage>());
         AddNavigationButton(content, AppStrings.PeopleTab, () => services.GetRequiredService<PeoplePage>());
