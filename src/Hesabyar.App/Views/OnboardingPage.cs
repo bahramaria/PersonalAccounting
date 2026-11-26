@@ -4,7 +4,6 @@ using Hesabyar.App.Services;
 using Hesabyar.Domain.Accounts;
 using Hesabyar.Localization;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Storage;
 
 namespace Hesabyar.App.Views;
 
@@ -13,6 +12,7 @@ public sealed class OnboardingPage : ContentPage
     private readonly IServiceProvider _services;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly AppLockService _appLock;
+    private readonly TimeProvider _timeProvider;
     private readonly Entry _accountNameEntry;
     private readonly Picker _accountKindPicker;
     private readonly Entry _openingBalanceEntry;
@@ -23,11 +23,13 @@ public sealed class OnboardingPage : ContentPage
         IServiceProvider services,
         IServiceScopeFactory scopeFactory,
         ILocalizationService localization,
-        AppLockService appLock)
+        AppLockService appLock,
+        TimeProvider timeProvider)
     {
         _services = services;
         _scopeFactory = scopeFactory;
         _appLock = appLock;
+        _timeProvider = timeProvider;
 
         FlowDirection = localization.FlowDirection == TextDirection.RightToLeft
             ? Microsoft.Maui.FlowDirection.RightToLeft
@@ -144,6 +146,7 @@ public sealed class OnboardingPage : ContentPage
         }
 
         _createAccountButton.IsEnabled = false;
+        var accountCreated = false;
         try
         {
             var kind = _accountKindPicker.SelectedIndex switch
@@ -164,18 +167,29 @@ public sealed class OnboardingPage : ContentPage
                 kind,
                 CurrencyCode: "IRR",
                 OpeningBalanceMinor: openingBalance,
-                OpeningDate: openingBalance > 0 ? DateOnly.FromDateTime(DateTime.Today) : null));
+                OpeningDate: openingBalance > 0
+                    ? DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime)
+                    : null));
 
             if (!result.IsSuccess)
             {
                 await DisplayAlertAsync(AppStrings.ValidationError, AppStrings.OnboardingAccountFailed, AppStrings.Ok);
                 return;
             }
+            accountCreated = true;
 
             if (_enablePinCheckBox.IsChecked)
-                await ConfigureOptionalPinAsync();
+            {
+                try
+                {
+                    await ConfigureOptionalPinAsync();
+                }
+                catch (Exception)
+                {
+                    // PIN setup is optional; account creation must still complete.
+                }
+            }
 
-            Preferences.Set("onboarding.completed", true);
             var createFirstTransaction = await DisplayAlertAsync(
                 AppStrings.OnboardingFirstTransaction,
                 AppStrings.OnboardingFirstTransactionPrompt,
@@ -193,11 +207,14 @@ public sealed class OnboardingPage : ContentPage
         }
         catch (Exception)
         {
-            await DisplayAlertAsync(AppStrings.OnboardingTitle, AppStrings.OnboardingAccountFailed, AppStrings.Ok);
+            await DisplayAlertAsync(
+                AppStrings.OnboardingTitle,
+                accountCreated ? AppStrings.StartupFailed : AppStrings.OnboardingAccountFailed,
+                AppStrings.Ok);
         }
         finally
         {
-            _createAccountButton.IsEnabled = true;
+            _createAccountButton.IsEnabled = !accountCreated;
         }
     }
 
