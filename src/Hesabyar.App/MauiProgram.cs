@@ -97,7 +97,8 @@ public static class MauiProgram
         builder.Services.AddTransient(provider => new DocumentAttachmentService(
             provider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
             Path.Combine(FileSystem.AppDataDirectory, "attachments"),
-            provider.GetRequiredService<IDatabaseKeyProvider>()));
+            provider.GetRequiredService<IDatabaseKeyProvider>(),
+            provider.GetRequiredService<TimeProvider>()));
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddSingleton<ReportsExportService>();
         builder.Services.AddTransient<ReportsPage>();
