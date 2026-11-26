@@ -148,6 +148,34 @@ public sealed class AccountingServiceTests
     }
 
     [Fact]
+    public async Task ArchiveCategory_WithActiveChild_IsRejectedUntilChildrenAreArchived()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = CreateDatabase(connection);
+        await db.Database.MigrateAsync();
+
+        var service = new AccountService(new EfAccountingRepository(db), new FixedClock(NowUtc));
+        var parent = await service.CreateAsync(new CreateAccountRequest(
+            "Food", AccountType.Expense, AccountKind.Category));
+        var child = await service.CreateAsync(new CreateAccountRequest(
+            "Restaurants", AccountType.Expense, AccountKind.Category, ParentId: parent.Value));
+
+        Assert.True(parent.IsSuccess);
+        Assert.True(child.IsSuccess);
+
+        var rejectedArchive = await service.ArchiveAsync(parent.Value);
+        Assert.True(rejectedArchive.IsFailure);
+        Assert.Equal("account.category.has_active_children", rejectedArchive.Error.Code);
+        Assert.False((await new EfAccountingRepository(db).GetAccountAsync(parent.Value, default))!.IsArchived);
+
+        Assert.True((await service.ArchiveAsync(child.Value)).IsSuccess);
+        var successfulArchive = await service.ArchiveAsync(parent.Value);
+        Assert.True(successfulArchive.IsSuccess);
+        Assert.True((await new EfAccountingRepository(db).GetAccountAsync(parent.Value, default))!.IsArchived);
+    }
+
+    [Fact]
     public async Task RenameAccount_UpdatesNameWithoutChangingBalance()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
